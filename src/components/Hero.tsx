@@ -3,7 +3,7 @@ import Image from 'next/image';
 export function Hero() {
   return (
     <>
-      <div className='absolute right-0 top-0 -z-10 h-full w-230'>
+      <div className='absolute right-0 top-0 -z-10 h-full w-170'>
         <Image
           src='/bg-landingpage.png'
           alt='Background network'
