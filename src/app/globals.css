@@ -119,6 +119,12 @@
   .secondary-color {
     color: #4f959d;
   }
+  .tertiary-color {
+    color: #98d2c0;
+  }
+  .surface-color {
+    color: #f6f8d5;
+  }
 }
 
 @layer base {
