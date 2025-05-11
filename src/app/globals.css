@@ -113,6 +113,18 @@
 }
 
 @layer utilities {
+  .bg-primary {
+    background-color: #4971a9;
+  }
+  .bg-secondary {
+    background-color: #4f959d;
+  }
+  .bg-tertiary {
+    background-color: #98d2c0;
+  }
+  .bg-surface {
+    background-color: #f6f8d5;
+  }
   .primary-color {
     color: #4971a9;
   }
