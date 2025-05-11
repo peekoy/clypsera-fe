@@ -3,7 +3,7 @@ import CardFeature from './cards/Card-Feature';
 export function Feature() {
   return (
     <>
-      <div className='flex gap-12 items-center'>
+      <div className='flex gap-12 items-center mb-10'>
         <div className='flex flex-col gap-12 mt-22'>
           <CardFeature
             image='/surgical-data.svg'
