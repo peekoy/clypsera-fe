@@ -113,11 +113,11 @@
 }
 
 @layer utilities {
-  .clypsera-logo {
-    background-image: url('/LOGO.svg');
+  .primary-color {
+    color: #4971a9;
   }
-  .bg-landingpage-header {
-    background-image: url('/background.png');
+  .secondary-color {
+    color: #4f959d;
   }
 }
 
