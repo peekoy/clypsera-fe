@@ -1,7 +1,8 @@
+'use server';
 import Image from 'next/image';
 import Link from 'next/link';
 
-export function Footer() {
+export async function Footer() {
   const year = new Date().getFullYear();
   return (
     <>

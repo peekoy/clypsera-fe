@@ -1,6 +1,7 @@
+'use server';
 import CardNews from './cards/Card-News';
 
-export function News() {
+export async function News() {
   return (
     <>
       <div className='flex flex-col items-center mb-20 gap-12 z-10'>

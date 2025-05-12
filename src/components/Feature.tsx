@@ -1,6 +1,7 @@
+'use server';
 import CardFeature from './cards/Card-Feature';
 
-export function Feature() {
+export async function Feature() {
   return (
     <>
       <div className='flex gap-12 items-center mb-10'>

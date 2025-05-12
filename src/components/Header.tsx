@@ -17,18 +17,20 @@ export function Header() {
     <header className='w-full'>
       <div className='container mx-auto flex h-20 items-center justify-between px-30'>
         <Link href='/' className='flex items-center gap-2'>
-          <Image
-            src='/LOGO.svg'
-            alt='clypsera-logo'
-            width={64}
-            height={64}
-          ></Image>
+          <Image src='/LOGO.svg' alt='clypsera-logo' width={64} height={64} />
         </Link>
 
         <NavigationMenu className='md:flex'>
           <NavigationMenuList className='flex gap-12'>
             <NavigationMenuItem>
-              <Link href='/features' passHref>
+              <Link
+                href='/'
+                onClick={(e) => {
+                  e.preventDefault();
+                  const section = document.getElementById('feature');
+                  section?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
                 <NavigationMenuLink
                   className={cn(
                     navigationMenuTriggerStyle(),
@@ -40,7 +42,14 @@ export function Header() {
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <Link href='/faq' passHref>
+              <Link
+                href='/'
+                onClick={(e) => {
+                  e.preventDefault();
+                  const section = document.getElementById('faq');
+                  section?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
                 <NavigationMenuLink
                   className={cn(
                     navigationMenuTriggerStyle(),
@@ -52,7 +61,14 @@ export function Header() {
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <Link href='/news' passHref>
+              <Link
+                href='/'
+                onClick={(e) => {
+                  e.preventDefault();
+                  const section = document.getElementById('news');
+                  section?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
                 <NavigationMenuLink
                   className={cn(
                     navigationMenuTriggerStyle(),
@@ -63,9 +79,11 @@ export function Header() {
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
-            <Button className='rounded-full bg-green-200/80 px-6 font-medium text-green-800 hover:bg-green-200'>
-              LOGIN
-            </Button>
+            <Link href='/login'>
+              <Button className='rounded-full bg-green-200/80 px-6 font-medium text-green-800 hover:bg-green-200'>
+                Login
+              </Button>
+            </Link>
           </NavigationMenuList>
         </NavigationMenu>
       </div>

@@ -1,6 +1,7 @@
+'use server';
 import Image from 'next/image';
 
-export function Hero() {
+export async function Hero() {
   return (
     <>
       <div className='absolute bottom-[3%] right-0 -z-10 h-full w-170'>
@@ -11,7 +12,7 @@ export function Hero() {
           height={800}
         />
       </div>
-      <div className='flex flex-row gap-30 py-20'>
+      <div className='flex flex-row gap-30 pt-20 pb-40'>
         <div className='flex flex-col gap-8 justify-center w-full'>
           <p className='text-[64px] primary-color font-bold'>
             Smarter Healthcare <br /> Through Cleft Data
