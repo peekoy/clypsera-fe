@@ -3,7 +3,7 @@ import Image from 'next/image';
 export function Hero() {
   return (
     <>
-      <div className='absolute right-0 top-0 -z-10 h-full w-170'>
+      <div className='absolute bottom-[3%] right-0 -z-10 h-full w-170'>
         <Image
           src='/bg-landingpage.png'
           alt='Background network'
@@ -13,7 +13,7 @@ export function Hero() {
       </div>
       <div className='flex flex-row gap-30 py-20'>
         <div className='flex flex-col gap-8 justify-center w-full'>
-          <p className='text-[64px] primary-color text-shadow-lg font-bold'>
+          <p className='text-[64px] primary-color font-bold'>
             Smarter Healthcare <br /> Through Cleft Data
           </p>
           <p className='text-2xl font-semibold'>

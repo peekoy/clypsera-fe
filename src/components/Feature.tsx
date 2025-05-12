@@ -33,11 +33,11 @@ export function Feature() {
         <div className='flex flex-col gap-16'>
           <p className='text-[40px] font-bold secondary-color'>-FEATURES</p>
           <div className='flex flex-col gap-10'>
-            <p className='text-5xl primary-color text-shadow-lg font-semibold'>
+            <p className='text-5xl primary-color font-semibold'>
               Comprehensive Data <br />
               Accurate Insights
             </p>
-            <p className='text-2xl font-semibold'>
+            <p className='text-2xl font-medium'>
               Clypsera provides reliable, well-
               <br />
               structured data to support better policy-making and clinical
