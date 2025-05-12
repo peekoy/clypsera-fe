@@ -5,7 +5,7 @@ export function Footer() {
   const year = new Date().getFullYear();
   return (
     <>
-      <div className='relative bg-secondary w-full h-80'>
+      <footer className='relative bg-secondary w-full h-80'>
         <div className='absolute bg-white w-full h-10 z-30'></div>
         <div className='absolute bg-white w-full h-70 z-10 rounded-bl-[100]'>
           <div className='flex gap-2 mt-28 ml-20'>
@@ -58,7 +58,7 @@ export function Footer() {
             © {year} Clypsera. HUMIC Enginnering All rights reserved.
           </p>
         </div>
-      </div>
+      </footer>
     </>
   );
 }
