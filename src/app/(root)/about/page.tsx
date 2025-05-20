@@ -11,11 +11,11 @@ export default function AboutPage() {
         className='absolute top-0 -z-10 w-full'
       />
       <main className='relative'>
-        <div className='w-160 mt-20 ml-60 pb-101'>
-          <p className='text-white text-[64px] font-extrabold text-shadow-lg'>
+        <div className='w-160 mt-28 ml-60 pb-101'>
+          <p className='text-white text-[64px] font-bold text-shadow-lg'>
             About Us
           </p>
-          <p className='text-white text-2xl font-bold'>
+          <p className='text-white text-2xl font-semibold'>
             Clypsera is a health data platform that focuses on collecting,
             managing, and sharing accurate, structured data on cleft lip and
             palate cases. We believe in the power of data to transform
