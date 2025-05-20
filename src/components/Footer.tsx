@@ -21,7 +21,7 @@ export async function Footer() {
                 Clypsera provides accurate and organized data on cleft <br />{' '}
                 lip cases to support better healthcare and research.
               </p>
-              <Link href='#' className='font-bold primary-color'>
+              <Link href='/about' className='font-bold primary-color'>
                 Learn More
               </Link>
             </div>
