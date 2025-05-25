@@ -39,17 +39,17 @@ export async function Footer() {
               <Link href='#'>Affiliates</Link>
             </div>
             <div>
-              <Link href='#'>Privacy</Link>
+              <Link href='/privacy'>Privacy</Link>
             </div>
             <div>
-              <Link href='#'>Log In</Link>
+              <Link href='/login'>Log In</Link>
             </div>
             <div className='col-span-3 grid grid-cols-subgrid gap-4'>
               <div className='col-start-2'>
-                <Link href='#'>Terms</Link>
+                <Link href='/terms'>Terms</Link>
               </div>
               <div>
-                <Link href='#'>Support</Link>
+                <Link href='/support'>Support</Link>
               </div>
             </div>
           </div>
