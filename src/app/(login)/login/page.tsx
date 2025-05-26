@@ -47,7 +47,7 @@ export default function LoginPage() {
                 type='button'
                 variant='ghost'
                 size='icon'
-                className='absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground'
+                className='absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground cursor-pointer'
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? (
@@ -60,7 +60,10 @@ export default function LoginPage() {
                 </span>
               </Button>
             </div>
-            <Button type='submit' className='w-50 h-10 mt-10 rounded-full'>
+            <Button
+              type='submit'
+              className='w-50 h-10 mt-10 hover:bg-[#4971a9]/90 rounded-full cursor-pointer'
+            >
               Login
             </Button>
           </Form>

@@ -21,13 +21,13 @@ export default async function SupportPage() {
           <div className='space-x-4'>
             <Button
               type='button'
-              className='bg-secondary hover:bg-[#4f959d]/90'
+              className='bg-secondary hover:bg-[#4f959d]/90 cursor-pointer'
             >
               <Mail /> <p>E-mail: support@clypsera.com</p>
             </Button>
             <Button
               type='button'
-              className='bg-secondary hover:bg-[#4f959d]/90'
+              className='bg-secondary hover:bg-[#4f959d]/90 cursor-pointer'
             >
               <Phone /> <p>Phone: +62 812 1212 0000</p>
             </Button>

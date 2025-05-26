@@ -80,7 +80,10 @@ export function Header() {
               </Link>
             </NavigationMenuItem>
             <Link href='/login'>
-              <Button className='rounded-full bg-green-200/80 px-6 font-medium text-green-800 hover:bg-green-200'>
+              <Button
+                variant='default'
+                className='rounded-full bg-green-200/80 px-6 font-medium text-green-800 hover:bg-green-200 cursor-pointer'
+              >
                 Login
               </Button>
             </Link>
