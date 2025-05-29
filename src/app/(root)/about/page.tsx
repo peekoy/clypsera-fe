@@ -1,5 +1,6 @@
 'use server';
 
+import CardAbout from '@/components/cards/Card-About';
 import Image from 'next/image';
 
 export default async function AboutPage() {
@@ -56,26 +57,44 @@ export default async function AboutPage() {
             </div>
           </div>
         </div>
-        <div className='relative pb-216'>
+        <div className='relative pb-20'>
           <Image
             src='/about-us-foot.svg'
             alt='about us footer'
-            width={712}
+            width={800}
             height={0}
-            className='absolute right-0 z-40'
+            className='absolute right-0 -z-10'
           />
-          <div className='absolute z-50 shadow-2xl bg-linear-to-t from-[#4F959D]/75 to-[#98D2C0] w-230 h-120 rounded-3xl ml-20 mt-45 p-26'>
-            <div className='space-y-14'>
-              <p className='text-white text-5xl font-semibold text-shadow-lg'>
-                Why It <span className='primary-color'>Matters?</span>
+          <div className='flex justify-between items-center pt-20 px-36'>
+            <div className='space-y-14 w-130'>
+              <p className='primary-color text-5xl font-semibold text-shadow-lg'>
+                Why It Matters?
               </p>
-              <p className='text-white text-2xl font-mono'>
-                Cleft lip and palate treatment requires accurate diagnosis,
-                careful planning, and long-term care. With Clypsera,
-                professionals gain access to detailed patient data that can
-                improve surgical outcomes, advance research, and guide better
-                policies.
+              <p className='text-2xl font-mono'>
+                Clypsera bridges the gap between clinical care and research by
+                providing medical professionals and scientists with structured,
+                accessible, and actionable patient data.
               </p>
+            </div>
+            <div className='flex gap-10'>
+              <div className='space-y-30'>
+                <CardAbout
+                  description='Clinical Decision Support'
+                  color='#4971a9'
+                />
+                <div className='ml-10'>
+                  <CardAbout
+                    description='Data-Driven Practice'
+                    color='#4971a9'
+                  />
+                </div>
+              </div>
+              <div className='space-y-30 mt-20'>
+                <CardAbout description='Accelerating Research' />
+                <div className='ml-10'>
+                  <CardAbout description='Cross-Institutional Collaboration' />
+                </div>
+              </div>
             </div>
           </div>
         </div>
