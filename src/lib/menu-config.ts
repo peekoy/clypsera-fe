@@ -1,13 +1,13 @@
 import {
   Home,
-  BarChart3,
   Upload,
   Database,
   Settings,
-  Users,
   FileCheck,
+  LayoutDashboard,
 } from 'lucide-react';
 import type { MenuSection, UserRole } from '@/types/user';
+import Image from 'next/image';
 
 export const menuSections: MenuSection[] = [
   {
@@ -27,7 +27,7 @@ export const menuSections: MenuSection[] = [
       {
         title: 'Browse Data',
         url: '/browse-data',
-        icon: BarChart3,
+        icon: LayoutDashboard,
         roles: ['admin', 'operator', 'user'],
       },
       {

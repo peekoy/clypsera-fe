@@ -147,3 +147,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #ffffff; /* biru tua */
+  border-radius: 10px;
+  border: 3px solid #4971a9; /* padding warna */
+}

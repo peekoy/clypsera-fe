@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import ScrollspySidebar from '@/components/ScrollspySidebar';
+import ScrollspySidebar from '@/components/landingpage/ScrollspySidebar';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

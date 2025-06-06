@@ -1,10 +1,10 @@
 'use server';
 
 import Image from 'next/image';
-import { Hero } from '@/components/Hero';
-import { Feature } from '@/components/Feature';
-import { FAQ } from '@/components/FAQ';
-import { News } from '@/components/News';
+import { Hero } from '@/components/landingpage/Hero';
+import { Feature } from '@/components/landingpage/Feature';
+import { FAQ } from '@/components/landingpage/FAQ';
+import { News } from '@/components/landingpage/News';
 
 export default async function LandingPage() {
   return (
