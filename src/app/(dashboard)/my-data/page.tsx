@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, Trash2 } from 'lucide-react';
-import { data } from '@/data/data';
+import { patientData } from '@/data/data';
 import DataTable from '@/components/dashboard/data-table';
 import FilterForm from '@/components/dashboard/filter-form';
 import Pagination from '@/components/dashboard/pagination';
@@ -16,7 +16,7 @@ type FilterState = {
   patientName: string;
 };
 
-export default function BrowseDataPage() {
+export default function MyDataPage() {
   const [tempFilters, setTempFilters] = useState<FilterState>({
     foundation: '',
     operationTechnique: '',
@@ -38,7 +38,7 @@ export default function BrowseDataPage() {
   const itemsPerPage = 7;
 
   const filteredData = useMemo(() => {
-    return data.filter((patient) => {
+    return patientData.filter((patient) => {
       const matchesFoundation =
         !appliedFilters.foundation ||
         patient.organizer

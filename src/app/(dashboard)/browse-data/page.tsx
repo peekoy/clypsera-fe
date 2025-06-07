@@ -3,10 +3,11 @@
 import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Trash2, Download } from 'lucide-react';
-import { data } from '@/data/data';
+import { patientData } from '@/data/data';
 import DataTable from '@/components/dashboard/data-table';
 import FilterForm from '@/components/dashboard/filter-form';
 import Pagination from '@/components/dashboard/pagination';
+import { useRouter } from 'next/navigation';
 
 type FilterState = {
   foundation: string;
@@ -17,6 +18,13 @@ type FilterState = {
 };
 
 export default function BrowseDataPage() {
+  const router = useRouter();
+
+  const handleViewOperation = (patientId: number) => {
+    // Redirect ke endpoint operations/[id]
+    router.push(`/operations/${patientId}`);
+  };
+
   const [tempFilters, setTempFilters] = useState<FilterState>({
     foundation: '',
     operationTechnique: '',
@@ -38,7 +46,7 @@ export default function BrowseDataPage() {
   const itemsPerPage = 7;
 
   const filteredData = useMemo(() => {
-    return data.filter((patient) => {
+    return patientData.filter((patient) => {
       const matchesFoundation =
         !appliedFilters.foundation ||
         patient.organizer
@@ -192,6 +200,7 @@ export default function BrowseDataPage() {
             <Button
               size='sm'
               className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white'
+              onClick={() => handleViewOperation(item.id)}
             >
               View
             </Button>

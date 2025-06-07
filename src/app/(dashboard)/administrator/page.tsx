@@ -3,10 +3,11 @@
 import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, Trash2 } from 'lucide-react';
-import { data } from '@/data/data';
+import { patientData } from '@/data/data';
 import DataTable from '@/components/dashboard/data-table';
 import FilterForm from '@/components/dashboard/filter-form';
 import Pagination from '@/components/dashboard/pagination';
+import { useRouter } from 'next/navigation';
 
 type FilterState = {
   foundation: string;
@@ -16,7 +17,13 @@ type FilterState = {
   patientName: string;
 };
 
-export default function BrowseDataPage() {
+export default function AdministratorPage() {
+  const router = useRouter();
+
+  const handleGoToAddNewUser = () => {
+    router.push('/add-new-user');
+  };
+
   const [tempFilters, setTempFilters] = useState<FilterState>({
     foundation: '',
     operationTechnique: '',
@@ -38,7 +45,7 @@ export default function BrowseDataPage() {
   const itemsPerPage = 7;
 
   const filteredData = useMemo(() => {
-    return data.filter((patient) => {
+    return patientData.filter((patient) => {
       const matchesFoundation =
         !appliedFilters.foundation ||
         patient.organizer
@@ -186,7 +193,10 @@ export default function BrowseDataPage() {
           totalPages={totalPages}
           onPageChange={setCurrentPage}
         />
-        <Button className='bg-secondary hover:bg-[#4F959D]/90 cursor-pointer text-white flex items-center gap-2'>
+        <Button
+          className='bg-secondary hover:bg-[#4F959D]/90 cursor-pointer text-white flex items-center gap-2'
+          onClick={handleGoToAddNewUser}
+        >
           Add New User
         </Button>
       </div>
