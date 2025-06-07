@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -16,7 +17,10 @@ import {
 import { getMenuForRole } from '@/lib/menu-config';
 import type { User } from '@/types/user';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { ChevronDown, UserIcon, LogOut } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface RoleBasedSidebarProps {
   user: User;
@@ -24,7 +28,9 @@ interface RoleBasedSidebarProps {
 
 export function RoleBasedSidebar({ user }: RoleBasedSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const menuSections = getMenuForRole(user.role);
+  const [isProfileExpanded, setIsProfileExpanded] = useState(false);
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -39,10 +45,24 @@ export function RoleBasedSidebar({ user }: RoleBasedSidebarProps) {
     }
   };
 
+  const toggleProfileMenu = () => {
+    setIsProfileExpanded(!isProfileExpanded);
+  };
+
+  const handleLogout = () => {
+    console.log('Logging out...');
+    toast('Logged Out', {
+      description: 'You have been logged out successfully.',
+    });
+    // Implement logout logic here
+    localStorage.removeItem('token');
+    router.push('/login');
+  };
+
   return (
     <Sidebar className='rounded-br-full border-none bg-primary'>
-      <SidebarHeader className='p-6 rounded-tr-2xl bg-primary'>
-        <div className='flex flex-col items-center space-y-3'>
+      <SidebarHeader className='p-6 bg-primary rounded-tr-xl'>
+        <div className='flex flex-col items-center'>
           <Avatar className='h-16 w-16 border-2 border-white/20'>
             <AvatarImage
               src={user.avatar || '/placeholder.svg'}
@@ -55,15 +75,63 @@ export function RoleBasedSidebar({ user }: RoleBasedSidebarProps) {
                 .join('')}
             </AvatarFallback>
           </Avatar>
-          <div className='text-center'>
-            <h3 className='font-semibold text-lg text-white'>{user.name}</h3>
-            <Badge
-              variant='secondary'
-              className={`mt-1 capitalize ${getRoleBadgeColor(user.role)}`}
-            >
-              {user.role}
-            </Badge>
+
+          <div className='cursor-pointer' onClick={toggleProfileMenu}>
+            {/* Profile Info */}
+            <div className='text-center mt-2'>
+              <div className='flex items-center gap-2 justify-center'>
+                <h3 className='font-semibold text-lg text-white'>
+                  {user.name}
+                </h3>
+                <ChevronDown
+                  className={cn(
+                    'h-4 w-4 text-white/70 transition-transform duration-200',
+                    isProfileExpanded && 'rotate-180'
+                  )}
+                />
+              </div>
+            </div>
           </div>
+          <Badge
+            variant='secondary'
+            className={`mt-1 capitalize ${getRoleBadgeColor(user.role)}`}
+          >
+            {user.role}
+          </Badge>
+
+          {/* Profile Menu Items - Conditionally Rendered */}
+          {isProfileExpanded && (
+            <div className='w-full space-y-1 mt-2 animate-fadeIn'>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname === '/profile'}
+                className={`
+                    text-white/90 hover:text-white hover:bg-white/10 
+                    data-[active=true]:bg-white/20 data-[active=true]:text-white
+                    transition-all duration-200 bg-primary border-none w-full justify-start
+                    ${pathname === '/profile' ? 'bg-white/20 text-white' : ''}
+                  `}
+              >
+                <Link
+                  href='/profile'
+                  className='flex items-center gap-3 w-full px-3 py-2'
+                >
+                  <UserIcon className='h-4 w-4' />
+                  <span>Profile</span>
+                </Link>
+              </SidebarMenuButton>
+
+              <SidebarMenuButton
+                className='text-white/90 hover:text-white hover:bg-white/10 transition-all duration-200 bg-primary border-none w-full justify-start'
+                onClick={handleLogout}
+              >
+                <div className='flex items-center gap-3 w-full px-3 py-2'>
+                  <LogOut className='h-4 w-4' />
+                  <span>Log Out</span>
+                </div>
+              </SidebarMenuButton>
+            </div>
+          )}
         </div>
       </SidebarHeader>
 
