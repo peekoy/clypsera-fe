@@ -5,16 +5,28 @@ import {
   NavigationMenuList,
   NavigationMenuItem,
   NavigationMenuLink,
-  navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 export function Header() {
+  const router = useRouter();
   const pathname = usePathname();
+
+  const handleLogin = () => {
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    if (!token || !storedUser) {
+      router.push('/login');
+      return;
+    } else {
+      router.push('/dashboard');
+      return;
+    }
+  };
+
   return (
     <header className='w-full'>
       <div className='container mx-auto flex h-20 items-center justify-between px-30 mt-10'>
@@ -100,18 +112,17 @@ export function Header() {
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
-            <Link href='/login'>
-              <Button
-                variant='default'
-                className={
-                  pathname === '/' || pathname === '/about'
-                    ? 'rounded-full bg-secondary px-6 text-white font-medium hover:bg-[#4f959d]/80 cursor-pointer'
-                    : 'rounded-full bg-primary px-6 text-white font-medium hover:bg-[#4971a9]/90 cursor-pointer'
-                }
-              >
-                Login
-              </Button>
-            </Link>
+            <Button
+              variant='default'
+              className={
+                pathname === '/' || pathname === '/about'
+                  ? 'rounded-full bg-secondary px-6 text-white font-medium hover:bg-[#4f959d]/80 cursor-pointer'
+                  : 'rounded-full bg-primary px-6 text-white font-medium hover:bg-[#4971a9]/90 cursor-pointer'
+              }
+              onClick={handleLogin}
+            >
+              Login
+            </Button>
           </NavigationMenuList>
         </NavigationMenu>
       </div>
