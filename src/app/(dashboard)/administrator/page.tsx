@@ -1,43 +1,54 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, Trash2 } from 'lucide-react';
-import { patientData } from '@/data/data';
+import { Trash2 } from 'lucide-react';
 import DataTable from '@/components/dashboard/data-table';
 import FilterForm from '@/components/dashboard/filter-form';
 import Pagination from '@/components/dashboard/pagination';
 import { useRouter } from 'next/navigation';
-
-type FilterState = {
-  foundation: string;
-  operationTechnique: string;
-  gender: string;
-  age: string;
-  patientName: string;
-};
+import type { AllUsers } from '@/types/user';
+import { getAllUsers } from '@/lib/api/fetch-user';
+import { FilterAdmin } from '@/types/filter';
 
 export default function AdministratorPage() {
   const router = useRouter();
+
+  const [allUsersData, setAllUsersData] = useState<AllUsers[]>([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('Token tidak ditemukan');
+        return;
+      }
+      setIsLoading(true);
+      let users = (await getAllUsers(token)) || [];
+
+      if (users) {
+        setAllUsersData(users);
+      }
+      setIsLoading(false);
+    };
+
+    fetchUsers();
+  }, []);
 
   const handleGoToAddNewUser = () => {
     router.push('/add-new-user');
   };
 
-  const [tempFilters, setTempFilters] = useState<FilterState>({
-    foundation: '',
-    operationTechnique: '',
-    gender: '',
-    age: '',
-    patientName: '',
+  const [tempFilters, setTempFilters] = useState<FilterAdmin>({
+    name: '',
+    email: '',
+    role: '',
   });
 
-  const [appliedFilters, setAppliedFilters] = useState<FilterState>({
-    foundation: '',
-    operationTechnique: '',
-    gender: '',
-    age: '',
-    patientName: '',
+  const [appliedFilters, setAppliedFilters] = useState<FilterAdmin>({
+    name: '',
+    email: '',
+    role: '',
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,50 +56,29 @@ export default function AdministratorPage() {
   const itemsPerPage = 7;
 
   const filteredData = useMemo(() => {
-    return patientData.filter((patient) => {
-      const matchesFoundation =
-        !appliedFilters.foundation ||
-        patient.organizer
-          .toLowerCase()
-          .includes(appliedFilters.foundation.toLowerCase()) ||
-        patient.uploadedBy
-          .toLowerCase()
-          .includes(appliedFilters.foundation.toLowerCase());
+    return allUsersData.filter((user) => {
+      const matchesRole =
+        !appliedFilters.role ||
+        user.role.toLowerCase().includes(appliedFilters.role.toLowerCase()) ||
+        user.role.toLowerCase().includes(appliedFilters.role.toLowerCase());
 
-      const matchesTechnique =
-        !appliedFilters.operationTechnique ||
-        patient.operationalTechniques
-          .toLowerCase()
-          .includes(appliedFilters.operationTechnique.toLowerCase());
-
-      const matchesGender =
-        !appliedFilters.gender ||
-        patient.gender.toLowerCase() === appliedFilters.gender.toLowerCase();
-
-      const matchesAge =
-        !appliedFilters.age || patient.age.toString() === appliedFilters.age;
+      const matchesEmail =
+        !appliedFilters.email ||
+        user.email.toLowerCase().includes(appliedFilters.email.toLowerCase());
 
       const matchesName =
-        !appliedFilters.patientName ||
-        patient.name
-          .toLowerCase()
-          .includes(appliedFilters.patientName.toLowerCase());
+        !appliedFilters.name ||
+        user.name.toLowerCase().includes(appliedFilters.name.toLowerCase());
 
-      return (
-        matchesFoundation &&
-        matchesTechnique &&
-        matchesGender &&
-        matchesAge &&
-        matchesName
-      );
+      return matchesRole && matchesEmail && matchesName;
     });
-  }, [appliedFilters]);
+  }, [appliedFilters, allUsersData]);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
-  const handleTempFilterChange = (key: keyof FilterState, value: string) => {
+  const handleTempFilterChange = (key: keyof FilterAdmin, value: string) => {
     setTempFilters((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -101,12 +91,10 @@ export default function AdministratorPage() {
   };
 
   const clearFilters = () => {
-    const emptyFilters: FilterState = {
-      foundation: '',
-      operationTechnique: '',
-      gender: '',
-      age: '',
-      patientName: '',
+    const emptyFilters: FilterAdmin = {
+      name: '',
+      email: '',
+      role: '',
     };
     setTempFilters(emptyFilters);
     setAppliedFilters(emptyFilters);
@@ -144,14 +132,6 @@ export default function AdministratorPage() {
     },
   ];
 
-  const columns = [
-    { key: 'id', label: 'User ID' },
-    { key: 'name', label: 'Name' },
-    { key: 'email', label: 'Email' },
-    { key: 'userCreationDate', label: 'User Creation Date' },
-    { key: 'role', label: 'Role' },
-  ];
-
   return (
     <div className='p-6 space-y-4'>
       <div className='relative'>
@@ -159,7 +139,7 @@ export default function AdministratorPage() {
           fields={filterFields}
           values={tempFilters}
           onChange={(key, value) =>
-            handleTempFilterChange(key as keyof FilterState, value)
+            handleTempFilterChange(key as keyof FilterAdmin, value)
           }
           onApply={applyFilters}
           onClear={clearFilters}
@@ -170,7 +150,13 @@ export default function AdministratorPage() {
 
       <DataTable
         data={currentData}
-        columns={columns}
+        columns={[
+          { key: 'id', label: 'User ID' },
+          { key: 'name', label: 'Name' },
+          { key: 'email', label: 'Email' },
+          { key: 'userCreationDate', label: 'User Creation Date' },
+          { key: 'role', label: 'Role' },
+        ]}
         loading={isLoading}
         actions={(item) => (
           <div className='flex'>
