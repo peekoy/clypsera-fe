@@ -10,19 +10,19 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 
-type DataTableProps = {
-  data: any[];
-  columns: { key: string; label: string }[];
+type DataTableProps<T> = {
+  data: T[];
+  columns: { key: keyof T; label: string }[];
   loading?: boolean;
   actions?: (item: any) => React.ReactNode;
 };
 
-export default function DataTable({
+export default function DataTable<T>({
   data,
   columns,
   loading,
   actions,
-}: DataTableProps) {
+}: DataTableProps<T>) {
   if (loading) {
     return (
       <div className='flex items-center justify-center py-12'>
@@ -34,6 +34,8 @@ export default function DataTable({
     );
   }
 
+  console.log(data);
+
   return (
     <div className='overflow-hidden rounded-lg shadow-lg'>
       <div className='overflow-x-auto'>
@@ -42,7 +44,7 @@ export default function DataTable({
             <TableRow className='bg-primary hover:bg-[#4971A9]'>
               {columns.map((col, i) => (
                 <TableHead
-                  key={col.key}
+                  key={String(col.key)}
                   className={`text-white font-medium ${
                     i === 0 ? 'rounded-tl-lg' : ''
                   } ${
@@ -60,19 +62,7 @@ export default function DataTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.length > 0 ? (
-              data.map((item, index) => (
-                <TableRow
-                  key={item.id || index}
-                  className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}
-                >
-                  {columns.map((col) => (
-                    <TableCell key={col.key}>{item[col.key]}</TableCell>
-                  ))}
-                  {actions && <TableCell>{actions(item)}</TableCell>}
-                </TableRow>
-              ))
-            ) : (
+            {!data ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length + (actions ? 1 : 0)}
@@ -81,6 +71,20 @@ export default function DataTable({
                   No data found matching your filters
                 </TableCell>
               </TableRow>
+            ) : (
+              data.map((item, index) => (
+                <TableRow
+                  key={(item as any).id || index}
+                  className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}
+                >
+                  {columns.map((col) => (
+                    <TableCell key={String(col.key)}>
+                      {String(item[col.key])}
+                    </TableCell>
+                  ))}
+                  {actions && <TableCell>{actions(item)}</TableCell>}
+                </TableRow>
+              ))
             )}
           </TableBody>
         </Table>
