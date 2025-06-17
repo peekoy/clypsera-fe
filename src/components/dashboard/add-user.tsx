@@ -43,7 +43,7 @@ export default function AddNewUserForm() {
 
     try {
       const res = await fetch(
-        'https://7abe-118-99-81-224.ngrok-free.app/api/auth/register',
+        'https://3dd8-103-194-173-98.ngrok-free.app/api/auth/register',
         {
           method: 'POST',
           headers: {
