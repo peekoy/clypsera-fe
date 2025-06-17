@@ -3,14 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
-import type { User } from '@/types/user';
+import type { UserAuth } from '@/types/user';
 
 export default function DashboardLayoutWrapper({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserAuth | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export default function DashboardLayoutWrapper({
     }
 
     try {
-      const parsedUser: User = JSON.parse(storedUser);
+      const parsedUser: UserAuth = JSON.parse(storedUser);
       setUser(parsedUser);
     } catch (err) {
       console.error('Gagal parse user dari localStorage', err);
