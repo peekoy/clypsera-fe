@@ -1,31 +1,47 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Trash2, Download } from 'lucide-react';
-import { patientData } from '@/data/data';
+import { Download } from 'lucide-react';
+// import { patientData } from '@/data/data';
 import DataTable from '@/components/dashboard/data-table';
 import FilterForm from '@/components/dashboard/filter-form';
 import Pagination from '@/components/dashboard/pagination';
 import { useRouter } from 'next/navigation';
-
-type FilterState = {
-  foundation: string;
-  operationTechnique: string;
-  gender: string;
-  age: string;
-  patientName: string;
-};
+import { FilterBrowse } from '@/types/filter';
+import { PatientData } from '@/types/patient';
+import { getAllPatient } from '@/lib/api/fetch-patient';
 
 export default function BrowseDataPage() {
+  const [allPatient, setAllPatient] = useState<PatientData[]>([]);
   const router = useRouter();
 
+  useEffect(() => {
+    const fetchPatient = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('Token tidak ditemukan');
+        return;
+      }
+      setIsLoading(true);
+      let patient = (await getAllPatient(token)) || [];
+
+      if (patient) {
+        setAllPatient(patient);
+      }
+      setIsLoading(false);
+    };
+
+    fetchPatient();
+  }, []);
+
+  console.log(allPatient);
+
   const handleViewOperation = (patientId: number) => {
-    // Redirect ke endpoint operations/[id]
     router.push(`/operations/${patientId}`);
   };
 
-  const [tempFilters, setTempFilters] = useState<FilterState>({
+  const [tempFilters, setTempFilters] = useState<FilterBrowse>({
     foundation: '',
     operationTechnique: '',
     gender: '',
@@ -33,7 +49,7 @@ export default function BrowseDataPage() {
     patientName: '',
   });
 
-  const [appliedFilters, setAppliedFilters] = useState<FilterState>({
+  const [appliedFilters, setAppliedFilters] = useState<FilterBrowse>({
     foundation: '',
     operationTechnique: '',
     gender: '',
@@ -46,7 +62,7 @@ export default function BrowseDataPage() {
   const itemsPerPage = 7;
 
   const filteredData = useMemo(() => {
-    return patientData.filter((patient) => {
+    return allPatient.filter((patient) => {
       const matchesFoundation =
         !appliedFilters.foundation ||
         patient.organizer
@@ -71,7 +87,7 @@ export default function BrowseDataPage() {
 
       const matchesName =
         !appliedFilters.patientName ||
-        patient.name
+        patient.patientName
           .toLowerCase()
           .includes(appliedFilters.patientName.toLowerCase());
 
@@ -83,13 +99,13 @@ export default function BrowseDataPage() {
         matchesName
       );
     });
-  }, [appliedFilters]);
+  }, [appliedFilters, allPatient]);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
-  const handleTempFilterChange = (key: keyof FilterState, value: string) => {
+  const handleTempFilterChange = (key: keyof FilterBrowse, value: string) => {
     setTempFilters((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -102,7 +118,7 @@ export default function BrowseDataPage() {
   };
 
   const clearFilters = () => {
-    const emptyFilters: FilterState = {
+    const emptyFilters: FilterBrowse = {
       foundation: '',
       operationTechnique: '',
       gender: '',
@@ -164,17 +180,6 @@ export default function BrowseDataPage() {
     },
   ];
 
-  const columns = [
-    { key: 'name', label: 'Patient Name' },
-    { key: 'age', label: 'Age' },
-    { key: 'gender', label: 'Gender' },
-    { key: 'dateOfBirth', label: 'Date of Birth' },
-    { key: 'operationDate', label: 'Operation Date' },
-    { key: 'organizer', label: 'Organizer' },
-    { key: 'operationalTechniques', label: 'Operational Techniques' },
-    { key: 'uploadedBy', label: 'Uploaded By' },
-  ];
-
   return (
     <div className='p-6 space-y-4'>
       <div className='relative'>
@@ -182,7 +187,7 @@ export default function BrowseDataPage() {
           fields={filterFields}
           values={tempFilters}
           onChange={(key, value) =>
-            handleTempFilterChange(key as keyof FilterState, value)
+            handleTempFilterChange(key as keyof FilterBrowse, value)
           }
           onApply={applyFilters}
           onClear={clearFilters}
@@ -193,14 +198,25 @@ export default function BrowseDataPage() {
 
       <DataTable
         data={currentData}
-        columns={columns}
+        columns={[
+          { key: 'patientName', label: 'Patient Name' },
+          { key: 'age', label: 'Age' },
+          { key: 'gender', label: 'Gender' },
+          { key: 'dateOfBirth', label: 'Date of Birth' },
+          { key: 'operationDate', label: 'Operation Date' },
+          { key: 'organizer', label: 'Organizer' },
+          { key: 'operationalTechniques', label: 'Operational Techniques' },
+          { key: 'uploadedBy', label: 'Uploaded By' },
+        ]}
         loading={isLoading}
         actions={(item) => (
           <div className='flex'>
             <Button
               size='sm'
               className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white'
-              onClick={() => handleViewOperation(item.id)}
+              onClick={() => {
+                handleViewOperation(item.id);
+              }}
             >
               View
             </Button>
