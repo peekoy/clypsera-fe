@@ -1,36 +1,49 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Download, Trash2 } from 'lucide-react';
-import { patientData } from '@/data/data';
+import { Trash2 } from 'lucide-react';
 import DataTable from '@/components/dashboard/data-table';
 import FilterForm from '@/components/dashboard/filter-form';
 import Pagination from '@/components/dashboard/pagination';
-
-type FilterState = {
-  foundation: string;
-  operationTechnique: string;
-  gender: string;
-  age: string;
-  patientName: string;
-};
+import { FilterRequestData } from '@/types/filter';
+import { CheckRequestData } from '@/types/check-request-data';
+import { getAllRequestData } from '@/lib/api/fetch-request-data';
 
 export default function CheckDataRequestPage() {
-  const [tempFilters, setTempFilters] = useState<FilterState>({
-    foundation: '',
-    operationTechnique: '',
-    gender: '',
-    age: '',
-    patientName: '',
+  const [requestData, setRequestData] = useState<CheckRequestData[]>([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('Token tidak ditemukan');
+        return;
+      }
+      setIsLoading(true);
+      let request = (await getAllRequestData(token)) || [];
+
+      if (request) {
+        setRequestData(request);
+      }
+      setIsLoading(false);
+    };
+
+    fetchUsers();
+  }, []);
+
+  const [tempFilters, setTempFilters] = useState<FilterRequestData>({
+    category: '',
+    status: '',
+    email: '',
+    name: '',
   });
 
-  const [appliedFilters, setAppliedFilters] = useState<FilterState>({
-    foundation: '',
-    operationTechnique: '',
-    gender: '',
-    age: '',
-    patientName: '',
+  const [appliedFilters, setAppliedFilters] = useState<FilterRequestData>({
+    category: '',
+    status: '',
+    email: '',
+    name: '',
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -38,50 +51,37 @@ export default function CheckDataRequestPage() {
   const itemsPerPage = 7;
 
   const filteredData = useMemo(() => {
-    return patientData.filter((patient) => {
-      const matchesFoundation =
-        !appliedFilters.foundation ||
-        patient.organizer
+    return requestData.filter((data) => {
+      const matchesCategory =
+        !appliedFilters.category ||
+        data.category
           .toLowerCase()
-          .includes(appliedFilters.foundation.toLowerCase()) ||
-        patient.uploadedBy
-          .toLowerCase()
-          .includes(appliedFilters.foundation.toLowerCase());
+          .includes(appliedFilters.category.toLowerCase());
 
-      const matchesTechnique =
-        !appliedFilters.operationTechnique ||
-        patient.operationalTechniques
-          .toLowerCase()
-          .includes(appliedFilters.operationTechnique.toLowerCase());
+      const matchesStatus =
+        !appliedFilters.status ||
+        data.status.toLowerCase().includes(appliedFilters.status.toLowerCase());
 
-      const matchesGender =
-        !appliedFilters.gender ||
-        patient.gender.toLowerCase() === appliedFilters.gender.toLowerCase();
-
-      const matchesAge =
-        !appliedFilters.age || patient.age.toString() === appliedFilters.age;
+      const matchesEmail =
+        !appliedFilters.email ||
+        data.email.toLowerCase() === appliedFilters.email.toLowerCase();
 
       const matchesName =
-        !appliedFilters.patientName ||
-        patient.name
-          .toLowerCase()
-          .includes(appliedFilters.patientName.toLowerCase());
+        !appliedFilters.name ||
+        data.name.toLowerCase().includes(appliedFilters.name.toLowerCase());
 
-      return (
-        matchesFoundation &&
-        matchesTechnique &&
-        matchesGender &&
-        matchesAge &&
-        matchesName
-      );
+      return matchesCategory && matchesStatus && matchesEmail && matchesName;
     });
-  }, [appliedFilters]);
+  }, [appliedFilters, requestData]);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
-  const handleTempFilterChange = (key: keyof FilterState, value: string) => {
+  const handleTempFilterChange = (
+    key: keyof FilterRequestData,
+    value: string
+  ) => {
     setTempFilters((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -94,12 +94,11 @@ export default function CheckDataRequestPage() {
   };
 
   const clearFilters = () => {
-    const emptyFilters: FilterState = {
-      foundation: '',
-      operationTechnique: '',
-      gender: '',
-      age: '',
-      patientName: '',
+    const emptyFilters: FilterRequestData = {
+      category: '',
+      status: '',
+      email: '',
+      name: '',
     };
     setTempFilters(emptyFilters);
     setAppliedFilters(emptyFilters);
@@ -145,15 +144,6 @@ export default function CheckDataRequestPage() {
     },
   ];
 
-  const columns = [
-    { key: 'id', label: 'Request ID' },
-    { key: 'name', label: 'Name' },
-    { key: 'email', label: 'Email' },
-    { key: 'category', label: 'Category' },
-    { key: 'status', label: 'Status' },
-    { key: 'userCreationDate', label: 'User Creation Date' },
-  ];
-
   return (
     <div className='p-6 space-y-4'>
       <div className='relative'>
@@ -161,7 +151,7 @@ export default function CheckDataRequestPage() {
           fields={filterFields}
           values={tempFilters}
           onChange={(key, value) =>
-            handleTempFilterChange(key as keyof FilterState, value)
+            handleTempFilterChange(key as keyof FilterRequestData, value)
           }
           onApply={applyFilters}
           onClear={clearFilters}
@@ -172,7 +162,14 @@ export default function CheckDataRequestPage() {
 
       <DataTable
         data={currentData}
-        columns={columns}
+        columns={[
+          { key: 'id', label: 'Request ID' },
+          { key: 'name', label: 'Name' },
+          { key: 'email', label: 'Email' },
+          { key: 'category', label: 'Category' },
+          { key: 'status', label: 'Status' },
+          { key: 'createdAt', label: 'Created At' },
+        ]}
         loading={isLoading}
         actions={(item) => (
           <div className='flex'>
