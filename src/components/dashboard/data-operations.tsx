@@ -4,33 +4,57 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Car } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
-import { getPatientById, type DetailedPatientData } from '@/data/data';
+import { DetailedPatientData } from '@/types/patient';
+import { getDetailedPatient } from '@/lib/api/fetch-show-patient-data';
 
 export default function OperationDetail() {
   const params = useParams();
   const router = useRouter();
-  const [patient, setPatient] = useState<DetailedPatientData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [detailedPatient, setDetailedPatient] = useState<DetailedPatientData[]>(
+    []
+  );
+  const [isLoading, setIsLoading] = useState(true);
+
+  console.log('tata', params);
 
   useEffect(() => {
-    const patientId = Number.parseInt(params.id as string);
-    const patientData = getPatientById(patientId);
+    const fetchDetailedPatient = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('Token tidak ditemukan');
+        return;
+      }
+      setIsLoading(true);
+      let patient =
+        (await getDetailedPatient(
+          token,
+          Number.parseInt(params.id as string)
+        )) || [];
 
-    setPatient(patientData);
-    setLoading(false);
-  }, [params.id]);
+      console.log(patient);
+      if (patient) {
+        setDetailedPatient(patient);
+      }
+      setIsLoading(false);
+    };
+
+    fetchDetailedPatient();
+  }, []);
+
+  console.log(detailedPatient);
+  let detailPatient = detailedPatient[0];
 
   const handleBackToBrowse = () => {
     router.push('/browse-data');
   };
 
   const handleRequestData = () => {
-    router.push(`/operations/${patient?.id}/request`);
+    router.push(`/operations/${detailPatient.id}/request`);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className='flex items-center justify-center min-h-screen'>
         <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
@@ -38,7 +62,7 @@ export default function OperationDetail() {
     );
   }
 
-  if (!patient) {
+  if (!detailPatient) {
     return (
       <div className='p-6'>
         <div className='text-center'>
@@ -75,52 +99,52 @@ export default function OperationDetail() {
       <CardContent className='flex justify-between'>
         <div className='text-md space-y-4'>
           <p>
-            <strong>Nama Pasien:</strong> {patient.name}
+            <strong>Nama Pasien:</strong> {detailPatient.name}
           </p>
           <p>
-            <strong>Tanggal Lahir:</strong> {patient.birthDate}
+            <strong>Tanggal Lahir:</strong> {detailPatient.birthDate}
           </p>
           <p>
-            <strong>Umur Pasien:</strong> {patient.age}
+            <strong>Umur Pasien:</strong> {detailPatient.age}
           </p>
           <p>
-            <strong>Alamat Pasien:</strong> {patient.address}
+            <strong>Alamat Pasien:</strong> {detailPatient.address}
           </p>
           <p>
-            <strong>Suku:</strong> {patient.ethnicity}
+            <strong>Suku:</strong> {detailPatient.ethnicity}
           </p>
           <p>
             <strong>Kelainan Kongenital Penyerta</strong>{' '}
-            {patient.congenitalAbnormalities}
+            {detailPatient.congenitalAbnormalities}
           </p>
           <p>
-            <strong>Tanggal Operasi:</strong> {patient.operationDate}
+            <strong>Tanggal Operasi:</strong> {detailPatient.operationDate}
           </p>
           <p>
             <strong>Teknik Operasi Yang Digunakan:</strong>{' '}
-            {patient.surgicalTechnique}
+            {detailPatient.surgicalTechnique}
           </p>
           <p>
-            <strong>Nama Penyelenggara:</strong> {patient.organizer}
+            <strong>Nama Penyelenggara:</strong> {detailPatient.organizer}
           </p>
           <p>
-            <strong>Lokasi Operasi:</strong> {patient.operationLocation}
+            <strong>Lokasi Operasi:</strong> {detailPatient.operationLocation}
           </p>
           <p>
             <strong>Pasien Merupakan Anak Ke-berapa:</strong>{' '}
-            {patient.childNumber}
+            {detailPatient.childNumber}
           </p>
           <p>
-            <strong>Jenis Kelamin Pasien:</strong> {patient.gender}
+            <strong>Jenis Kelamin Pasien:</strong> {detailPatient.gender}
           </p>
           <p>
-            <strong>Jenis Kelainan Cleft:</strong> {patient.cleftType}
+            <strong>Jenis Kelainan Cleft:</strong> {detailPatient.cleftType}
           </p>
           <p>
-            <strong>Jenis Terapi:</strong> {patient.therapyType}
+            <strong>Jenis Terapi:</strong> {detailPatient.therapyType}
           </p>
           <p>
-            <strong>Diagnosa:</strong> {patient.diagnosis}
+            <strong>Diagnosa:</strong> {detailPatient.diagnosis}
           </p>
         </div>
         <Card className='rounded-xl w-150 p-0'>
@@ -130,21 +154,23 @@ export default function OperationDetail() {
                 Riwayat kehamilan ibu dari pasien:
               </h3>
               <p className='text-sm text-gray-600'>
-                {patient.pregnancyHistory}
+                {detailPatient.pregnancyHistory}
               </p>
             </div>
             <div>
               <h3 className='font-semibold text-gray-800 mb-2'>
                 Riwayat keluarga pasien:
               </h3>
-              <p className='text-sm text-gray-600'>{patient.familyHistory}</p>
+              <p className='text-sm text-gray-600'>
+                {detailPatient.familyHistory}
+              </p>
             </div>
             <div>
               <h3 className='font-semibold text-gray-800 mb-2'>
                 Riwayat kawin kerabat:
               </h3>
               <p className='text-sm text-gray-600'>
-                {patient.relativeMarriageHistory}
+                {detailPatient.relativeMarriageHistory}
               </p>
             </div>
             <div>
@@ -152,28 +178,28 @@ export default function OperationDetail() {
                 Riwayat penyakit terdahulu:
               </h3>
               <p className='text-sm text-gray-600'>
-                {patient.previousIllnessHistory}
+                {detailPatient.previousIllnessHistory}
               </p>
             </div>
             <div>
               <h3 className='font-semibold text-gray-800 mb-2'>Follow-up:</h3>
-              <p className='text-sm text-gray-600'>{patient.followUp}</p>
+              <p className='text-sm text-gray-600'>{detailPatient.followUp}</p>
             </div>
             <div className='pt-4 border-t'>
               <div className='text-xs text-gray-500 space-y-1'>
                 <p>
                   <span className='font-medium'>Data diuangah oleh:</span>{' '}
-                  {patient.uploadedBy}
+                  {detailPatient.uploadedBy}
                 </p>
                 <p>
                   <span className='font-medium'>Tanggal pembuatan data:</span>{' '}
-                  {patient.creationDate}
+                  {detailPatient.creationDate}
                 </p>
                 <p>
                   <span className='font-medium'>
                     Tanggal terakhir update data:
                   </span>{' '}
-                  {patient.lastUpdate}
+                  {detailPatient.lastUpdate}
                 </p>
               </div>
             </div>
@@ -187,7 +213,7 @@ export default function OperationDetail() {
             <div className='text-center'>
               <div className='bg-white rounded-lg p-4 shadow-sm'>
                 <Image
-                  src={patient.preOpImage || '/placeholder.svg'}
+                  src={detailPatient.preOpImage || '/placeholder.svg'}
                   alt='Pre-Operation'
                   width={200}
                   height={200}
@@ -201,7 +227,7 @@ export default function OperationDetail() {
             <div className='text-center'>
               <div className='bg-white rounded-lg p-4 shadow-sm'>
                 <Image
-                  src={patient.postOpImage || '/placeholder.svg'}
+                  src={detailPatient.postOpImage || '/placeholder.svg'}
                   alt='Post-Operation'
                   width={200}
                   height={200}
