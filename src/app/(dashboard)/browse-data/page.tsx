@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
-// import { patientData } from '@/data/data';
+import { patientData } from '@/data/data';
 import DataTable from '@/components/dashboard/data-table';
 import FilterForm from '@/components/dashboard/filter-form';
 import Pagination from '@/components/dashboard/pagination';
@@ -13,7 +13,7 @@ import { PatientData } from '@/types/patient';
 import { getAllPatient } from '@/lib/api/fetch-patient';
 
 export default function BrowseDataPage() {
-  const [allPatient, setAllPatient] = useState<PatientData[]>([]);
+  // const [allPatient, setAllPatient] = useState<PatientData[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -27,15 +27,13 @@ export default function BrowseDataPage() {
       let patient = (await getAllPatient(token)) || [];
 
       if (patient) {
-        setAllPatient(patient);
+        // setAllPatient(patient);
       }
       setIsLoading(false);
     };
 
     fetchPatient();
   }, []);
-
-  console.log(allPatient);
 
   const handleViewOperation = (patientId: number) => {
     router.push(`/operations/${patientId}`);
@@ -62,7 +60,7 @@ export default function BrowseDataPage() {
   const itemsPerPage = 7;
 
   const filteredData = useMemo(() => {
-    return allPatient.filter((patient) => {
+    return patientData.filter((patient) => {
       const matchesFoundation =
         !appliedFilters.foundation ||
         patient.organizer
@@ -87,7 +85,7 @@ export default function BrowseDataPage() {
 
       const matchesName =
         !appliedFilters.patientName ||
-        patient.patientName
+        patient.name
           .toLowerCase()
           .includes(appliedFilters.patientName.toLowerCase());
 
@@ -99,7 +97,7 @@ export default function BrowseDataPage() {
         matchesName
       );
     });
-  }, [appliedFilters, allPatient]);
+  }, [appliedFilters]);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -180,6 +178,21 @@ export default function BrowseDataPage() {
     },
   ];
 
+  if (patientData.length === 0) {
+    return (
+      <div className='flex justify-center items-center h-full p-6'>
+        <div className='text-center'>
+          <h1 className='text-2xl font-bold text-gray-900 mb-4'>
+            Data Not Found
+          </h1>
+          <p className='text-gray-600 mb-4'>
+            The data you're looking for doesn't exist. Please try again later!
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='p-6 space-y-4'>
       <div className='relative'>
@@ -199,7 +212,7 @@ export default function BrowseDataPage() {
       <DataTable
         data={currentData}
         columns={[
-          { key: 'patientName', label: 'Patient Name' },
+          { key: 'name', label: 'Patient Name' },
           { key: 'age', label: 'Age' },
           { key: 'gender', label: 'Gender' },
           { key: 'dateOfBirth', label: 'Date of Birth' },

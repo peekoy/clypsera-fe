@@ -132,6 +132,21 @@ export default function AdministratorPage() {
     },
   ];
 
+  if (allUsersData.length === 0) {
+    return (
+      <div className='flex justify-center items-center h-full p-6'>
+        <div className='text-center'>
+          <h1 className='text-2xl font-bold text-gray-900 mb-4'>
+            Data Not Found
+          </h1>
+          <p className='text-gray-600 mb-4'>
+            The data you're looking for doesn't exist. Please try again later!
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='p-6 space-y-4'>
       <div className='relative'>

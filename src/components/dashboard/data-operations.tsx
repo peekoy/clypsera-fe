@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import { DetailedPatientData } from '@/types/patient';
 import { getDetailedPatient } from '@/lib/api/fetch-show-patient-data';
@@ -56,7 +55,7 @@ export default function OperationDetail() {
 
   if (isLoading) {
     return (
-      <div className='flex items-center justify-center min-h-screen'>
+      <div className='flex items-center justify-center h-full'>
         <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
       </div>
     );
@@ -64,7 +63,7 @@ export default function OperationDetail() {
 
   if (!detailPatient) {
     return (
-      <div className='p-6'>
+      <div className='flex justify-center items-center h-full p-6'>
         <div className='text-center'>
           <h1 className='text-2xl font-bold text-gray-900 mb-4'>
             Operation Data Not Found
@@ -72,10 +71,6 @@ export default function OperationDetail() {
           <p className='text-gray-600 mb-4'>
             The operation data you're looking for doesn't exist.
           </p>
-          <Button onClick={handleBackToBrowse}>
-            <ArrowLeft className='h-4 w-4 mr-2' />
-            Back to Browse Data
-          </Button>
         </div>
       </div>
     );

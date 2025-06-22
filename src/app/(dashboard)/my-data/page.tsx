@@ -16,7 +16,10 @@ export default function MyDataPage() {
 
   useEffect(() => {
     const fetchPatient = async () => {
-      const currentUser = localStorage.getItem('user');
+      const storedUser = localStorage.getItem('user');
+      const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+      const currentUser = parsedUser?.name;
+
       const token = localStorage.getItem('token');
       if (!token) {
         console.log('Token tidak ditemukan');
@@ -173,69 +176,69 @@ export default function MyDataPage() {
     },
   ];
 
+  if (myPatient.length === 0) {
+    return (
+      <div className='flex justify-center items-center h-full p-6'>
+        <div className='text-center'>
+          <h1 className='text-2xl font-bold text-gray-900 mb-4'>
+            Data Not Found
+          </h1>
+          <p className='text-gray-600 mb-4'>
+            The data you're looking for doesn't exist. Or you can upload it
+            first!
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='p-6 space-y-4'>
-      {myPatient.length === 0 ? (
-        <div className='p-6'>
-          <div className='text-center'>
-            <h1 className='text-2xl font-bold text-gray-900 mb-4'>
-              Data Not Found
-            </h1>
-            <p className='text-gray-600 mb-4'>
-              The data you're looking for doesn't exist. Or you can upload it
-              first!
-            </p>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className='relative'>
-            <FilterForm
-              fields={filterFields}
-              values={tempFilters}
-              onChange={(key, value) =>
-                handleTempFilterChange(key as keyof FilterMyData, value)
-              }
-              onApply={applyFilters}
-              onClear={clearFilters}
-              isLoading={isLoading}
-              showClear={hasActiveFilters}
-            />
-          </div>
+      <div className='relative'>
+        <FilterForm
+          fields={filterFields}
+          values={tempFilters}
+          onChange={(key, value) =>
+            handleTempFilterChange(key as keyof FilterMyData, value)
+          }
+          onApply={applyFilters}
+          onClear={clearFilters}
+          isLoading={isLoading}
+          showClear={hasActiveFilters}
+        />
+      </div>
 
-          <DataTable
-            data={currentData}
-            columns={[
-              { key: 'patientName', label: 'Patient Name' },
-              { key: 'age', label: 'Age' },
-              { key: 'dateOfBirth', label: 'Date of Birth' },
-              { key: 'operationDate', label: 'Operation Date' },
-              { key: 'organizer', label: 'Organizer' },
-              { key: 'operationalTechniques', label: 'Operational Techniques' },
-            ]}
-            loading={isLoading}
-            actions={(item) => (
-              <div className='flex'>
-                <Button
-                  size='sm'
-                  className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white'
-                >
-                  View
-                </Button>
-                <Button size='sm' className='bg-[#CE6872] text-white ml-1'>
-                  <Trash2 />
-                </Button>
-              </div>
-            )}
-          />
+      <DataTable
+        data={currentData}
+        columns={[
+          { key: 'patientName', label: 'Patient Name' },
+          { key: 'age', label: 'Age' },
+          { key: 'dateOfBirth', label: 'Date of Birth' },
+          { key: 'operationDate', label: 'Operation Date' },
+          { key: 'organizer', label: 'Organizer' },
+          { key: 'operationalTechniques', label: 'Operational Techniques' },
+        ]}
+        loading={isLoading}
+        actions={(item) => (
+          <div className='flex'>
+            <Button
+              size='sm'
+              className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white'
+            >
+              View
+            </Button>
+            <Button size='sm' className='bg-[#CE6872] text-white ml-1'>
+              <Trash2 />
+            </Button>
+          </div>
+        )}
+      />
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 }
