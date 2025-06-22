@@ -49,3 +49,26 @@ export interface DetailedPatientData {
   preOpImage: string;
   postOpImage: string;
 }
+
+export interface AddPatienPayload {
+  patientName: string;
+  congenitalComorbidities: string;
+  whichChild: number;
+  dateOfBirth: string;
+  patientGender: string;
+  dateOfSurgery: string;
+  patientAge: number;
+  operationTechnique: string;
+  patientAddress: string;
+  providerName: string;
+  ethnicity: string;
+  surgeryLocation: string;
+  motherPregnancyHistory: string;
+  familyHistory: string;
+  residentsMaritalHistory: string;
+  previousMedicalHistory: string;
+  followUp: string;
+  cleftPalateType: string;
+  therapyType: string;
+  diagnosis: string;
+}
