@@ -5,7 +5,7 @@ export async function getAllPatient(
 ): Promise<PatientData[] | null> {
   try {
     const res = await fetch(
-      'https://0b2d-118-99-106-123.ngrok-free.app/api/pasien',
+      'https://dbaa-118-99-106-123.ngrok-free.app/api/pasien',
       {
         headers: {
           'Content-Type': 'application/json',
@@ -40,7 +40,7 @@ export async function getAllPatient(
       gender: item.jenis_kelamin === 'P' ? 'Women' : 'Men',
       dateOfBirth: item.tanggal_lahir,
       operationDate: item.operasi.tanggal_operasi,
-      organizer: item.operasi.lokasi_operasi, // ini masih bingung
+      organizer: item.operasi.nama_penyelenggara, // ini masih bingung
       operationalTechniques: item.operasi.tehnik_operasi,
       uploadedBy: item.operasi.operator.name, // ini masih bingung
     }));

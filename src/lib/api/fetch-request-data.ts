@@ -5,7 +5,7 @@ export async function getAllRequestData(
 ): Promise<CheckRequestData[] | null> {
   try {
     const res = await fetch(
-      'https://0b2d-118-99-106-123.ngrok-free.app/api/permohonan',
+      'https://dbaa-118-99-106-123.ngrok-free.app/api/permohonan',
       {
         headers: {
           'Content-Type': 'application/json',

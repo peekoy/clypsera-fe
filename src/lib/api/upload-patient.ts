@@ -12,7 +12,7 @@ export async function uploadPatientData(
     }
 
     const diagnosisResponse = await fetch(
-      'https://0b2d-118-99-106-123.ngrok-free.app/api/diagnosis',
+      'https://dbaa-118-99-106-123.ngrok-free.app/api/diagnosis',
       {
         headers: {
           Accept: 'application/json',
@@ -29,7 +29,7 @@ export async function uploadPatientData(
     );
 
     const jenisKelainanResponse = await fetch(
-      'https://0b2d-118-99-106-123.ngrok-free.app/api/jenis-kelainan',
+      'https://dbaa-118-99-106-123.ngrok-free.app/api/jenis-kelainan',
       {
         headers: {
           Accept: 'application/json',
@@ -47,7 +47,7 @@ export async function uploadPatientData(
     );
 
     const jenisTerapiResponse = await fetch(
-      'https://0b2d-118-99-106-123.ngrok-free.app/api/jenis-terapi',
+      'https://dbaa-118-99-106-123.ngrok-free.app/api/jenis-terapi',
       {
         method: 'GET',
         headers: {
@@ -100,7 +100,7 @@ export async function uploadPatientData(
     // console.log('Data yang dikirim:', dataToSend);
 
     const response = await fetch(
-      'https://0b2d-118-99-106-123.ngrok-free.app/api/pasien/store',
+      'https://dbaa-118-99-106-123.ngrok-free.app/api/pasien/store',
       {
         method: 'POST',
         headers: {

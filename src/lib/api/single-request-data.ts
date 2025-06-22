@@ -2,7 +2,8 @@ import { RequestDataPayload } from '@/types/check-request-data';
 
 export async function singleRequestData(
   token: string | null,
-  payload: RequestDataPayload
+  payload: RequestDataPayload,
+  operasiId: number
 ) {
   try {
     if (!token) {
@@ -10,7 +11,7 @@ export async function singleRequestData(
     }
 
     const categoryResponse = await fetch(
-      'https://0b2d-118-99-106-123.ngrok-free.app/api/kategori_permohonan',
+      'https://dbaa-118-99-106-123.ngrok-free.app/api/kategori_permohonan',
       {
         headers: {
           Accept: 'application/json',
@@ -27,24 +28,26 @@ export async function singleRequestData(
     );
 
     const categoryId = matchedCategory.id;
-    const operatorId = localStorage.getItem('userId');
+    // const operatorId = localStorage.getItem('userId');
+
+    const initStatus = 'pending';
 
     const formData = new FormData();
+    formData.append('kategori_id', categoryId);
     formData.append('nama_pemohon', payload.name);
     formData.append('email_pemohon', payload.email);
-    formData.append('nik_pemohon', payload.nik);
     formData.append('no_telepon', payload.phoneNumber);
+    formData.append('nik_pemohon', payload.nik);
+    formData.append('status_permohonan', initStatus);
     formData.append('alasan_permohonan', payload.purpose);
-    formData.append('status_permohonan', 'pending');
-    formData.append('katergori_id', categoryId);
-    formData.append('operator_id', operatorId ?? '');
+    formData.append('operasi_id', operasiId.toString());
 
     const response = await fetch(
-      'https://0b2d-118-99-106-123.ngrok-free.app/api/permohonan/store',
+      'https://dbaa-118-99-106-123.ngrok-free.app/api/permohonan/store',
       {
         method: 'POST',
         headers: {
-          // 'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
           Accept: 'application/json',
           Authorization: `Bearer ${token}`,
           'ngrok-skip-browser-warning': 'true',
