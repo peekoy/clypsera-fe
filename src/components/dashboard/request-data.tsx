@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type FormEvent, useEffect } from 'react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import {
   Select,
@@ -12,12 +12,159 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useRouter, usePathname } from 'next/navigation';
+import { singleRequestData } from '@/lib/api/single-request-data';
+
+function convertPathToTitle(path: string) {
+  return path
+    .replace(/^\//, '')
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 export default function RequestData() {
-  const [reqData, setReqData] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    nik: '',
+    phoneNumber: '',
+    category: '',
+    purpose: '',
+  });
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    setToken(localStorage.getItem('token'));
+  }, []);
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    try {
+      await singleRequestData(token, formData);
+
+      setSuccess('Data pasien berhasil diupload!');
+
+      // Reset form
+      // resetForm();
+    } catch (error: any) {
+      setError(error.message || 'Gagal mengupload data. Silakan coba lagi.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const path = convertPathToTitle(usePathname());
+
+  console.log(path);
+
   return (
     <>
-      {reqData ? (
+      {path.includes('Operations') ? (
+        <Card className='gap-4'>
+          <CardHeader className='text-center primary-color gap-0 font-bold text-3xl'>
+            Data Use Request Form
+          </CardHeader>
+          <CardContent className='space-y-2'>
+            <form id='cleft-lip-form' onSubmit={onSubmit} className='space-y-6'>
+              <div>
+                <label>Applicant's full name</label>
+                <Input
+                  name='name'
+                  placeholder='Name'
+                  className='bg-gray-100 border-0'
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Email</label>
+                <Input
+                  name='email'
+                  placeholder='Email'
+                  className='bg-gray-100 border-0'
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className='flex justify-between'>
+                <div>
+                  <label>Mobile Phone number</label>
+                  <Input
+                    name='phoneNumber'
+                    placeholder='Number'
+                    className='bg-gray-100 border-0 w-100'
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <label>NIK</label>
+                  <Input
+                    name='nik'
+                    placeholder='NIK'
+                    className='bg-gray-100 border-0 w-100'
+                    value={formData.nik}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label>Submission Categories</label>
+                <Select
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, category: value })
+                  }
+                  name='category'
+                >
+                  <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
+                    <SelectValue placeholder='Research' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='research'>Research</SelectItem>
+                    <SelectItem value='komersil'>Komersil</SelectItem>
+                    <SelectItem value='lainnya'>Lainnya</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label>Purpose of application</label>
+                <Textarea
+                  name='purpose'
+                  placeholder='Please fill in the purpose'
+                  className='bg-gray-100 border-0 min-h-[120px] text-sm'
+                  value={formData.purpose}
+                  onChange={handleTextAreaChange}
+                  required
+                />
+              </div>
+              <div className='flex justify-center'>
+                <Button className='mt-4 hover:bg-[#4971a9]/90 cursor-pointer w-50'>
+                  Submit
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      ) : (
         <Card className='gap-4'>
           <CardHeader className='text-center primary-color gap-0 font-bold text-3xl'>
             Data Use Request Form
@@ -100,82 +247,6 @@ export default function RequestData() {
               <Button className='hover:bg-[#4971A9]/90 cursor-pointer w-50'>
                 Reject Request
               </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className='gap-4'>
-          <CardHeader className='text-center primary-color gap-0 font-bold text-3xl'>
-            Data Use Request Form
-          </CardHeader>
-          <CardContent className='space-y-2'>
-            <div>
-              <label>Applicant's full name</label>
-              <Input
-                id=''
-                name=''
-                placeholder='Name'
-                className='bg-gray-100 border-0'
-                required
-              />
-            </div>
-            <div>
-              <label>Email</label>
-              <Input
-                id=''
-                name=''
-                placeholder='Email'
-                className='bg-gray-100 border-0'
-                required
-              />
-            </div>
-            <div className='flex justify-between'>
-              <div>
-                <label>Mobile Phone number</label>
-                <Input
-                  id=''
-                  name=''
-                  placeholder='Number'
-                  className='bg-gray-100 border-0 w-100'
-                  required
-                />
-              </div>
-              <div>
-                <label>NIK</label>
-                <Input
-                  id=''
-                  name=''
-                  placeholder='NIK'
-                  className='bg-gray-100 border-0 w-100'
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <label>Submission Categories</label>
-              <Select name=''>
-                <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
-                  <SelectValue placeholder='Research' />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='research'>Research</SelectItem>
-                  <SelectItem value='komersil'>Komersil</SelectItem>
-                  <SelectItem value='lainnya'>Lainnya</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label>Purpose of application</label>
-              <Textarea
-                id='followUp'
-                name='followUp'
-                placeholder='Please fill in the purpose'
-                className='bg-gray-100 border-0 min-h-[120px] text-sm'
-                required
-              />
-            </div>
-            <div className='flex justify-center'>
-              <Button className='mt-4 cursor-pointer w-50'>Submit</Button>
             </div>
           </CardContent>
         </Card>
