@@ -144,68 +144,68 @@ export default function CheckDataRequestPage() {
     },
   ];
 
-  if (requestData.length === 0) {
-    return (
-      <div className='flex justify-center items-center h-full p-6'>
-        <div className='text-center'>
-          <h1 className='text-2xl font-bold text-gray-900 mb-4'>
-            Data Not Found
-          </h1>
-          <p className='text-gray-600 mb-4'>
-            The data you're looking for doesn't exist. Please try again later!
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className='p-6 space-y-4'>
-      <div className='relative'>
-        <FilterForm
-          fields={filterFields}
-          values={tempFilters}
-          onChange={(key, value) =>
-            handleTempFilterChange(key as keyof FilterRequestData, value)
-          }
-          onApply={applyFilters}
-          onClear={clearFilters}
-          isLoading={isLoading}
-          showClear={hasActiveFilters}
-        />
-      </div>
-
-      <DataTable
-        data={currentData}
-        columns={[
-          { key: 'id', label: 'Request ID' },
-          { key: 'name', label: 'Name' },
-          { key: 'email', label: 'Email' },
-          { key: 'category', label: 'Category' },
-          { key: 'status', label: 'Status' },
-          { key: 'createdAt', label: 'Created At' },
-        ]}
-        loading={isLoading}
-        actions={(item) => (
-          <div className='flex'>
-            <Button
-              size='sm'
-              className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white'
-            >
-              View
-            </Button>
-            <Button size='sm' className='bg-[#CE6872] text-white ml-1'>
-              <Trash2 />
-            </Button>
+      {requestData ? (
+        <>
+          <div className='relative'>
+            <FilterForm
+              fields={filterFields}
+              values={tempFilters}
+              onChange={(key, value) =>
+                handleTempFilterChange(key as keyof FilterRequestData, value)
+              }
+              onApply={applyFilters}
+              onClear={clearFilters}
+              isLoading={isLoading}
+              showClear={hasActiveFilters}
+            />
           </div>
-        )}
-      />
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-      />
+          <DataTable
+            data={currentData}
+            columns={[
+              { key: 'id', label: 'Request ID' },
+              { key: 'name', label: 'Name' },
+              { key: 'email', label: 'Email' },
+              { key: 'category', label: 'Category' },
+              { key: 'status', label: 'Status' },
+              { key: 'createdAt', label: 'Created At' },
+            ]}
+            loading={isLoading}
+            actions={(item) => (
+              <div className='flex'>
+                <Button
+                  size='sm'
+                  className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white'
+                >
+                  View
+                </Button>
+                <Button size='sm' className='bg-[#CE6872] text-white ml-1'>
+                  <Trash2 />
+                </Button>
+              </div>
+            )}
+          />
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </>
+      ) : (
+        <div className='flex justify-center items-center h-full p-6'>
+          <div className='text-center'>
+            <h1 className='text-2xl font-bold text-gray-900 mb-4'>
+              Data Not Found
+            </h1>
+            <p className='text-gray-600 mb-4'>
+              The data you're looking for doesn't exist. Please try again later!
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

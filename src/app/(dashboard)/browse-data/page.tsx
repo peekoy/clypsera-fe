@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
-import { patientData } from '@/data/data';
+// import { patientData } from '@/data/data';
 import DataTable from '@/components/dashboard/data-table';
 import FilterForm from '@/components/dashboard/filter-form';
 import Pagination from '@/components/dashboard/pagination';
@@ -13,7 +13,7 @@ import { PatientData } from '@/types/patient';
 import { getAllPatient } from '@/lib/api/fetch-patient';
 
 export default function BrowseDataPage() {
-  // const [allPatient, setAllPatient] = useState<PatientData[]>([]);
+  const [allPatient, setAllPatient] = useState<PatientData[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function BrowseDataPage() {
       let patient = (await getAllPatient(token)) || [];
 
       if (patient) {
-        // setAllPatient(patient);
+        setAllPatient(patient);
       }
       setIsLoading(false);
     };
@@ -60,7 +60,7 @@ export default function BrowseDataPage() {
   const itemsPerPage = 7;
 
   const filteredData = useMemo(() => {
-    return patientData.filter((patient) => {
+    return allPatient.filter((patient) => {
       const matchesFoundation =
         !appliedFilters.foundation ||
         patient.organizer
@@ -85,7 +85,7 @@ export default function BrowseDataPage() {
 
       const matchesName =
         !appliedFilters.patientName ||
-        patient.name
+        patient.patientName
           .toLowerCase()
           .includes(appliedFilters.patientName.toLowerCase());
 
@@ -97,7 +97,7 @@ export default function BrowseDataPage() {
         matchesName
       );
     });
-  }, [appliedFilters]);
+  }, [appliedFilters, allPatient]);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -178,76 +178,82 @@ export default function BrowseDataPage() {
     },
   ];
 
-  if (patientData.length === 0) {
-    return (
-      <div className='flex justify-center items-center h-full p-6'>
-        <div className='text-center'>
-          <h1 className='text-2xl font-bold text-gray-900 mb-4'>
-            Data Not Found
-          </h1>
-          <p className='text-gray-600 mb-4'>
-            The data you're looking for doesn't exist. Please try again later!
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // if (allPatient.length === 0) {
+  //   return (
+
+  //   );
+  // }
 
   return (
     <div className='p-6 space-y-4'>
-      <div className='relative'>
-        <FilterForm
-          fields={filterFields}
-          values={tempFilters}
-          onChange={(key, value) =>
-            handleTempFilterChange(key as keyof FilterBrowse, value)
-          }
-          onApply={applyFilters}
-          onClear={clearFilters}
-          isLoading={isLoading}
-          showClear={hasActiveFilters}
-        />
-      </div>
+      {allPatient ? (
+        <>
+          <div className='relative'>
+            <FilterForm
+              fields={filterFields}
+              values={tempFilters}
+              onChange={(key, value) =>
+                handleTempFilterChange(key as keyof FilterBrowse, value)
+              }
+              onApply={applyFilters}
+              onClear={clearFilters}
+              isLoading={isLoading}
+              showClear={hasActiveFilters}
+            />
+          </div>
 
-      <DataTable
-        data={currentData}
-        columns={[
-          { key: 'name', label: 'Patient Name' },
-          { key: 'age', label: 'Age' },
-          { key: 'gender', label: 'Gender' },
-          { key: 'dateOfBirth', label: 'Date of Birth' },
-          { key: 'operationDate', label: 'Operation Date' },
-          { key: 'organizer', label: 'Organizer' },
-          { key: 'operationalTechniques', label: 'Operational Techniques' },
-          { key: 'uploadedBy', label: 'Uploaded By' },
-        ]}
-        loading={isLoading}
-        actions={(item) => (
-          <div className='flex'>
-            <Button
-              size='sm'
-              className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white'
-              onClick={() => {
-                handleViewOperation(item.id);
-              }}
-            >
-              View
+          <DataTable
+            data={currentData}
+            columns={[
+              { key: 'patientName', label: 'Patient Name' },
+              { key: 'age', label: 'Age' },
+              { key: 'gender', label: 'Gender' },
+              { key: 'dateOfBirth', label: 'Date of Birth' },
+              { key: 'operationDate', label: 'Operation Date' },
+              { key: 'organizer', label: 'Organizer' },
+              { key: 'operationalTechniques', label: 'Operational Techniques' },
+              { key: 'uploadedBy', label: 'Uploaded By' },
+            ]}
+            loading={isLoading}
+            actions={(item) => (
+              <div className='flex'>
+                <Button
+                  size='sm'
+                  className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white'
+                  onClick={() => {
+                    handleViewOperation(item.id);
+                  }}
+                >
+                  View
+                </Button>
+              </div>
+            )}
+          />
+
+          <div className='flex justify-between'>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+            <Button className='bg-secondary hover:bg-[#4F959D]/90 cursor-pointer text-white flex items-center gap-2'>
+              <Download className='h-4 w-4' />
+              Download All Data
             </Button>
           </div>
-        )}
-      />
-
-      <div className='flex justify-between'>
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
-        <Button className='bg-secondary hover:bg-[#4F959D]/90 cursor-pointer text-white flex items-center gap-2'>
-          <Download className='h-4 w-4' />
-          Download All Data
-        </Button>
-      </div>
+        </>
+      ) : (
+        <div className='flex justify-center items-center h-full p-6'>
+          <div className='text-center'>
+            <h1 className='text-2xl font-bold text-gray-900 mb-4'>
+              Data Not Found
+            </h1>
+            <p className='text-gray-600 mb-4'>
+              The data you're looking for doesn't exist. Please try again later!
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

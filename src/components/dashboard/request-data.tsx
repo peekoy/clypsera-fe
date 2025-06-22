@@ -12,7 +12,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useParams } from 'next/navigation';
 import { singleRequestData } from '@/lib/api/single-request-data';
 
 function convertPathToTitle(path: string) {
@@ -23,6 +23,7 @@ function convertPathToTitle(path: string) {
 }
 
 export default function RequestData() {
+  const params = useParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -47,9 +48,13 @@ export default function RequestData() {
     setLoading(true);
 
     try {
-      await singleRequestData(token, formData);
+      (await singleRequestData(
+        token,
+        formData,
+        Number.parseInt(params.id as string)
+      )) || [];
 
-      setSuccess('Data pasien berhasil diupload!');
+      alert('request Data pasien berhasil! Ditunggu ya');
 
       // Reset form
       // resetForm();
@@ -139,9 +144,12 @@ export default function RequestData() {
                     <SelectValue placeholder='Research' />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value='research'>Research</SelectItem>
-                    <SelectItem value='komersil'>Komersil</SelectItem>
-                    <SelectItem value='lainnya'>Lainnya</SelectItem>
+                    <SelectItem value='KTP'>KTP</SelectItem>
+                    <SelectItem value='KK'>KK</SelectItem>
+                    <SelectItem value='Akta Kelahiran'>
+                      Akta Kelahiran
+                    </SelectItem>
+                    <SelectItem value='Akta Kematian'>Akta Kematian</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

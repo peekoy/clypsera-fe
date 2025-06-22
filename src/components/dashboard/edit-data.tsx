@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,18 +13,32 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { DetailedPatientData } from '@/types/patient';
 
 export default function EditDataForm() {
-  const [patientGender, setPatientGender] = useState<string>('');
-  const [cleftPalateType, setCleftPalateType] = useState<string>('');
-  const [therapyType, setTherapyType] = useState<string>('');
-  const [diagnosis, setDiagnosis] = useState<string>('');
-  const [beforeSurgeryFiles, setBeforeSurgeryFiles] = useState<File[]>([]);
-  const [afterSurgeryFiles, setAfterSurgeryFiles] = useState<File[]>([]);
+  const { patientId } = useParams();
+  const [data, setData] = useState<DetailedPatientData | null>(null);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
+
+    useEffect(() => {
+      const fetchPatientById = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            console.log('Token tidak ditemukan');
+            return;
+          }
+          // let patient = (await getAllPatient(token)) || [];
+          // setData(patient);
+        } catch (error) {
+          console.error('Failed to fetch patient:', error);
+        }
+      };
+    });
 
     // Convert FormData to object
     const formValues: Record<string, any> = {};
@@ -32,32 +46,22 @@ export default function EditDataForm() {
       formValues[key] = value;
     });
 
-    // Add select values that aren't automatically included in FormData
-    formValues.patientGender = patientGender;
-    formValues.cleftPalateType = cleftPalateType;
-    formValues.therapyType = therapyType;
-    formValues.diagnosis = diagnosis;
-
-    console.log('Form data:', formValues);
-    console.log('Before surgery files:', beforeSurgeryFiles);
-    console.log('After surgery files:', afterSurgeryFiles);
-
     alert('Form submitted successfully!');
   }
 
-  const handleFileUpload = (
-    files: FileList | null,
-    type: 'before' | 'after'
-  ) => {
-    if (files) {
-      const fileArray = Array.from(files);
-      if (type === 'before') {
-        setBeforeSurgeryFiles((prev) => [...prev, ...fileArray]);
-      } else {
-        setAfterSurgeryFiles((prev) => [...prev, ...fileArray]);
-      }
-    }
-  };
+  // const handleFileUpload = (
+  //   files: FileList | null,
+  //   type: 'before' | 'after'
+  // ) => {
+  //   if (files) {
+  //     const fileArray = Array.from(files);
+  //     if (type === 'before') {
+  //       setBeforeSurgeryFiles((prev) => [...prev, ...fileArray]);
+  //     } else {
+  //       setAfterSurgeryFiles((prev) => [...prev, ...fileArray]);
+  //     }
+  //   }
+  // };
 
   return (
     <Card className='w-full p-0'>
@@ -86,7 +90,7 @@ export default function EditDataForm() {
                 Patient Name
               </label>
               <Input
-                id='patientName'
+                defaultValue={data?.name}
                 name='patientName'
                 className='bg-gray-100 border-0'
                 required
@@ -100,7 +104,7 @@ export default function EditDataForm() {
                 Congenital comorbidities
               </label>
               <Input
-                id='congenitalComorbidities'
+                defaultValue={data?.congenitalAbnormalities}
                 name='congenitalComorbidities'
                 className='bg-gray-100 border-0'
                 required
@@ -114,7 +118,8 @@ export default function EditDataForm() {
                 Which child is the patient?
               </label>
               <Input
-                id='whichChild'
+                defaultValue={data?.childNumber}
+                type='number'
                 name='whichChild'
                 className='bg-gray-100 border-0'
                 required
@@ -131,7 +136,7 @@ export default function EditDataForm() {
                 Date of Birth
               </label>
               <Input
-                id='dateOfBirth'
+                defaultValue={data?.birthDate}
                 name='dateOfBirth'
                 type='date'
                 className='bg-gray-100 border-0'
@@ -146,7 +151,7 @@ export default function EditDataForm() {
                 Date of Surgery
               </label>
               <Input
-                id='dateOfSurgery'
+                defaultValue={data?.operationDate}
                 name='dateOfSurgery'
                 type='date'
                 className='bg-gray-100 border-0'
@@ -160,7 +165,7 @@ export default function EditDataForm() {
               >
                 Patient gender
               </label>
-              <Select onValueChange={setPatientGender} name='patientGender'>
+              <Select name='patientGender'>
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
                   <SelectValue placeholder='Female' />
                 </SelectTrigger>
@@ -181,7 +186,7 @@ export default function EditDataForm() {
                 Patient Age
               </label>
               <Input
-                id='patientAge'
+                defaultValue={data?.age}
                 type='number'
                 name='patientAge'
                 className='bg-gray-100 border-0'
@@ -196,7 +201,7 @@ export default function EditDataForm() {
                 Operation technique used
               </label>
               <Input
-                id='operationTechnique'
+                defaultValue={data?.surgicalTechnique}
                 name='operationTechnique'
                 className='bg-gray-100 border-0'
                 required
@@ -209,7 +214,7 @@ export default function EditDataForm() {
               >
                 Type of cleft palate categories
               </label>
-              <Select onValueChange={setCleftPalateType} name='cleftPalateType'>
+              <Select name='cleftPalateType'>
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
                   <SelectValue placeholder='Syndromic' />
                 </SelectTrigger>
@@ -230,7 +235,7 @@ export default function EditDataForm() {
                 Patient Address
               </label>
               <Input
-                id='patientAddress'
+                defaultValue={data?.address}
                 name='patientAddress'
                 className='bg-gray-100 border-0'
                 required
@@ -244,7 +249,7 @@ export default function EditDataForm() {
                 Name of provider
               </label>
               <Input
-                id='providerName'
+                defaultValue={data?.organizer}
                 name='providerName'
                 className='bg-gray-100 border-0'
                 required
@@ -257,7 +262,7 @@ export default function EditDataForm() {
               >
                 Type of therapy
               </label>
-              <Select onValueChange={setTherapyType} name='therapyType'>
+              <Select name='therapyType'>
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
                   <SelectValue placeholder='Labioplasty' />
                 </SelectTrigger>
@@ -279,7 +284,7 @@ export default function EditDataForm() {
                 Ethnicity
               </label>
               <Input
-                id='ethnicity'
+                defaultValue={data?.ethnicity}
                 name='ethnicity'
                 className='bg-gray-100 border-0'
                 required
@@ -293,7 +298,7 @@ export default function EditDataForm() {
                 Location of surgery
               </label>
               <Input
-                id='surgeryLocation'
+                defaultValue={data?.operationLocation}
                 name='surgeryLocation'
                 className='bg-gray-100 border-0'
                 required
@@ -306,7 +311,7 @@ export default function EditDataForm() {
               >
                 Diagnosis
               </label>
-              <Select onValueChange={setDiagnosis} name='diagnosis'>
+              <Select name='diagnosis'>
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
                   <SelectValue placeholder='Labioschisis' />
                 </SelectTrigger>
@@ -330,7 +335,7 @@ export default function EditDataForm() {
                 Patient's mother's pregnancy history
               </label>
               <Textarea
-                id='motherPregnancyHistory'
+                defaultValue={data?.pregnancyHistory}
                 name='motherPregnancyHistory'
                 placeholder="Please fill in the patient's mother's pregnancy history"
                 className='bg-gray-100 border-0 min-h-[100px] text-sm'
@@ -345,7 +350,7 @@ export default function EditDataForm() {
                 Patient's family history
               </label>
               <Textarea
-                id='familyHistory'
+                defaultValue={data?.familyHistory}
                 name='familyHistory'
                 placeholder="Please fill in the patient's family history"
                 className='bg-gray-100 border-0 min-h-[100px] text-sm'
@@ -360,7 +365,7 @@ export default function EditDataForm() {
                 Residents' marital history
               </label>
               <Textarea
-                id='residentsMaritalHistory'
+                defaultValue={data?.relativeMarriageHistory}
                 name='residentsMaritalHistory'
                 placeholder="Residents' marital history"
                 className='bg-gray-100 border-0 min-h-[100px] text-sm'
@@ -378,7 +383,7 @@ export default function EditDataForm() {
                 Previous medical history
               </label>
               <Textarea
-                id='previousMedicalHistory'
+                defaultValue={data?.previousIllnessHistory}
                 name='previousMedicalHistory'
                 placeholder="Please fill in the patient's previous medical history"
                 className='bg-gray-100 border-0 min-h-[120px] text-sm'
@@ -393,7 +398,7 @@ export default function EditDataForm() {
                 Follow up
               </label>
               <Textarea
-                id='followUp'
+                defaultValue={data?.followUp}
                 name='followUp'
                 placeholder='Please fill in the follow up'
                 className='bg-gray-100 border-0 min-h-[120px] text-sm'
@@ -434,9 +439,9 @@ export default function EditDataForm() {
                       type='file'
                       multiple
                       accept='image/*'
-                      onChange={(e) =>
-                        handleFileUpload(e.target.files, 'before')
-                      }
+                      // onChange={(e) =>
+                      //   // handleFileUpload(e.target.files, 'before')
+                      // }
                       className='hidden'
                       id='before-surgery'
                       name='beforeSurgery'
@@ -465,9 +470,9 @@ export default function EditDataForm() {
                       type='file'
                       multiple
                       accept='image/*'
-                      onChange={(e) =>
-                        handleFileUpload(e.target.files, 'after')
-                      }
+                      // onChange={(e) =>
+                      //   // handleFileUpload(e.target.files, 'after')
+                      // }
                       className='hidden'
                       id='after-surgery'
                       name='afterSurgery'
