@@ -16,6 +16,14 @@ export interface AllUsers {
   userCreationDate: string;
 }
 
+export interface AddUserPayload {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  role: string;
+}
+
 export interface MenuItem {
   title: string;
   url: string;
