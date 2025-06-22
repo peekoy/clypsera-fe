@@ -3,7 +3,7 @@ import { AllUsers } from '@/types/user';
 export async function getAllUsers(token: string): Promise<AllUsers[] | null> {
   try {
     const res = await fetch(
-      'https://3dd8-103-194-173-98.ngrok-free.app/api/user',
+      'https://0b2d-118-99-106-123.ngrok-free.app/api/user',
       {
         headers: {
           'Content-Type': 'application/json',

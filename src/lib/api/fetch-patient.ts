@@ -5,7 +5,7 @@ export async function getAllPatient(
 ): Promise<PatientData[] | null> {
   try {
     const res = await fetch(
-      'https://3dd8-103-194-173-98.ngrok-free.app/api/pasien',
+      'https://0b2d-118-99-106-123.ngrok-free.app/api/pasien',
       {
         headers: {
           'Content-Type': 'application/json',

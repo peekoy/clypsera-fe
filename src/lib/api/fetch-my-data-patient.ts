@@ -6,7 +6,7 @@ export async function getMyPatient(
 ): Promise<PatientData[] | null> {
   try {
     const res = await fetch(
-      'https://3dd8-103-194-173-98.ngrok-free.app/api/pasien',
+      'https://0b2d-118-99-106-123.ngrok-free.app/api/pasien',
       {
         headers: {
           'Content-Type': 'application/json',
@@ -17,7 +17,7 @@ export async function getMyPatient(
       }
     );
 
-    console.log('tes', token);
+    console.log('tes', currentUser);
 
     const contentType = res.headers.get('content-type');
 
@@ -36,7 +36,7 @@ export async function getMyPatient(
     let data = await res.json();
 
     let filteredData = data.data.filter(
-      (item: any) => item.operator.name === currentUser
+      (item: any) => item.operasi.operator.name === currentUser
     );
 
     filteredData = filteredData.map((item: any) => ({
@@ -48,8 +48,8 @@ export async function getMyPatient(
       organizer: item.operasi.lokasi_operasi, // ini masih bingung
       operationalTechniques: item.operasi.tehnik_operasi,
     }));
-    console.log('yaya', data);
-    return data;
+    console.log('yaya', filteredData);
+    return filteredData;
   } catch (error) {
     console.error('Error fetching users:', error);
     return null;
