@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,38 +12,101 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
+import { uploadPatientData } from '@/lib/api/upload-patient';
 
 export default function CleftLipPatientForm() {
-  const [patientGender, setPatientGender] = useState<string>('');
-  const [cleftPalateType, setCleftPalateType] = useState<string>('');
-  const [therapyType, setTherapyType] = useState<string>('');
-  const [diagnosis, setDiagnosis] = useState<string>('');
+  const [formData, setFormData] = useState({
+    patientName: '',
+    congenitalComorbidities: '',
+    whichChild: 0,
+    dateOfBirth: '',
+    patientGender: '',
+    dateOfSurgery: '',
+    patientAge: 0,
+    operationTechnique: '',
+    patientAddress: '',
+    providerName: '',
+    ethnicity: '',
+    surgeryLocation: '',
+    motherPregnancyHistory: '',
+    familyHistory: '',
+    residentsMaritalHistory: '',
+    previousMedicalHistory: '',
+    followUp: '',
+    cleftPalateType: '',
+    therapyType: '',
+    diagnosis: '',
+  });
+
   const [beforeSurgeryFiles, setBeforeSurgeryFiles] = useState<File[]>([]);
   const [afterSurgeryFiles, setAfterSurgeryFiles] = useState<File[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [token, setToken] = useState<string | null>(null);
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    setToken(localStorage.getItem('token'));
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    setError('');
+    setSuccess('');
+    setLoading(true);
 
-    // Convert FormData to object
-    const formValues: Record<string, any> = {};
-    formData.forEach((value, key) => {
-      formValues[key] = value;
-    });
+    try {
+      await uploadPatientData(
+        token,
+        formData,
+        beforeSurgeryFiles,
+        afterSurgeryFiles
+      );
 
-    // Add select values that aren't automatically included in FormData
-    formValues.patientGender = patientGender;
-    formValues.cleftPalateType = cleftPalateType;
-    formValues.therapyType = therapyType;
-    formValues.diagnosis = diagnosis;
+      setSuccess('Data pasien berhasil diupload!');
 
-    console.log('Form data:', formValues);
-    console.log('Before surgery files:', beforeSurgeryFiles);
-    console.log('After surgery files:', afterSurgeryFiles);
-
-    alert('Form submitted successfully!');
+      // Reset form
+      // resetForm();
+    } catch (error: any) {
+      setError(error.message || 'Gagal mengupload data. Silakan coba lagi.');
+    } finally {
+      setLoading(false);
+    }
   }
+
+  // const resetForm = () => {
+  //   setPatientName('');
+  //   setCongenitalComorbidities('');
+  //   setWhichChild('');
+  //   setDateOfBirth('');
+  //   setPatientGender('');
+  //   setDateOfSurgery('');
+  //   setPatientAge(undefined);
+  //   setOperationTechnique('');
+  //   setPatientAddress('');
+  //   setProviderName('');
+  //   setEthnicity('');
+  //   setSurgeryLocation('');
+  //   setMotherPregnancyHistory('');
+  //   setFamilyHistory('');
+  //   setResidentsMaritalHistory('');
+  //   setPreviousMedicalHistory('');
+  //   setFollowUp('');
+  //   setCleftPalateType('');
+  //   setTherapyType('');
+  //   setDiagnosis('');
+  //   setBeforeSurgeryFiles([]);
+  //   setAfterSurgeryFiles([]);
+  // };
 
   const handleFileUpload = (
     files: FileList | null,
@@ -51,13 +114,58 @@ export default function CleftLipPatientForm() {
   ) => {
     if (files) {
       const fileArray = Array.from(files);
+
+      // Validate file types
+      const validFiles = fileArray.filter((file) => {
+        const isImage = file.type.startsWith('image/');
+        if (!isImage) {
+          setError('Hanya file gambar yang diperbolehkan');
+          return false;
+        }
+        return true;
+      });
+
       if (type === 'before') {
-        setBeforeSurgeryFiles((prev) => [...prev, ...fileArray]);
+        setBeforeSurgeryFiles((prev) => [...prev, ...validFiles]);
       } else {
-        setAfterSurgeryFiles((prev) => [...prev, ...fileArray]);
+        setAfterSurgeryFiles((prev) => [...prev, ...validFiles]);
       }
     }
   };
+
+  // const removeFile = (index: number, type: 'before' | 'after') => {
+  //   if (type === 'before') {
+  //     setBeforeSurgeryFiles((prev) => prev.filter((_, i) => i !== index));
+  //   } else {
+  //     setAfterSurgeryFiles((prev) => prev.filter((_, i) => i !== index));
+  //   }
+  // };
+
+  // const FileList = ({
+  //   files,
+  //   type,
+  // }: {
+  //   files: File[];
+  //   type: 'before' | 'after';
+  // }) => (
+  //   <div className='mt-2 space-y-2'>
+  //     {files.map((file, index) => (
+  //       <div
+  //         key={index}
+  //         className='flex items-center justify-between bg-white p-2 rounded border'
+  //       >
+  //         <span className='text-sm text-gray-600 truncate'>{file.name}</span>
+  //         <button
+  //           type='button'
+  //           onClick={() => removeFile(index, type)}
+  //           className='text-red-500 hover:text-red-700'
+  //         >
+  //           <X className='h-4 w-4' />
+  //         </button>
+  //       </div>
+  //     ))}
+  //   </div>
+  // );
 
   return (
     <Card className='w-full p-0'>
@@ -86,9 +194,11 @@ export default function CleftLipPatientForm() {
                 Patient Name
               </label>
               <Input
-                id='patientName'
+                type='text'
                 name='patientName'
                 className='bg-gray-100 border-0'
+                value={formData.patientName}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -100,9 +210,11 @@ export default function CleftLipPatientForm() {
                 Congenital comorbidities
               </label>
               <Input
-                id='congenitalComorbidities'
+                type='text'
                 name='congenitalComorbidities'
                 className='bg-gray-100 border-0'
+                value={formData.congenitalComorbidities}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -114,9 +226,11 @@ export default function CleftLipPatientForm() {
                 Which child is the patient?
               </label>
               <Input
-                id='whichChild'
+                type='number'
                 name='whichChild'
                 className='bg-gray-100 border-0'
+                value={formData.whichChild}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -131,10 +245,11 @@ export default function CleftLipPatientForm() {
                 Date of Birth
               </label>
               <Input
-                id='dateOfBirth'
-                name='dateOfBirth'
                 type='date'
+                name='dateOfBirth'
                 className='bg-gray-100 border-0'
+                value={formData.dateOfBirth}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -146,10 +261,11 @@ export default function CleftLipPatientForm() {
                 Date of Surgery
               </label>
               <Input
-                id='dateOfSurgery'
-                name='dateOfSurgery'
                 type='date'
+                name='dateOfSurgery'
                 className='bg-gray-100 border-0'
+                value={formData.dateOfSurgery}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -160,13 +276,18 @@ export default function CleftLipPatientForm() {
               >
                 Patient gender
               </label>
-              <Select onValueChange={setPatientGender} name='patientGender'>
+              <Select
+                onValueChange={(value) =>
+                  setFormData({ ...formData, patientGender: value })
+                }
+                name='patientGender'
+              >
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
                   <SelectValue placeholder='Female' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value='female'>Female</SelectItem>
-                  <SelectItem value='male'>Male</SelectItem>
+                  <SelectItem value='P'>Female</SelectItem>
+                  <SelectItem value='L'>Male</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -181,10 +302,11 @@ export default function CleftLipPatientForm() {
                 Patient Age
               </label>
               <Input
-                id='patientAge'
                 type='number'
                 name='patientAge'
                 className='bg-gray-100 border-0'
+                value={formData.patientAge}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -196,9 +318,11 @@ export default function CleftLipPatientForm() {
                 Operation technique used
               </label>
               <Input
-                id='operationTechnique'
+                type='text'
                 name='operationTechnique'
                 className='bg-gray-100 border-0'
+                value={formData.operationTechnique}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -209,13 +333,22 @@ export default function CleftLipPatientForm() {
               >
                 Type of cleft palate categories
               </label>
-              <Select onValueChange={setCleftPalateType} name='cleftPalateType'>
+              <Select
+                onValueChange={(value) =>
+                  setFormData({ ...formData, cleftPalateType: value })
+                }
+                name='cleftPalateType'
+              >
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
-                  <SelectValue placeholder='Syndromic' />
+                  <SelectValue placeholder='Sindromic Cleft' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value='syndromic'>Syndromic</SelectItem>
-                  <SelectItem value='non-syndromic'>Non-syndromic</SelectItem>
+                  <SelectItem value='Sindromic Cleft'>
+                    Sindromic Cleft
+                  </SelectItem>
+                  <SelectItem value='Nonsindromic Cleft'>
+                    Nonsindromic Cleft
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -230,9 +363,11 @@ export default function CleftLipPatientForm() {
                 Patient Address
               </label>
               <Input
-                id='patientAddress'
+                type='text'
                 name='patientAddress'
                 className='bg-gray-100 border-0'
+                value={formData.patientAddress}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -244,9 +379,11 @@ export default function CleftLipPatientForm() {
                 Name of provider
               </label>
               <Input
-                id='providerName'
+                type='text'
                 name='providerName'
                 className='bg-gray-100 border-0'
+                value={formData.providerName}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -257,14 +394,21 @@ export default function CleftLipPatientForm() {
               >
                 Type of therapy
               </label>
-              <Select onValueChange={setTherapyType} name='therapyType'>
+              <Select
+                onValueChange={(value) =>
+                  setFormData({ ...formData, therapyType: value })
+                }
+                name='therapyType'
+              >
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
-                  <SelectValue placeholder='Labioplasty' />
+                  <SelectValue placeholder='Labioshisis' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value='labioplasty'>Labioplasty</SelectItem>
-                  <SelectItem value='palatoplasty'>Palatoplasty</SelectItem>
-                  <SelectItem value='combined'>Combined</SelectItem>
+                  <SelectItem value='Labioshisis'>Labioshisis</SelectItem>
+                  <SelectItem value='Palatoschisis'>Palatoschisis</SelectItem>
+                  <SelectItem value='Labiopalatoschisis'>
+                    Labiopalatoschisis
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -279,9 +423,11 @@ export default function CleftLipPatientForm() {
                 Ethnicity
               </label>
               <Input
-                id='ethnicity'
+                type='text'
                 name='ethnicity'
                 className='bg-gray-100 border-0'
+                value={formData.ethnicity}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -293,9 +439,11 @@ export default function CleftLipPatientForm() {
                 Location of surgery
               </label>
               <Input
-                id='surgeryLocation'
+                type='text'
                 name='surgeryLocation'
                 className='bg-gray-100 border-0'
+                value={formData.surgeryLocation}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -306,7 +454,12 @@ export default function CleftLipPatientForm() {
               >
                 Diagnosis
               </label>
-              <Select onValueChange={setDiagnosis} name='diagnosis'>
+              <Select
+                onValueChange={(value) =>
+                  setFormData({ ...formData, diagnosis: value })
+                }
+                name='diagnosis'
+              >
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
                   <SelectValue placeholder='Labioschisis' />
                 </SelectTrigger>
@@ -330,10 +483,11 @@ export default function CleftLipPatientForm() {
                 Patient's mother's pregnancy history
               </label>
               <Textarea
-                id='motherPregnancyHistory'
                 name='motherPregnancyHistory'
                 placeholder="Please fill in the patient's mother's pregnancy history"
                 className='bg-gray-100 border-0 min-h-[100px] text-sm'
+                value={formData.motherPregnancyHistory}
+                onChange={handleTextAreaChange}
                 required
               />
             </div>
@@ -345,10 +499,11 @@ export default function CleftLipPatientForm() {
                 Patient's family history
               </label>
               <Textarea
-                id='familyHistory'
                 name='familyHistory'
                 placeholder="Please fill in the patient's family history"
                 className='bg-gray-100 border-0 min-h-[100px] text-sm'
+                value={formData.familyHistory}
+                onChange={handleTextAreaChange}
                 required
               />
             </div>
@@ -360,10 +515,11 @@ export default function CleftLipPatientForm() {
                 Residents' marital history
               </label>
               <Textarea
-                id='residentsMaritalHistory'
                 name='residentsMaritalHistory'
                 placeholder="Residents' marital history"
                 className='bg-gray-100 border-0 min-h-[100px] text-sm'
+                value={formData.residentsMaritalHistory}
+                onChange={handleTextAreaChange}
                 required
               />
             </div>
@@ -378,10 +534,11 @@ export default function CleftLipPatientForm() {
                 Previous medical history
               </label>
               <Textarea
-                id='previousMedicalHistory'
                 name='previousMedicalHistory'
                 placeholder="Please fill in the patient's previous medical history"
                 className='bg-gray-100 border-0 min-h-[120px] text-sm'
+                value={formData.previousMedicalHistory}
+                onChange={handleTextAreaChange}
                 required
               />
             </div>
@@ -393,10 +550,11 @@ export default function CleftLipPatientForm() {
                 Follow up
               </label>
               <Textarea
-                id='followUp'
                 name='followUp'
                 placeholder='Please fill in the follow up'
                 className='bg-gray-100 border-0 min-h-[120px] text-sm'
+                value={formData.followUp}
+                onChange={handleTextAreaChange}
                 required
               />
             </div>
@@ -473,7 +631,7 @@ export default function CleftLipPatientForm() {
                       name='afterSurgery'
                     />
                     <label
-                      htmlFor='before-surgery'
+                      htmlFor='after-surgery'
                       className='flex items-center justify-center gap-2 cursor-pointer'
                     >
                       <Plus className='h-6 w-6 primary-color' />
