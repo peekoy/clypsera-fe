@@ -12,6 +12,7 @@ import {
 import { Lock, User, EyeOff, Eye } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { addUser } from '@/lib/api/add-user';
 
 export default function AddNewUserForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -42,41 +43,18 @@ export default function AddNewUserForm() {
     }
 
     try {
-      const res = await fetch(
-        'https://3dd8-103-194-173-98.ngrok-free.app/api/auth/register',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: formData.name,
-            email: formData.email,
-            password: formData.password,
-            password_confirmation: formData.confirmPassword,
-            role: formData.role,
-          }),
-        }
-      );
-
-      const data = await res.json();
-
-      if (res.ok) {
-        alert('User registered successfully!');
-        // Optional: reset form
-        setFormData({
-          name: '',
-          email: '',
-          password: '',
-          confirmPassword: '',
-          role: '',
-        });
-      } else {
-        alert(`Error: ${data.message || 'Failed to register'}`);
-      }
-    } catch (error) {
+      await addUser(formData);
+      alert('User registered successfully!');
+      setFormData({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        role: '',
+      });
+    } catch (error: any) {
       console.error(error);
-      alert('Something went wrong.');
+      alert(`Error: ${error.message || 'Something went wrong.'}`);
     }
   };
 
