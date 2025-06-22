@@ -6,3 +6,12 @@ export type CheckRequestData = {
   status: string;
   createdAt: string;
 };
+
+export type RequestDataPayload = {
+  name: string;
+  email: string;
+  nik: string;
+  phoneNumber: string;
+  category: string;
+  purpose: string;
+};
