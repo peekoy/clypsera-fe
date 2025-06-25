@@ -7,10 +7,14 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { DetailedPatientData } from '@/types/patient';
 import { getDetailedPatient } from '@/lib/api/fetch-show-patient-data';
+import { checkIfDataRequested } from '@/lib/api/check-request';
+import { deleteRequest } from '@/lib/api/delete-request';
 
 export default function OperationDetail() {
   const params = useParams();
   const router = useRouter();
+  const [isDataRequested, setIsDataRequested] = useState(false);
+  const [requestId, setRequestId] = useState<number | null>(null);
   const [detailedPatient, setDetailedPatient] = useState<DetailedPatientData[]>(
     []
   );
@@ -33,8 +37,16 @@ export default function OperationDetail() {
         )) || [];
 
       console.log(patient);
-      if (patient) {
+
+      if (patient.length > 0) {
         setDetailedPatient(patient);
+        const { requested, requestId } = await checkIfDataRequested(
+          token,
+          patient[0].id
+        );
+        console.log(requestId);
+        setIsDataRequested(requested);
+        setRequestId(requestId);
       }
       setIsLoading(false);
     };
@@ -51,6 +63,19 @@ export default function OperationDetail() {
 
   const handleRequestData = () => {
     router.push(`/operations/${detailPatient.id}/request`);
+  };
+
+  const handleCancelRequest = async () => {
+    if (!requestId) return;
+    const token = localStorage.getItem('token');
+    try {
+      await deleteRequest(token!, requestId);
+      setIsDataRequested(false);
+      setRequestId(null);
+      alert('Permohonan berhasil dibatalkan.');
+    } catch (error: any) {
+      alert(error.message);
+    }
   };
 
   if (isLoading) {
@@ -84,10 +109,10 @@ export default function OperationDetail() {
             <CardTitle className='text-2xl font-bold'>Patient Data</CardTitle>
           </div>
           <Button
-            className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white px-6'
-            onClick={handleRequestData}
+            className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white px-6 disabled:opacity-50'
+            onClick={isDataRequested ? handleCancelRequest : handleRequestData}
           >
-            Request Data
+            {isDataRequested ? 'Cancel Request' : 'Request Data'}
           </Button>
         </div>
       </CardHeader>

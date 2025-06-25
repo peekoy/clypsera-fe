@@ -14,8 +14,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, X } from 'lucide-react';
 import { uploadPatientData } from '@/lib/api/upload-patient';
+import { useRouter } from 'next/navigation';
 
 export default function CleftLipPatientForm() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     patientName: '',
     congenitalComorbidities: '',
@@ -72,7 +74,8 @@ export default function CleftLipPatientForm() {
         afterSurgeryFiles
       );
 
-      setSuccess('Data pasien berhasil diupload!');
+      alert('Data pasien berhasil diupload!');
+      router.push('/my-data');
 
       // Reset form
       // resetForm();

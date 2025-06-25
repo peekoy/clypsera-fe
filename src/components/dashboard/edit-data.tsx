@@ -14,37 +14,54 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { DetailedPatientData } from '@/types/patient';
+import { DetailedPatientData, EditPatientPayload } from '@/types/patient';
+import { getMyPatientById } from '@/lib/api/fetch-data-patient-by-id';
+import { editPatientData } from '@/lib/api/edit-data-patient';
 
 export default function EditDataForm() {
-  const { patientId } = useParams();
-  const [data, setData] = useState<DetailedPatientData | null>(null);
+  const params = useParams();
+  const [patientData, setPatientData] = useState<DetailedPatientData | null>(
+    null
+  );
+  console.log(params.id);
+  console.log('konszs', patientData);
+
+  useEffect(() => {
+    const fetchPatientById = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.log('Token tidak ditemukan');
+          return;
+        }
+        let patient = await getMyPatientById(
+          token,
+          Number.parseInt(params.id as string)
+        );
+        setPatientData(patient);
+      } catch (error) {
+        console.error('Failed to fetch patient:', error);
+      }
+    };
+    fetchPatientById();
+  }, []);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const token = localStorage.getItem('token');
     const formData = new FormData(event.currentTarget);
 
-    useEffect(() => {
-      const fetchPatientById = async () => {
-        try {
-          const token = localStorage.getItem('token');
-          if (!token) {
-            console.log('Token tidak ditemukan');
-            return;
-          }
-          // let patient = (await getAllPatient(token)) || [];
-          // setData(patient);
-        } catch (error) {
-          console.error('Failed to fetch patient:', error);
-        }
-      };
-    });
-
     // Convert FormData to object
-    const formValues: Record<string, any> = {};
+    let formValues: { [key: string]: any } = {};
     formData.forEach((value, key) => {
       formValues[key] = value;
     });
+
+    editPatientData(
+      token,
+      Number.parseInt(params.id as string),
+      formValues as EditPatientPayload
+    );
 
     alert('Form submitted successfully!');
   }
@@ -90,7 +107,7 @@ export default function EditDataForm() {
                 Patient Name
               </label>
               <Input
-                defaultValue={data?.name}
+                defaultValue={patientData?.name}
                 name='patientName'
                 className='bg-gray-100 border-0'
                 required
@@ -104,7 +121,7 @@ export default function EditDataForm() {
                 Congenital comorbidities
               </label>
               <Input
-                defaultValue={data?.congenitalAbnormalities}
+                defaultValue={patientData?.congenitalAbnormalities}
                 name='congenitalComorbidities'
                 className='bg-gray-100 border-0'
                 required
@@ -118,7 +135,7 @@ export default function EditDataForm() {
                 Which child is the patient?
               </label>
               <Input
-                defaultValue={data?.childNumber}
+                defaultValue={patientData?.childNumber}
                 type='number'
                 name='whichChild'
                 className='bg-gray-100 border-0'
@@ -136,7 +153,7 @@ export default function EditDataForm() {
                 Date of Birth
               </label>
               <Input
-                defaultValue={data?.birthDate}
+                defaultValue={patientData?.birthDate}
                 name='dateOfBirth'
                 type='date'
                 className='bg-gray-100 border-0'
@@ -151,7 +168,7 @@ export default function EditDataForm() {
                 Date of Surgery
               </label>
               <Input
-                defaultValue={data?.operationDate}
+                defaultValue={patientData?.operationDate}
                 name='dateOfSurgery'
                 type='date'
                 className='bg-gray-100 border-0'
@@ -186,7 +203,7 @@ export default function EditDataForm() {
                 Patient Age
               </label>
               <Input
-                defaultValue={data?.age}
+                defaultValue={patientData?.age}
                 type='number'
                 name='patientAge'
                 className='bg-gray-100 border-0'
@@ -201,7 +218,7 @@ export default function EditDataForm() {
                 Operation technique used
               </label>
               <Input
-                defaultValue={data?.surgicalTechnique}
+                defaultValue={patientData?.surgicalTechnique}
                 name='operationTechnique'
                 className='bg-gray-100 border-0'
                 required
@@ -235,7 +252,7 @@ export default function EditDataForm() {
                 Patient Address
               </label>
               <Input
-                defaultValue={data?.address}
+                defaultValue={patientData?.address}
                 name='patientAddress'
                 className='bg-gray-100 border-0'
                 required
@@ -249,7 +266,7 @@ export default function EditDataForm() {
                 Name of provider
               </label>
               <Input
-                defaultValue={data?.organizer}
+                defaultValue={patientData?.organizer}
                 name='providerName'
                 className='bg-gray-100 border-0'
                 required
@@ -284,7 +301,7 @@ export default function EditDataForm() {
                 Ethnicity
               </label>
               <Input
-                defaultValue={data?.ethnicity}
+                defaultValue={patientData?.ethnicity}
                 name='ethnicity'
                 className='bg-gray-100 border-0'
                 required
@@ -298,7 +315,7 @@ export default function EditDataForm() {
                 Location of surgery
               </label>
               <Input
-                defaultValue={data?.operationLocation}
+                defaultValue={patientData?.operationLocation}
                 name='surgeryLocation'
                 className='bg-gray-100 border-0'
                 required
@@ -335,7 +352,7 @@ export default function EditDataForm() {
                 Patient's mother's pregnancy history
               </label>
               <Textarea
-                defaultValue={data?.pregnancyHistory}
+                defaultValue={patientData?.pregnancyHistory}
                 name='motherPregnancyHistory'
                 placeholder="Please fill in the patient's mother's pregnancy history"
                 className='bg-gray-100 border-0 min-h-[100px] text-sm'
@@ -350,7 +367,7 @@ export default function EditDataForm() {
                 Patient's family history
               </label>
               <Textarea
-                defaultValue={data?.familyHistory}
+                defaultValue={patientData?.familyHistory}
                 name='familyHistory'
                 placeholder="Please fill in the patient's family history"
                 className='bg-gray-100 border-0 min-h-[100px] text-sm'
@@ -365,7 +382,7 @@ export default function EditDataForm() {
                 Residents' marital history
               </label>
               <Textarea
-                defaultValue={data?.relativeMarriageHistory}
+                defaultValue={patientData?.relativeMarriageHistory}
                 name='residentsMaritalHistory'
                 placeholder="Residents' marital history"
                 className='bg-gray-100 border-0 min-h-[100px] text-sm'
@@ -383,7 +400,7 @@ export default function EditDataForm() {
                 Previous medical history
               </label>
               <Textarea
-                defaultValue={data?.previousIllnessHistory}
+                defaultValue={patientData?.previousIllnessHistory}
                 name='previousMedicalHistory'
                 placeholder="Please fill in the patient's previous medical history"
                 className='bg-gray-100 border-0 min-h-[120px] text-sm'
@@ -398,7 +415,7 @@ export default function EditDataForm() {
                 Follow up
               </label>
               <Textarea
-                defaultValue={data?.followUp}
+                defaultValue={patientData?.followUp}
                 name='followUp'
                 placeholder='Please fill in the follow up'
                 className='bg-gray-100 border-0 min-h-[120px] text-sm'

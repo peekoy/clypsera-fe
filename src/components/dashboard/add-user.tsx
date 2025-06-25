@@ -13,8 +13,10 @@ import { Lock, User, EyeOff, Eye } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { addUser } from '@/lib/api/add-user';
+import { useRouter } from 'next/navigation';
 
 export default function AddNewUserForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -52,6 +54,7 @@ export default function AddNewUserForm() {
         confirmPassword: '',
         role: '',
       });
+      router.push('/administrator');
     } catch (error: any) {
       console.error(error);
       alert(`Error: ${error.message || 'Something went wrong.'}`);
@@ -146,13 +149,13 @@ export default function AddNewUserForm() {
                 className='absolute right-0 px-3 py-2 text-muted-foreground cursor-pointer'
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               >
-                {showPassword ? (
+                {showConfirmPassword ? (
                   <EyeOff className='h-4 w-4' />
                 ) : (
                   <Eye className='h-4 w-4' />
                 )}
                 <span className='sr-only'>
-                  {showPassword ? 'Hide password' : 'Show password'}
+                  {showConfirmPassword ? 'Hide password' : 'Show password'}
                 </span>
               </Button>
             </div>
