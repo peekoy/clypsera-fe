@@ -72,3 +72,26 @@ export interface AddPatienPayload {
   therapyType: string;
   diagnosis: string;
 }
+
+export interface EditPatientPayload {
+  patientName: string;
+  congenitalComorbidities: string;
+  whichChild: number;
+  dateOfBirth: string;
+  patientGender: string;
+  dateOfSurgery: string;
+  patientAge: number;
+  operationTechnique: string;
+  patientAddress: string;
+  providerName: string;
+  ethnicity: string;
+  surgeryLocation: string;
+  motherPregnancyHistory: string;
+  familyHistory: string;
+  residentsMaritalHistory: string;
+  previousMedicalHistory: string;
+  followUp: string;
+  cleftPalateType: string;
+  therapyType: string;
+  diagnosis: string;
+}
