@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { FilterBrowse } from '@/types/filter';
 import { PatientData } from '@/types/patient';
 import { getAllPatient } from '@/lib/api/fetch-patient';
+// import { patientData } from '@/data/data';
 
 export default function BrowseDataPage() {
   const [allPatient, setAllPatient] = useState<PatientData[]>([]);
@@ -178,16 +179,10 @@ export default function BrowseDataPage() {
     },
   ];
 
-  // if (allPatient.length === 0) {
-  //   return (
-
-  //   );
-  // }
-
   return (
-    <div className='p-6 space-y-4'>
+    <>
       {allPatient ? (
-        <>
+        <div className='p-6 space-y-4'>
           <div className='relative'>
             <FilterForm
               fields={filterFields}
@@ -241,12 +236,12 @@ export default function BrowseDataPage() {
               Download All Data
             </Button>
           </div>
-        </>
+        </div>
       ) : (
         <div className='flex justify-center items-center h-full p-6'>
           <div className='text-center'>
             <h1 className='text-2xl font-bold text-gray-900 mb-4'>
-              Data Not Found
+              Patient Data Not Found
             </h1>
             <p className='text-gray-600 mb-4'>
               The data you're looking for doesn't exist. Please try again later!
@@ -254,6 +249,6 @@ export default function BrowseDataPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

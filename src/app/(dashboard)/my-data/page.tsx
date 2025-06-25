@@ -11,6 +11,7 @@ import { FilterMyData } from '@/types/filter';
 import { MyDataPatient } from '@/types/patient';
 import { getMyPatient } from '@/lib/api/fetch-my-data-patient';
 import { useRouter } from 'next/navigation';
+import { deleteMyDataPatient } from '@/lib/api/delete-my-data-patient';
 
 export default function MyDataPage() {
   const [myPatient, setMyPatient] = useState<MyDataPatient[]>([]);
@@ -182,10 +183,20 @@ export default function MyDataPage() {
     },
   ];
 
+  const handleDeletePatient = async (patientId: number) => {
+    try {
+      const token = localStorage.getItem('token');
+      await deleteMyDataPatient(token!, patientId);
+      alert('Patient berhasil dihapus.');
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
+
   return (
-    <div className='p-6 space-y-4'>
+    <>
       {myPatient ? (
-        <>
+        <div className='p-6 space-y-4'>
           <div className='relative'>
             <FilterForm
               fields={filterFields}
@@ -216,13 +227,16 @@ export default function MyDataPage() {
                 <Button
                   size='sm'
                   className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white'
-                  onClick={() => handleEditOperation(item.id)}
+                  onClick={() => {
+                    handleEditOperation(item.id);
+                  }}
                 >
                   View
                 </Button>
                 <Button
                   size='sm'
                   className='bg-[#CE6872] hover:bg-[#CE6872]/90 cursor-pointer text-white ml-1'
+                  onClick={() => handleDeletePatient(item.id)}
                 >
                   <Trash2 />
                 </Button>
@@ -235,12 +249,12 @@ export default function MyDataPage() {
             totalPages={totalPages}
             onPageChange={setCurrentPage}
           />
-        </>
+        </div>
       ) : (
         <div className='flex justify-center items-center h-full p-6'>
           <div className='text-center'>
             <h1 className='text-2xl font-bold text-gray-900 mb-4'>
-              Data Not Found
+              Patient Data Not Found
             </h1>
             <p className='text-gray-600 mb-4'>
               The data you're looking for doesn't exist. Or you can upload it
@@ -249,6 +263,6 @@ export default function MyDataPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -9,9 +9,12 @@ import Pagination from '@/components/dashboard/pagination';
 import { FilterRequestData } from '@/types/filter';
 import { CheckRequestData } from '@/types/check-request-data';
 import { getAllRequestData } from '@/lib/api/fetch-request-data';
+import { deleteRequest } from '@/lib/api/delete-request';
 
 export default function CheckDataRequestPage() {
   const [requestData, setRequestData] = useState<CheckRequestData[]>([]);
+  const [isDataRequested, setIsDataRequested] = useState(false);
+  const [requestId, setRequestId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -144,10 +147,22 @@ export default function CheckDataRequestPage() {
     },
   ];
 
+  const handleDeleteRequest = async (requestId: number) => {
+    try {
+      const token = localStorage.getItem('token');
+      await deleteRequest(token!, requestId);
+      setIsDataRequested(false);
+      setRequestId(null);
+      alert('Permohonan berhasil dibatalkan.');
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
+
   return (
-    <div className='p-6 space-y-4'>
+    <>
       {requestData ? (
-        <>
+        <div className='p-6 space-y-4'>
           <div className='relative'>
             <FilterForm
               fields={filterFields}
@@ -181,7 +196,13 @@ export default function CheckDataRequestPage() {
                 >
                   View
                 </Button>
-                <Button size='sm' className='bg-[#CE6872] text-white ml-1'>
+                <Button
+                  size='sm'
+                  className='bg-[#CE6872] hover:bg-[#CE6872]/90 cursor-pointer text-white ml-1'
+                  onClick={() => {
+                    handleDeleteRequest(item.id);
+                  }}
+                >
                   <Trash2 />
                 </Button>
               </div>
@@ -193,12 +214,12 @@ export default function CheckDataRequestPage() {
             totalPages={totalPages}
             onPageChange={setCurrentPage}
           />
-        </>
+        </div>
       ) : (
         <div className='flex justify-center items-center h-full p-6'>
           <div className='text-center'>
             <h1 className='text-2xl font-bold text-gray-900 mb-4'>
-              Data Not Found
+              Check Request Data Not Found
             </h1>
             <p className='text-gray-600 mb-4'>
               The data you're looking for doesn't exist. Please try again later!
@@ -206,6 +227,6 @@ export default function CheckDataRequestPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

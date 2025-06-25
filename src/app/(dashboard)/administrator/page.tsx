@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import type { AllUsers } from '@/types/user';
 import { getAllUsers } from '@/lib/api/fetch-user';
 import { FilterAdmin } from '@/types/filter';
+import { deleteUser } from '@/lib/api/delete-user';
 
 export default function AdministratorPage() {
   const router = useRouter();
@@ -132,10 +133,20 @@ export default function AdministratorPage() {
     },
   ];
 
+  const handleDeleteUser = async (userId: number) => {
+    try {
+      const token = localStorage.getItem('token');
+      await deleteUser(token!, userId);
+      alert('User berhasil dihapus.');
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
+
   return (
-    <div className='p-6 space-y-4'>
+    <>
       {allUsersData ? (
-        <>
+        <div className='p-6 space-y-4'>
           <div className='relative'>
             <FilterForm
               fields={filterFields}
@@ -168,7 +179,11 @@ export default function AdministratorPage() {
                 >
                   View
                 </Button>
-                <Button size='sm' className='bg-[#CE6872] text-white ml-1'>
+                <Button
+                  size='sm'
+                  className='bg-[#CE6872] hover:bg-[#CE6872]/90 cursor-pointer text-white ml-1'
+                  onClick={() => handleDeleteUser(item.id)}
+                >
                   <Trash2 />
                 </Button>
               </div>
@@ -188,12 +203,12 @@ export default function AdministratorPage() {
               Add New User
             </Button>
           </div>
-        </>
+        </div>
       ) : (
         <div className='flex justify-center items-center h-full p-6'>
           <div className='text-center'>
             <h1 className='text-2xl font-bold text-gray-900 mb-4'>
-              Data Not Found
+              User Data Not Found
             </h1>
             <p className='text-gray-600 mb-4'>
               The data you're looking for doesn't exist. Please try again later!
@@ -201,6 +216,6 @@ export default function AdministratorPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
