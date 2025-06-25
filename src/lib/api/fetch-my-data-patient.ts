@@ -6,7 +6,7 @@ export async function getMyPatient(
 ): Promise<PatientData[] | null> {
   try {
     const res = await fetch(
-      'https://dbaa-118-99-106-123.ngrok-free.app/api/pasien',
+      'https://835e-103-194-173-102.ngrok-free.app/api/pasien',
       {
         headers: {
           'Content-Type': 'application/json',
@@ -40,6 +40,7 @@ export async function getMyPatient(
     );
 
     filteredData = filteredData.map((item: any) => ({
+      id: item.id,
       patientName: item.nama_pasien,
       age: item.umur_pasien,
       gender: item.jenis_kelamin === 'P' ? 'Women' : 'Men',

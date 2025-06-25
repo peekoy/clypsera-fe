@@ -11,7 +11,7 @@ export async function singleRequestData(
     }
 
     const categoryResponse = await fetch(
-      'https://dbaa-118-99-106-123.ngrok-free.app/api/kategori_permohonan',
+      'https://835e-103-194-173-102.ngrok-free.app/api/kategori_permohonan',
       {
         headers: {
           Accept: 'application/json',
@@ -29,8 +29,7 @@ export async function singleRequestData(
 
     const categoryId = matchedCategory.id;
     // const operatorId = localStorage.getItem('userId');
-
-    const initStatus = 'pending';
+    const status = 'pending';
 
     const formData = new FormData();
     formData.append('kategori_id', categoryId);
@@ -38,16 +37,16 @@ export async function singleRequestData(
     formData.append('email_pemohon', payload.email);
     formData.append('no_telepon', payload.phoneNumber);
     formData.append('nik_pemohon', payload.nik);
-    formData.append('status_permohonan', initStatus);
+    formData.append('status_permohonan', status);
     formData.append('alasan_permohonan', payload.purpose);
     formData.append('operasi_id', operasiId.toString());
 
     const response = await fetch(
-      'https://dbaa-118-99-106-123.ngrok-free.app/api/permohonan/store',
+      'https://835e-103-194-173-102.ngrok-free.app/api/permohonan/store',
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          // 'Content-Type': 'application/json',
           Accept: 'application/json',
           Authorization: `Bearer ${token}`,
           'ngrok-skip-browser-warning': 'true',

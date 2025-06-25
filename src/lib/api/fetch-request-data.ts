@@ -5,7 +5,7 @@ export async function getAllRequestData(
 ): Promise<CheckRequestData[] | null> {
   try {
     const res = await fetch(
-      'https://dbaa-118-99-106-123.ngrok-free.app/api/permohonan',
+      'https://835e-103-194-173-102.ngrok-free.app/api/permohonan',
       {
         headers: {
           'Content-Type': 'application/json',
@@ -38,7 +38,7 @@ export async function getAllRequestData(
       name: item.nama_pemohon,
       email: item.email_pemohon,
       category: item.kategori.kategori,
-      status: item.status,
+      status: item.status_permohonan,
       createdAt: item.created_at,
     }));
     console.log('yaya', data);

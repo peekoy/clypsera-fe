@@ -6,7 +6,7 @@ export async function addUser(payload: AddUserPayload) {
   }
 
   const res = await fetch(
-    'https://dbaa-118-99-106-123.ngrok-free.app/api/auth/register',
+    'https://835e-103-194-173-102.ngrok-free.app/api/auth/register',
     {
       method: 'POST',
       headers: {

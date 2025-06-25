@@ -6,7 +6,7 @@ export async function getDetailedPatient(
 ): Promise<DetailedPatientData[] | null> {
   try {
     const res = await fetch(
-      `https://dbaa-118-99-106-123.ngrok-free.app/api/operasi/show/${id}`,
+      `https://835e-103-194-173-102.ngrok-free.app/api/operasi/show/${id}`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ export async function getDetailedPatient(
       birthDate: item.pasien.tanggal_lahir,
       age: item.pasien.umur_pasien,
       address: item.pasien.alamat_pasien,
-      ethnicity: item.pasien.suku,
+      ethnicity: item.pasien.suku_pasien,
       congenitalAbnormalities: item.pasien.kelainan_kotigental,
       operationDate: item.tanggal_operasi,
       surgicalTechnique: item.tehnik_operasi,
