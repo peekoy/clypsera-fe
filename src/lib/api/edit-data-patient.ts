@@ -3,68 +3,121 @@ import { EditPatientPayload } from '@/types/patient';
 export async function editPatientData(
   token: string | null,
   patientId: number,
-  formValues: EditPatientPayload
-): Promise<EditPatientPayload | null> {
-  // mapping dari camelCase → snake_case
-  const payload = {
-    // data pasien
-    nama_pasien: formValues.patientName,
-    tanggal_lahir: formValues.dateOfBirth,
-    umur_pasien: Number(formValues.patientAge),
-    jenis_kelamin: formValues.patientGender,
-    alamat_pasien: formValues.patientAddress,
-    suku_pasien: formValues.ethnicity,
-    kelainan_kotigental: formValues.congenitalComorbidities,
-    pasien_anak_ke_berapa: Number(formValues.whichChild),
-
-    // riwayat
-    riwayat_kehamilan: formValues.motherPregnancyHistory,
-    riwayat_keluarga_pasien: formValues.familyHistory,
-    riwayat_kawin_kerabat: formValues.residentsMaritalHistory,
-    riwayat_terdahulu: formValues.previousMedicalHistory,
-
-    // data operasi
-    tanggal_operasi: formValues.dateOfSurgery,
-    tehnik_operasi: formValues.operationTechnique,
-    nama_penyelenggara: formValues.providerName,
-    lokasi_operasi: formValues.surgeryLocation,
-    jenis_kelainan_cleft_id: Number(formValues.cleftPalateType),
-    jenis_terapi_id: Number(formValues.therapyType),
-    diagnosis_id: Number(formValues.diagnosis),
-    follow_up: formValues.followUp,
-
-    // // file
-    // foto_sebelum_operasi: formValues.beforeSurgery,
-    // foto_setelah_operasi: formValues.afterSurgery,
-  };
-
-  console.log('pelod', payload);
-  console.log('fomrsvaue', formValues);
-
+  payload: EditPatientPayload,
+  beforeFiles: File[],
+  afterFiles: File[]
+) {
   try {
-    const res = await fetch(
-      `https://835e-103-194-173-102.ngrok-free.app/api/pasien/${patientId}/update?_method=PATCH`,
+    if (!token) throw new Error('Authentication token is required');
+    const diagnosisResponse = await fetch(
+      'https://dd13-118-99-106-123.ngrok-free.app/api/diagnosis',
       {
-        method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           Accept: 'application/json',
           Authorization: `Bearer ${token}`,
           'ngrok-skip-browser-warning': 'true',
         },
-        body: JSON.stringify(payload),
       }
     );
 
-    if (!res.ok) {
-      console.error('Update failed', res.status, await res.text());
-      return null;
+    const diagnosisData = await diagnosisResponse.json();
+    const matchedDiagnosis = diagnosisData.data.find(
+      (item: any) =>
+        item.nama_diagnosis.toLowerCase() === payload.diagnosis.toLowerCase()
+    );
+
+    const jenisKelainanResponse = await fetch(
+      'https://dd13-118-99-106-123.ngrok-free.app/api/jenis-kelainan',
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+          'ngrok-skip-browser-warning': 'true',
+        },
+      }
+    );
+
+    const jenisKelainanData = await jenisKelainanResponse.json();
+    const matchedJenisKelainan = jenisKelainanData.data.find(
+      (item: any) =>
+        item.nama_kelainan.toLowerCase() ===
+        payload.cleftPalateType.toLowerCase()
+    );
+
+    const jenisTerapiResponse = await fetch(
+      'https://dd13-118-99-106-123.ngrok-free.app/api/jenis-terapi',
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+          'ngrok-skip-browser-warning': 'true',
+        },
+      }
+    );
+
+    const jenisTerapiData = await jenisTerapiResponse.json();
+    const matchedJenisTerapi = jenisTerapiData.data.find(
+      (item: any) =>
+        item.nama_terapi.toLowerCase() === payload.therapyType.toLowerCase()
+    );
+
+    console.log(matchedJenisKelainan.id);
+
+    const operatorId = localStorage.getItem('userId') ?? '';
+
+    const formData = new FormData();
+    formData.append('nama_pasien', payload.patientName);
+    formData.append('tanggal_lahir', payload.dateOfBirth);
+    formData.append('umur_pasien', payload.patientAge.toString());
+    formData.append('jenis_kelamin', payload.patientGender);
+    formData.append('alamat_pasien', payload.patientAddress);
+    formData.append('suku_pasien', payload.ethnicity);
+    formData.append('kelainan_kotigental', payload.congenitalComorbidities);
+    formData.append('pasien_anak_ke_berapa', payload.whichChild.toString());
+    formData.append('riwayat_kehamilan', payload.motherPregnancyHistory);
+    formData.append('riwayat_keluarga_pasien', payload.familyHistory);
+    formData.append('riwayat_kawin_berabat', payload.residentsMaritalHistory);
+    formData.append('riwayat_terdahulu', payload.previousMedicalHistory);
+    formData.append('tanggal_operasi', payload.dateOfSurgery);
+    formData.append('tehnik_operasi', payload.operationTechnique);
+    formData.append('nama_penyelenggara', payload.providerName);
+    formData.append('lokasi_operasi', payload.surgeryLocation);
+    formData.append('jenis_kelainan_cleft_id', matchedJenisKelainan.id);
+    formData.append('jenis_terapi_id', matchedJenisTerapi.id);
+    formData.append('diagnosis_id', matchedDiagnosis);
+    formData.append('follow_up', payload.followUp);
+    formData.append('operator_id', operatorId);
+
+    if (beforeFiles[0]) {
+      formData.append('foto_sebelum_operasi', beforeFiles[0]);
+    }
+    if (afterFiles[0]) {
+      formData.append('foto_setelah_operasi', afterFiles[0]);
     }
 
-    const { data } = await res.json();
-    return data;
-  } catch (err) {
-    console.error('Network / parsing error', err);
-    return null;
+    const res = await fetch(
+      `https://dd13-118-99-106-123.ngrok-free.app/api/pasien/${patientId}/update?_method=PATCH`,
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+          'ngrok-skip-browser-warning': 'true',
+        },
+        body: formData,
+      }
+    );
+
+    const result = await res.json();
+    if (!res.ok) {
+      console.error('Error editing patient:', result);
+      throw new Error(result.message || 'Gagal mengedit data pasien');
+    }
+
+    return result;
+  } catch (error: any) {
+    console.error('Upload error:', error);
+    throw new Error(error.message || 'Terjadi kesalahan saat mengupload data.');
   }
 }

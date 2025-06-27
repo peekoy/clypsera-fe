@@ -11,7 +11,7 @@ export async function singleRequestData(
     }
 
     const categoryResponse = await fetch(
-      'https://835e-103-194-173-102.ngrok-free.app/api/kategori_permohonan',
+      'https://dd13-118-99-106-123.ngrok-free.app/api/kategori_permohonan',
       {
         headers: {
           Accept: 'application/json',
@@ -42,7 +42,7 @@ export async function singleRequestData(
     formData.append('operasi_id', operasiId.toString());
 
     const response = await fetch(
-      'https://835e-103-194-173-102.ngrok-free.app/api/permohonan/store',
+      'https://dd13-118-99-106-123.ngrok-free.app/api/permohonan/store',
       {
         method: 'POST',
         headers: {

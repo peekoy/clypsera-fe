@@ -4,7 +4,7 @@ export async function checkIfDataRequested(
 ): Promise<{ requested: boolean; requestId: number | null }> {
   try {
     const response = await fetch(
-      `https://835e-103-194-173-102.ngrok-free.app/api/permohonan/`,
+      `https://dd13-118-99-106-123.ngrok-free.app/api/permohonan/`,
       {
         headers: {
           'Content-Type': 'application/json',
