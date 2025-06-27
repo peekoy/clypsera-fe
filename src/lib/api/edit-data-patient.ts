@@ -9,6 +9,7 @@ export async function editPatientData(
 ) {
   try {
     if (!token) throw new Error('Authentication token is required');
+
     const diagnosisResponse = await fetch(
       'https://dd13-118-99-106-123.ngrok-free.app/api/diagnosis',
       {
@@ -23,8 +24,11 @@ export async function editPatientData(
     const diagnosisData = await diagnosisResponse.json();
     const matchedDiagnosis = diagnosisData.data.find(
       (item: any) =>
-        item.nama_diagnosis.toLowerCase() === payload.diagnosis.toLowerCase()
+        item?.nama_diagnosis?.toLowerCase() === payload.diagnosis.toLowerCase()
     );
+    if (!matchedDiagnosis) {
+      throw new Error(`Diagnosis '${payload.diagnosis}' not found.`);
+    }
 
     const jenisKelainanResponse = await fetch(
       'https://dd13-118-99-106-123.ngrok-free.app/api/jenis-kelainan',
@@ -40,9 +44,14 @@ export async function editPatientData(
     const jenisKelainanData = await jenisKelainanResponse.json();
     const matchedJenisKelainan = jenisKelainanData.data.find(
       (item: any) =>
-        item.nama_kelainan.toLowerCase() ===
+        item?.nama_kelainan?.toLowerCase() ===
         payload.cleftPalateType.toLowerCase()
     );
+    if (!matchedJenisKelainan) {
+      throw new Error(
+        `Cleft Palate Type '${payload.cleftPalateType}' not found.`
+      );
+    }
 
     const jenisTerapiResponse = await fetch(
       'https://dd13-118-99-106-123.ngrok-free.app/api/jenis-terapi',
@@ -59,18 +68,25 @@ export async function editPatientData(
     const jenisTerapiData = await jenisTerapiResponse.json();
     const matchedJenisTerapi = jenisTerapiData.data.find(
       (item: any) =>
-        item.nama_terapi.toLowerCase() === payload.therapyType.toLowerCase()
+        item?.nama_terapi?.toLowerCase() === payload.therapyType.toLowerCase()
     );
-
-    console.log(matchedJenisKelainan.id);
+    if (!matchedJenisTerapi) {
+      throw new Error(`Therapy Type '${payload.therapyType}' not found.`);
+    }
 
     const operatorId = localStorage.getItem('userId') ?? '';
+    const gender =
+      payload.patientGender === 'male'
+        ? 'L'
+        : payload.patientGender === 'female'
+        ? 'P'
+        : '';
 
     const formData = new FormData();
     formData.append('nama_pasien', payload.patientName);
     formData.append('tanggal_lahir', payload.dateOfBirth);
     formData.append('umur_pasien', payload.patientAge.toString());
-    formData.append('jenis_kelamin', payload.patientGender);
+    formData.append('jenis_kelamin', gender);
     formData.append('alamat_pasien', payload.patientAddress);
     formData.append('suku_pasien', payload.ethnicity);
     formData.append('kelainan_kotigental', payload.congenitalComorbidities);
@@ -85,7 +101,7 @@ export async function editPatientData(
     formData.append('lokasi_operasi', payload.surgeryLocation);
     formData.append('jenis_kelainan_cleft_id', matchedJenisKelainan.id);
     formData.append('jenis_terapi_id', matchedJenisTerapi.id);
-    formData.append('diagnosis_id', matchedDiagnosis);
+    formData.append('diagnosis_id', matchedDiagnosis.id);
     formData.append('follow_up', payload.followUp);
     formData.append('operator_id', operatorId);
 
