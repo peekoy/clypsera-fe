@@ -13,18 +13,19 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { DetailedPatientData, EditPatientPayload } from '@/types/patient';
 import { getMyPatientById } from '@/lib/api/fetch-data-patient-by-id';
 import { editPatientData } from '@/lib/api/edit-data-patient';
 
 export default function EditDataForm() {
   const params = useParams();
+  const router = useRouter();
   const [patientData, setPatientData] = useState<DetailedPatientData | null>(
     null
   );
-  console.log(params.id);
-  console.log('konszs', patientData);
+  const [beforeSurgeryFiles, setBeforeSurgeryFiles] = useState<File[]>([]);
+  const [afterSurgeryFiles, setAfterSurgeryFiles] = useState<File[]>([]);
 
   useEffect(() => {
     const fetchPatientById = async () => {
@@ -46,25 +47,60 @@ export default function EditDataForm() {
     fetchPatientById();
   }, []);
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPatientData({
+      ...patientData,
+      [e.target.name]: e.target.value,
+    } as DetailedPatientData);
+  };
+
+  const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setPatientData({
+      ...patientData,
+      [e.target.name]: e.target.value,
+    } as DetailedPatientData);
+  };
+
+  const handleFileUpload = (
+    files: FileList | null,
+    type: 'before' | 'after'
+  ) => {
+    if (files) {
+      const fileArray = Array.from(files);
+      if (type === 'before') {
+        setBeforeSurgeryFiles(fileArray);
+      } else {
+        setAfterSurgeryFiles(fileArray);
+      }
+    }
+  };
+
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const token = localStorage.getItem('token');
     const formData = new FormData(event.currentTarget);
 
-    // Convert FormData to object
-    let formValues: { [key: string]: any } = {};
+    const formValues: { [key: string]: any } = {};
     formData.forEach((value, key) => {
       formValues[key] = value;
     });
 
-    editPatientData(
-      token,
-      Number.parseInt(params.id as string),
-      formValues as EditPatientPayload
-    );
+    console.log(formValues);
 
-    alert('Form submitted successfully!');
-  }
+    try {
+      await editPatientData(
+        token,
+        Number(params.id),
+        formValues as EditPatientPayload,
+        beforeSurgeryFiles,
+        afterSurgeryFiles
+      );
+      alert('Data berhasil diperbarui!');
+      router.push('/my-data');
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
 
   // const handleFileUpload = (
   //   files: FileList | null,
@@ -110,6 +146,8 @@ export default function EditDataForm() {
                 defaultValue={patientData?.name}
                 name='patientName'
                 className='bg-gray-100 border-0'
+                value={patientData?.name}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -124,6 +162,8 @@ export default function EditDataForm() {
                 defaultValue={patientData?.congenitalAbnormalities}
                 name='congenitalComorbidities'
                 className='bg-gray-100 border-0'
+                value={patientData?.congenitalAbnormalities}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -139,6 +179,8 @@ export default function EditDataForm() {
                 type='number'
                 name='whichChild'
                 className='bg-gray-100 border-0'
+                value={patientData?.childNumber}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -157,6 +199,8 @@ export default function EditDataForm() {
                 name='dateOfBirth'
                 type='date'
                 className='bg-gray-100 border-0'
+                value={patientData?.birthDate}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -172,6 +216,8 @@ export default function EditDataForm() {
                 name='dateOfSurgery'
                 type='date'
                 className='bg-gray-100 border-0'
+                value={patientData?.operationDate}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -182,7 +228,15 @@ export default function EditDataForm() {
               >
                 Patient gender
               </label>
-              <Select name='patientGender'>
+              <Select
+                onValueChange={(value) =>
+                  setPatientData({
+                    ...patientData,
+                    gender: value,
+                  } as DetailedPatientData)
+                }
+                name='patientGender'
+              >
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
                   <SelectValue placeholder='Female' />
                 </SelectTrigger>
@@ -207,6 +261,8 @@ export default function EditDataForm() {
                 type='number'
                 name='patientAge'
                 className='bg-gray-100 border-0'
+                value={patientData?.age}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -221,6 +277,8 @@ export default function EditDataForm() {
                 defaultValue={patientData?.surgicalTechnique}
                 name='operationTechnique'
                 className='bg-gray-100 border-0'
+                value={patientData?.surgicalTechnique}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -231,7 +289,15 @@ export default function EditDataForm() {
               >
                 Type of cleft palate categories
               </label>
-              <Select name='cleftPalateType'>
+              <Select
+                onValueChange={(value) =>
+                  setPatientData({
+                    ...patientData,
+                    cleftType: value,
+                  } as DetailedPatientData)
+                }
+                name='cleftPalateType'
+              >
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
                   <SelectValue placeholder='Syndromic' />
                 </SelectTrigger>
@@ -255,6 +321,8 @@ export default function EditDataForm() {
                 defaultValue={patientData?.address}
                 name='patientAddress'
                 className='bg-gray-100 border-0'
+                value={patientData?.address}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -269,6 +337,8 @@ export default function EditDataForm() {
                 defaultValue={patientData?.organizer}
                 name='providerName'
                 className='bg-gray-100 border-0'
+                value={patientData?.organizer}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -279,7 +349,15 @@ export default function EditDataForm() {
               >
                 Type of therapy
               </label>
-              <Select name='therapyType'>
+              <Select
+                onValueChange={(value) =>
+                  setPatientData({
+                    ...patientData,
+                    therapyType: value,
+                  } as DetailedPatientData)
+                }
+                name='therapyType'
+              >
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
                   <SelectValue placeholder='Labioplasty' />
                 </SelectTrigger>
@@ -304,6 +382,8 @@ export default function EditDataForm() {
                 defaultValue={patientData?.ethnicity}
                 name='ethnicity'
                 className='bg-gray-100 border-0'
+                value={patientData?.ethnicity}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -318,6 +398,8 @@ export default function EditDataForm() {
                 defaultValue={patientData?.operationLocation}
                 name='surgeryLocation'
                 className='bg-gray-100 border-0'
+                value={patientData?.operationLocation}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -328,7 +410,15 @@ export default function EditDataForm() {
               >
                 Diagnosis
               </label>
-              <Select name='diagnosis'>
+              <Select
+                onValueChange={(value) =>
+                  setPatientData({
+                    ...patientData,
+                    diagnosis: value,
+                  } as DetailedPatientData)
+                }
+                name='diagnosis'
+              >
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
                   <SelectValue placeholder='Labioschisis' />
                 </SelectTrigger>
@@ -356,6 +446,8 @@ export default function EditDataForm() {
                 name='motherPregnancyHistory'
                 placeholder="Please fill in the patient's mother's pregnancy history"
                 className='bg-gray-100 border-0 min-h-[100px] text-sm'
+                value={patientData?.pregnancyHistory}
+                onChange={handleTextAreaChange}
                 required
               />
             </div>
@@ -371,6 +463,8 @@ export default function EditDataForm() {
                 name='familyHistory'
                 placeholder="Please fill in the patient's family history"
                 className='bg-gray-100 border-0 min-h-[100px] text-sm'
+                value={patientData?.familyHistory}
+                onChange={handleTextAreaChange}
                 required
               />
             </div>
@@ -386,6 +480,8 @@ export default function EditDataForm() {
                 name='residentsMaritalHistory'
                 placeholder="Residents' marital history"
                 className='bg-gray-100 border-0 min-h-[100px] text-sm'
+                value={patientData?.relativeMarriageHistory}
+                onChange={handleTextAreaChange}
                 required
               />
             </div>
@@ -404,6 +500,8 @@ export default function EditDataForm() {
                 name='previousMedicalHistory'
                 placeholder="Please fill in the patient's previous medical history"
                 className='bg-gray-100 border-0 min-h-[120px] text-sm'
+                value={patientData?.previousIllnessHistory}
+                onChange={handleTextAreaChange}
                 required
               />
             </div>
@@ -419,6 +517,8 @@ export default function EditDataForm() {
                 name='followUp'
                 placeholder='Please fill in the follow up'
                 className='bg-gray-100 border-0 min-h-[120px] text-sm'
+                value={patientData?.followUp}
+                onChange={handleTextAreaChange}
                 required
               />
             </div>
@@ -456,9 +556,9 @@ export default function EditDataForm() {
                       type='file'
                       multiple
                       accept='image/*'
-                      // onChange={(e) =>
-                      //   // handleFileUpload(e.target.files, 'before')
-                      // }
+                      onChange={(e) =>
+                        handleFileUpload(e.target.files, 'before')
+                      }
                       className='hidden'
                       id='before-surgery'
                       name='beforeSurgery'
@@ -487,9 +587,9 @@ export default function EditDataForm() {
                       type='file'
                       multiple
                       accept='image/*'
-                      // onChange={(e) =>
-                      //   // handleFileUpload(e.target.files, 'after')
-                      // }
+                      onChange={(e) =>
+                        handleFileUpload(e.target.files, 'after')
+                      }
                       className='hidden'
                       id='after-surgery'
                       name='afterSurgery'
