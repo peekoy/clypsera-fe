@@ -15,3 +15,15 @@ export type RequestDataPayload = {
   category: string;
   purpose: string;
 };
+
+export type RequestDataById = {
+  name: string;
+  email: string;
+  nik: string;
+  phoneNumber: string;
+  category: string;
+  purpose: string;
+  status: string;
+  createdAt: string;
+  requestOperationId: number;
+};

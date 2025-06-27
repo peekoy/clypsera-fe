@@ -10,11 +10,15 @@ import { FilterRequestData } from '@/types/filter';
 import { CheckRequestData } from '@/types/check-request-data';
 import { getAllRequestData } from '@/lib/api/fetch-request-data';
 import { deleteRequest } from '@/lib/api/delete-request';
+import { useRouter } from 'next/navigation';
 
 export default function CheckDataRequestPage() {
+  const router = useRouter();
   const [requestData, setRequestData] = useState<CheckRequestData[]>([]);
   const [isDataRequested, setIsDataRequested] = useState(false);
   const [requestId, setRequestId] = useState<number | null>(null);
+
+  console.log(requestData);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -34,6 +38,10 @@ export default function CheckDataRequestPage() {
 
     fetchUsers();
   }, []);
+
+  const handleGoToCheckRequestUser = (requestId: number) => {
+    router.push(`/requests/${requestId}`);
+  };
 
   const [tempFilters, setTempFilters] = useState<FilterRequestData>({
     category: '',
@@ -193,6 +201,7 @@ export default function CheckDataRequestPage() {
                 <Button
                   size='sm'
                   className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white'
+                  onClick={() => handleGoToCheckRequestUser(item.id)}
                 >
                   View
                 </Button>

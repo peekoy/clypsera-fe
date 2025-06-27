@@ -31,6 +31,10 @@ export function DashboardLayout({ children, user }: DashboardLayoutProps) {
 
   const router = useRouter();
 
+  const handleBack = () => {
+    router.back();
+  };
+
   const handleBackToBrowse = () => {
     router.push('/browse-data');
   };
@@ -62,17 +66,14 @@ export function DashboardLayout({ children, user }: DashboardLayoutProps) {
         <header className='flex h-24 shrink-0 items-center gap-2 border-none bg-white px-4'>
           {title.includes('Operations') ||
           title.includes('Add') ||
-          title.includes('User') ? (
+          title.includes('User') ||
+          title.includes('Requests/') ? (
             <>
               <div className='flex flex-1 items-center justify-between'>
                 <Button
                   variant='outline'
                   className='bg-primary text-white hover:bg-[#4971A9]/90 hover:text-white ml-2 z-10 cursor-pointer'
-                  onClick={
-                    title.includes('Operation')
-                      ? handleBackToBrowse
-                      : handleBackToAdmin
-                  }
+                  onClick={handleBack}
                 >
                   Back
                 </Button>

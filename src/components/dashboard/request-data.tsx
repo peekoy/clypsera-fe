@@ -14,6 +14,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useRouter, usePathname, useParams } from 'next/navigation';
 import { singleRequestData } from '@/lib/api/single-request-data';
+import { RequestDataById } from '@/types/check-request-data';
+import { getRequestDataById } from '@/lib/api/fetch-request-data-by-id';
+import { updateRequestData } from '@/lib/api/update-status';
 
 function convertPathToTitle(path: string) {
   return path
@@ -23,10 +26,12 @@ function convertPathToTitle(path: string) {
 }
 
 export default function RequestData() {
+  const router = useRouter();
   const params = useParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [requestData, setRequestData] = useState<RequestDataById | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -40,6 +45,64 @@ export default function RequestData() {
   useEffect(() => {
     setToken(localStorage.getItem('token'));
   }, []);
+
+  useEffect(() => {
+    const fetchRequestDataById = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('Token tidak ditemukan');
+        return;
+      }
+      try {
+        const user = await getRequestDataById(
+          token,
+          Number.parseInt(params.id as string)
+        );
+        if (user) {
+          setRequestData(user); // Set userData
+        } else {
+          console.log('User tidak ditemukan');
+          // Opsional: Redirect atau tampilkan pesan error
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error);
+        // Opsional: Handle error loading user data
+      }
+    };
+
+    fetchRequestDataById();
+  }, [params.id]);
+
+  const submitStatus = async (status: string) => {
+    if (!token) {
+      alert('Token tidak ditemukan. Silakan login kembali.');
+      return;
+    }
+
+    if (status === 'approved') {
+      try {
+        (await updateRequestData(
+          token,
+          status,
+          Number.parseInt(params.id as string)
+        )) || [];
+        alert('Request Approved');
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      try {
+        (await updateRequestData(
+          token,
+          status,
+          Number.parseInt(params.id as string)
+        )) || [];
+        alert('Request Rejected');
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -55,7 +118,7 @@ export default function RequestData() {
       )) || [];
 
       alert('request Data pasien berhasil! Ditunggu ya');
-
+      router.back();
       // Reset form
       // resetForm();
     } catch (error: any) {
@@ -185,6 +248,7 @@ export default function RequestData() {
                 name=''
                 placeholder='Name'
                 className='bg-gray-100 border-0'
+                value={requestData?.name}
                 disabled
               />
             </div>
@@ -195,6 +259,7 @@ export default function RequestData() {
                 name=''
                 placeholder='Email'
                 className='bg-gray-100 border-0'
+                value={requestData?.email}
                 disabled
               />
             </div>
@@ -206,6 +271,7 @@ export default function RequestData() {
                   name=''
                   placeholder='Number'
                   className='bg-gray-100 border-0 w-100'
+                  value={requestData?.phoneNumber}
                   disabled
                 />
               </div>
@@ -216,6 +282,7 @@ export default function RequestData() {
                   name=''
                   placeholder='NIK'
                   className='bg-gray-100 border-0 w-100'
+                  value={requestData?.nik}
                   disabled
                 />
               </div>
@@ -228,6 +295,7 @@ export default function RequestData() {
                   name=''
                   placeholder='Research'
                   className='bg-gray-100 border-0 w-100'
+                  value={requestData?.category}
                   disabled
                 />
               </div>
@@ -238,23 +306,37 @@ export default function RequestData() {
                   name=''
                   placeholder=''
                   className='bg-gray-100 border-0 w-100'
+                  value={requestData?.purpose}
                   disabled
                 />
               </div>
             </div>
             <Card className='bg-[#4F959D]/11 border-none shadow-none p-4 gap-2 mt-6 w-100 text-sm'>
-              <p>Status: Pending</p>
-              <p>Submission Date: 11 Jul 205 20:31:31</p>
+              <p>Status: {requestData?.status}</p>
+              <p>Submission Date: {requestData?.createdAt}</p>
               {/* tetep id user */}
-              <p>Requested Operation ID: Data ID-16</p>
+              <p>
+                Requested Operation ID: Data ID-
+                {requestData?.requestOperationId}
+              </p>
             </Card>
             <div className='space-x-4'>
-              <Button className='mt-4 bg-[#93BBF3] hover:bg-[#93BBF3]/90 cursor-pointer w-50'>
-                Approve Request
-              </Button>
-              <Button className='hover:bg-[#4971A9]/90 cursor-pointer w-50'>
-                Reject Request
-              </Button>
+              {requestData?.status.toLowerCase() === 'pending' && (
+                <>
+                  <Button
+                    className='mt-4 bg-[#93BBF3] hover:bg-[#93BBF3]/90 cursor-pointer w-50'
+                    onClick={() => submitStatus('approved')}
+                  >
+                    Approve Request
+                  </Button>
+                  <Button
+                    className='hover:bg-[#4971A9]/90 cursor-pointer w-50'
+                    onClick={() => submitStatus('rejected')}
+                  >
+                    Reject Request
+                  </Button>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>
