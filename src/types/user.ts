@@ -16,6 +16,22 @@ export interface AllUsers {
   userCreationDate: string;
 }
 
+export interface User {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  role: string;
+}
+
+export interface EditUserPayload {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  role: string;
+}
+
 export interface AddUserPayload {
   name: string;
   email: string;
