@@ -6,7 +6,7 @@ import { Trash2 } from 'lucide-react';
 import DataTable from '@/components/dashboard/data-table';
 import FilterForm from '@/components/dashboard/filter-form';
 import Pagination from '@/components/dashboard/pagination';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import type { AllUsers } from '@/types/user';
 import { getAllUsers } from '@/lib/api/fetch-user';
 import { FilterAdmin } from '@/types/filter';
@@ -14,6 +14,7 @@ import { deleteUser } from '@/lib/api/delete-user';
 
 export default function AdministratorPage() {
   const router = useRouter();
+  const params = useParams();
 
   const [allUsersData, setAllUsersData] = useState<AllUsers[]>([]);
 
@@ -38,6 +39,10 @@ export default function AdministratorPage() {
 
   const handleGoToAddNewUser = () => {
     router.push('/add-new-user');
+  };
+
+  const handleGoToEditUser = (userId: number) => {
+    router.push(`/user/${userId}/edit`);
   };
 
   const [tempFilters, setTempFilters] = useState<FilterAdmin>({
@@ -176,6 +181,7 @@ export default function AdministratorPage() {
                 <Button
                   size='sm'
                   className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white'
+                  onClick={() => handleGoToEditUser(item.id)}
                 >
                   View
                 </Button>
