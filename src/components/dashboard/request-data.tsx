@@ -59,14 +59,12 @@ export default function RequestData() {
           Number.parseInt(params.id as string)
         );
         if (user) {
-          setRequestData(user); // Set userData
+          setRequestData(user);
         } else {
           console.log('User tidak ditemukan');
-          // Opsional: Redirect atau tampilkan pesan error
         }
       } catch (error) {
         console.error('Error fetching user:', error);
-        // Opsional: Handle error loading user data
       }
     };
 
@@ -87,6 +85,7 @@ export default function RequestData() {
           Number.parseInt(params.id as string)
         )) || [];
         alert('Request Approved');
+        router.back();
       } catch (error) {
         console.log(error);
       }
@@ -98,6 +97,7 @@ export default function RequestData() {
           Number.parseInt(params.id as string)
         )) || [];
         alert('Request Rejected');
+        router.back();
       } catch (error) {
         console.log(error);
       }
