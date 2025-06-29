@@ -16,6 +16,19 @@ export interface AllUsers {
   userCreationDate: string;
 }
 
+export interface UserProfile {
+  name: string;
+  email: string;
+  gender: string;
+  password?: string;
+  age: number;
+  birthDate: string;
+  phone: string;
+  job: string;
+  nik: string;
+  address: string;
+}
+
 export interface User {
   name: string;
   email: string;
