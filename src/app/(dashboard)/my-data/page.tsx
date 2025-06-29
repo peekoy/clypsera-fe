@@ -19,17 +19,13 @@ export default function MyDataPage() {
 
   useEffect(() => {
     const fetchPatient = async () => {
-      const storedUser = localStorage.getItem('user');
-      const parsedUser = storedUser ? JSON.parse(storedUser) : null;
-      const currentUser = parsedUser?.name;
-
       const token = localStorage.getItem('token');
       if (!token) {
         console.log('Token tidak ditemukan');
         return;
       }
       setIsLoading(true);
-      let patient = (await getMyPatient(token, currentUser as string)) || [];
+      let patient = (await getMyPatient(token)) || [];
 
       if (patient) {
         setMyPatient(patient);
