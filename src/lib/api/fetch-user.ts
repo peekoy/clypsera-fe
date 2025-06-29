@@ -2,17 +2,14 @@ import { AllUsers } from '@/types/user';
 
 export async function getAllUsers(token: string): Promise<AllUsers[] | null> {
   try {
-    const res = await fetch(
-      'https://dd13-118-99-106-123.ngrok-free.app/api/user',
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          Authorization: `Bearer ${token}`,
-          'ngrok-skip-browser-warning': 'true',
-        },
-      }
-    );
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'ngrok-skip-browser-warning': 'true',
+      },
+    });
 
     console.log('tes', token);
 

@@ -6,7 +6,7 @@ export async function getDetailedPatient(
 ): Promise<DetailedPatientData[] | null> {
   try {
     const res = await fetch(
-      `https://dd13-118-99-106-123.ngrok-free.app/api/operasi/show/${id}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/operasi/show/${id}`,
       {
         headers: {
           'Content-Type': 'application/json',

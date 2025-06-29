@@ -11,7 +11,7 @@ export async function editPatientData(
     if (!token) throw new Error('Authentication token is required');
 
     const diagnosisResponse = await fetch(
-      'https://dd13-118-99-106-123.ngrok-free.app/api/diagnosis',
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/diagnosis`,
       {
         headers: {
           Accept: 'application/json',
@@ -31,7 +31,7 @@ export async function editPatientData(
     }
 
     const jenisKelainanResponse = await fetch(
-      'https://dd13-118-99-106-123.ngrok-free.app/api/jenis-kelainan',
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/jenis-kelainan`,
       {
         headers: {
           Accept: 'application/json',
@@ -54,7 +54,7 @@ export async function editPatientData(
     }
 
     const jenisTerapiResponse = await fetch(
-      'https://dd13-118-99-106-123.ngrok-free.app/api/jenis-terapi',
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/jenis-terapi`,
       {
         method: 'GET',
         headers: {
@@ -113,7 +113,7 @@ export async function editPatientData(
     }
 
     const res = await fetch(
-      `https://dd13-118-99-106-123.ngrok-free.app/api/pasien/${patientId}/update?_method=PATCH`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/pasien/${patientId}/update?_method=PATCH`,
       {
         method: 'POST',
         headers: {

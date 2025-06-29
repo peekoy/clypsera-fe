@@ -6,7 +6,7 @@ export async function loginUser(
 ): Promise<UserAuth | null> {
   try {
     const res = await fetch(
-      'https://dd13-118-99-106-123.ngrok-free.app/api/auth/login',
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`,
       {
         method: 'POST',
         headers: {
@@ -45,7 +45,7 @@ export async function loginUser(
     localStorage.setItem('userId', userId);
 
     const roleRes = await fetch(
-      `https://dd13-118-99-106-123.ngrok-free.app/api/user/find/${userId}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/find/${userId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

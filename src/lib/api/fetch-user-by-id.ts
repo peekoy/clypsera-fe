@@ -6,7 +6,7 @@ export async function getUserById(
 ): Promise<User | null> {
   try {
     const res = await fetch(
-      `https://dd13-118-99-106-123.ngrok-free.app/api/user/find/${userId}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/find/${userId}`,
       {
         headers: {
           'Content-Type': 'application/json',

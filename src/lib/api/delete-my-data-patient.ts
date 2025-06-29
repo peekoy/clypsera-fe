@@ -1,6 +1,6 @@
 export async function deleteMyDataPatient(token: string, patientId: number) {
   const response = await fetch(
-    `https://dd13-118-99-106-123.ngrok-free.app/api/pasien/${patientId}/delete`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/pasien/${patientId}/delete`,
     {
       method: 'DELETE',
       headers: {

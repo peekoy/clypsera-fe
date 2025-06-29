@@ -1,12 +1,7 @@
-import { RequestDataById } from '@/types/check-request-data';
-
-export async function getRequestDataById(
-  token: string,
-  requestId: number
-): Promise<RequestDataById | null> {
+export async function getTherapyType(token: string) {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/permohonan/find/${requestId}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/jenis-terapi`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -32,19 +27,7 @@ export async function getRequestDataById(
     }
 
     let data = await res.json();
-    data = data.data;
-    console.log('data user', data);
-    return {
-      name: data.nama_pemohon,
-      email: data.email_pemohon,
-      nik: data.nik_pemohon,
-      phoneNumber: data.no_telepon,
-      category: data.kategori.kategori,
-      purpose: data.alasan_permohonan,
-      status: data.status_permohonan,
-      createdAt: data.created_at,
-      requestOperationId: data.operasi_id,
-    };
+    return data;
   } catch (error) {
     console.error('Error fetching users:', error);
     return null;

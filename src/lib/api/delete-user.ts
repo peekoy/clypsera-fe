@@ -1,6 +1,6 @@
 export async function deleteUser(token: string, userId: number) {
   const response = await fetch(
-    `https://dd13-118-99-106-123.ngrok-free.app/api/user/${userId}/delete`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/${userId}/delete`,
     {
       method: 'DELETE',
       headers: {

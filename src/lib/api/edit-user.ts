@@ -11,7 +11,7 @@ export async function editUser(
   }
 
   const res = await fetch(
-    `https://dd13-118-99-106-123.ngrok-free.app/api/auth/update-user/${userId}?_method=PATCH`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/update-user/${userId}?_method=PATCH`,
     {
       method: 'POST',
       headers: {

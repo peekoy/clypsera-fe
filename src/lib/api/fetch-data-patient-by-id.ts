@@ -6,7 +6,7 @@ export async function getMyPatientById(
 ): Promise<DetailedPatientData | null> {
   try {
     const res = await fetch(
-      `https://dd13-118-99-106-123.ngrok-free.app/api/pasien/show/${patientId}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/pasien/show/${patientId}`,
       {
         headers: {
           'Content-Type': 'application/json',

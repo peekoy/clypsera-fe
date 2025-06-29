@@ -6,7 +6,7 @@ export async function addUser(payload: AddUserPayload) {
   }
 
   const res = await fetch(
-    'https://dd13-118-99-106-123.ngrok-free.app/api/auth/register',
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/register`,
     {
       method: 'POST',
       headers: {
