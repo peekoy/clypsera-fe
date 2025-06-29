@@ -8,6 +8,7 @@ export interface PatientData {
   organizer: string;
   operationalTechniques: string;
   uploadedBy: string;
+  therapyType: string;
 }
 
 export interface MyDataPatient {

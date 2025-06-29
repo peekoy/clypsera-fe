@@ -37,9 +37,10 @@ export async function getAllPatient(
       gender: item.jenis_kelamin === 'P' ? 'Women' : 'Men',
       dateOfBirth: item.tanggal_lahir,
       operationDate: item.operasi.tanggal_operasi,
-      organizer: item.operasi.nama_penyelenggara, // ini masih bingung
+      organizer: item.operasi.nama_penyelenggara,
       operationalTechniques: item.operasi.tehnik_operasi,
-      uploadedBy: item.operasi.operator.name, // ini masih bingung
+      uploadedBy: item.operasi.operator.name,
+      therapyType: item.operasi.jenis_terapi.nama_terapi,
     }));
     console.log('yaya', data);
     return data;
