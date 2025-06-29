@@ -51,7 +51,7 @@ export function DashboardLayout({ children, user }: DashboardLayoutProps) {
     <SidebarProvider>
       <RoleBasedSidebar user={user} />
       <SidebarInset>
-        {title.includes('Operations') ? (
+        {title.includes('Operations') || title.includes('Profile') ? (
           <></>
         ) : (
           <Image
@@ -67,7 +67,8 @@ export function DashboardLayout({ children, user }: DashboardLayoutProps) {
           {title.includes('Operations') ||
           title.includes('Add') ||
           title.includes('User') ||
-          title.includes('Requests/') ? (
+          title.includes('Requests/') ||
+          title.includes('Profile') ? (
             <>
               <div className='flex flex-1 items-center justify-between'>
                 <Button

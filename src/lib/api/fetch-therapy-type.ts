@@ -1,4 +1,8 @@
-export async function getTherapyType(token: string) {
+import type { TherapyType } from '@/types/therapy';
+
+export async function getTherapyType(
+  token: string
+): Promise<TherapyType[] | null> {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/jenis-terapi`,
@@ -27,6 +31,12 @@ export async function getTherapyType(token: string) {
     }
 
     let data = await res.json();
+    console.log(data);
+    data = data.data.map((item: any) => ({
+      id: item.id,
+      therapyName: item.nama_terapi,
+      therapyDesc: item.deskripsi_terapi,
+    }));
     return data;
   } catch (error) {
     console.error('Error fetching users:', error);

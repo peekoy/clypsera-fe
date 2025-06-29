@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +19,10 @@ import {
   Cell,
 } from 'recharts';
 import Image from 'next/image';
+import { getTherapyType } from '@/lib/api/fetch-therapy-type';
+import { getAllPatient } from '@/lib/api/fetch-patient';
+import { getAllUsers } from '@/lib/api/fetch-user';
+import { TherapyType } from '@/types/therapy';
 
 const totalUsersData = [
   { role: 'Administrator', users: 1, fill: '#9DDDE4' },
@@ -28,11 +33,11 @@ const totalUsersData = [
   { role: 'Nurse', users: 5, fill: '#4971A9' },
 ];
 
-const therapyData = [
-  { name: 'Labioplasty', value: 6, fill: '#4971A9' },
-  { name: 'Palatoplasty', value: 7, fill: '#4F959D' },
-  { name: 'Gnatoplasty', value: 5, fill: '#8DCCD3' },
-];
+// const therapyData = [
+//   { name: 'Labioplasty', value: 6, fill: '#4971A9' },
+//   { name: 'Palatoplasty', value: 7, fill: '#4F959D' },
+//   { name: 'Gnatoplasty', value: 5, fill: '#8DCCD3' },
+// ];
 
 const genderData = [
   { name: 'Women', value: 11, fill: '#E4ADD4' },
@@ -55,6 +60,63 @@ const chartConfig = {
 };
 
 export default function DashboardPage() {
+  // const [userData, setUserData] = useState({});
+  const [therapyData, setTherapyData] = useState<TherapyType[]>([]);
+  // const [genderData, setGenderData] = useState({});
+
+  // useEffect(() => {
+  //   const fetchUser = async () => {
+  //     const token = localStorage.getItem('token');
+  //     if (!token) {
+  //       console.log('Token tidak ditemukan');
+  //       return;
+  //     }
+  //     let user = (await getAllUsers(token)) || [];
+
+  //     if (user) {
+  //       setUserData(user);
+  //     }
+  //   };
+
+  //   fetchUser();
+  // }, []);
+
+  useEffect(() => {
+    const fetchTherapyType = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('Token tidak ditemukan');
+        return;
+      }
+      let therapy = (await getTherapyType(token)) || [];
+
+      if (therapy) {
+        setTherapyData(therapy);
+      }
+    };
+
+    fetchTherapyType();
+  }, []);
+
+  console.log(therapyData);
+
+  // useEffect(() => {
+  //   const fetchGender = async () => {
+  //     const token = localStorage.getItem('token');
+  //     if (!token) {
+  //       console.log('Token tidak ditemukan');
+  //       return;
+  //     }
+  //     let data = (await getAllPatient(token)) || [];
+
+  //     if (data) {
+  //       setGenderData({ ...data, gender: data[0].gender });
+  //     }
+  //   };
+
+  //   fetchGender();
+  // }, []);
+
   return (
     <div className='relative p-6 space-y-6'>
       <Card className='z-10 bg-[#4971a9]/80 text-white overflow-hidden'>
@@ -145,20 +207,23 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className='pt-0 flex items-center'>
               <div className='space-y-2'>
-                {therapyData.map((item, index) => (
-                  <div key={index} className='flex items-center gap-3'>
-                    <div
-                      className='w-3 h-3 rounded-full flex-shrink-0'
-                      style={{ backgroundColor: item.fill }}
-                    />
-                    <div className='text-sm'>
-                      <span className='font-semibold text-gray-800'>
-                        {item.value}
-                      </span>
-                      <span className='text-gray-600 ml-1'>{item.name}</span>
+                {therapyData.map((item) => {
+                  console.log('Current item in map:', item); // Add this line
+                  return (
+                    <div className='flex items-center gap-3'>
+                      <div
+                        className='w-3 h-3 rounded-full flex-shrink-0'
+                        // style={{ backgroundColor: item.fill }}
+                      />
+                      <div className='text-sm'>
+                        <span className='font-semibold text-gray-800'>
+                          {/* {item.value} */}
+                        </span>
+                        <p className='text-gray-600 ml-1'>{item.therapyName}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               <div className='flex-1 min-h-0'>
                 <ChartContainer config={chartConfig} className='h-[160px]'>
@@ -173,9 +238,9 @@ export default function DashboardPage() {
                       dataKey='value'
                       stroke='none'
                     >
-                      {therapyData.map((entry, index) => (
+                      {/* {therapyData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
+                      ))} */}
                     </Pie>
                     <ChartTooltip content={<ChartTooltipContent />} />
                   </PieChart>
