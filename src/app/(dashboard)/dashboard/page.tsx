@@ -19,30 +19,10 @@ import {
   Cell,
 } from 'recharts';
 import Image from 'next/image';
-import { getTherapyType } from '@/lib/api/fetch-therapy-type';
 import { getAllPatient } from '@/lib/api/fetch-patient';
 import { getAllUsers } from '@/lib/api/fetch-user';
-import { TherapyType } from '@/types/therapy';
-
-const totalUsersData = [
-  { role: 'Administrator', users: 1, fill: '#9DDDE4' },
-  { role: 'Oral Surgeon', users: 3, fill: '#90C7CD' },
-  { role: 'Doctor', users: 1, fill: '#4F959D' },
-  { role: 'Operator', users: 6, fill: '#487F85' },
-  { role: 'researcher', users: 1, fill: '#5285CD' },
-  { role: 'Nurse', users: 5, fill: '#4971A9' },
-];
-
-// const therapyData = [
-//   { name: 'Labioplasty', value: 6, fill: '#4971A9' },
-//   { name: 'Palatoplasty', value: 7, fill: '#4F959D' },
-//   { name: 'Gnatoplasty', value: 5, fill: '#8DCCD3' },
-// ];
-
-const genderData = [
-  { name: 'Women', value: 11, fill: '#E4ADD4' },
-  { name: 'Men', value: 7, fill: '#4971A9' },
-];
+import { PatientData } from '@/types/patient';
+import { AllUsers } from '@/types/user';
 
 const chartConfig = {
   users: {
@@ -60,62 +40,84 @@ const chartConfig = {
 };
 
 export default function DashboardPage() {
-  // const [userData, setUserData] = useState({});
-  const [therapyData, setTherapyData] = useState<TherapyType[]>([]);
-  // const [genderData, setGenderData] = useState({});
-
-  // useEffect(() => {
-  //   const fetchUser = async () => {
-  //     const token = localStorage.getItem('token');
-  //     if (!token) {
-  //       console.log('Token tidak ditemukan');
-  //       return;
-  //     }
-  //     let user = (await getAllUsers(token)) || [];
-
-  //     if (user) {
-  //       setUserData(user);
-  //     }
-  //   };
-
-  //   fetchUser();
-  // }, []);
+  const [totalUsersChartData, setTotalUsersChartData] = useState<
+    { role: string; users: number; fill: string }[]
+  >([]);
+  const [therapyChartData, setTherapyChartData] = useState<
+    { name: string; value: number; fill: string }[]
+  >([]);
+  const [genderChartData, setGenderChartData] = useState<
+    { name: string; value: number; fill: string }[]
+  >([]);
 
   useEffect(() => {
-    const fetchTherapyType = async () => {
+    const fetchData = async () => {
       const token = localStorage.getItem('token');
       if (!token) {
-        console.log('Token tidak ditemukan');
+        console.log('Authentication token not found. Redirecting to login.');
         return;
       }
-      let therapy = (await getTherapyType(token)) || [];
 
-      if (therapy) {
-        setTherapyData(therapy);
+      const users: AllUsers[] | null = await getAllUsers(token);
+      if (users) {
+        const roleCounts: { [key: string]: number } = {};
+        users.forEach((user) => {
+          const roleName = user.role;
+          roleCounts[roleName] = (roleCounts[roleName] || 0) + 1;
+        });
+
+        const colors = ['#90C7CD', '#487F85', '#4971A9', '#808080'];
+        const formattedUsersData = Object.keys(roleCounts).map(
+          (role, index) => ({
+            role: role,
+            users: roleCounts[role],
+            fill: colors[index % colors.length],
+          })
+        );
+        setTotalUsersChartData(formattedUsersData);
+      }
+
+      const patients: PatientData[] | null = await getAllPatient(token);
+      if (patients) {
+        const therapyTypeCounts: { [key: string]: number } = {};
+        patients.forEach((patient) => {
+          therapyTypeCounts[patient.therapyType] =
+            (therapyTypeCounts[patient.therapyType] || 0) + 1;
+        });
+
+        const therapyColors = ['#4971A9', '#4F959D', '#8DCCD3'];
+        const formattedTherapyData = Object.keys(therapyTypeCounts).map(
+          (therapyName, index) => ({
+            name: therapyName,
+            value: therapyTypeCounts[therapyName],
+            fill: therapyColors[index % therapyColors.length],
+          })
+        );
+        setTherapyChartData(formattedTherapyData);
+
+        const genderCounts: { [key: string]: number } = { Men: 0, Women: 0 };
+        patients.forEach((patient) => {
+          if (patient.gender === 'Men') {
+            genderCounts.Men++;
+          } else if (patient.gender === 'Women') {
+            genderCounts.Women++;
+          }
+        });
+
+        const genderColors = ['#E4ADD4', '#4971A9'];
+        const formattedGenderData = Object.keys(genderCounts).map(
+          (gender, index) => ({
+            name: gender,
+            value: genderCounts[gender],
+            fill: genderColors[index % genderColors.length],
+          })
+        );
+        setGenderChartData(formattedGenderData);
       }
     };
 
-    fetchTherapyType();
+    fetchData();
   }, []);
-
-  console.log(therapyData);
-
-  // useEffect(() => {
-  //   const fetchGender = async () => {
-  //     const token = localStorage.getItem('token');
-  //     if (!token) {
-  //       console.log('Token tidak ditemukan');
-  //       return;
-  //     }
-  //     let data = (await getAllPatient(token)) || [];
-
-  //     if (data) {
-  //       setGenderData({ ...data, gender: data[0].gender });
-  //     }
-  //   };
-
-  //   fetchGender();
-  // }, []);
 
   return (
     <div className='relative p-6 space-y-6'>
@@ -164,7 +166,7 @@ export default function DashboardPage() {
             <CardContent className='pt-0'>
               <ChartContainer config={chartConfig} className='h-[350px]'>
                 <BarChart
-                  data={totalUsersData}
+                  data={totalUsersChartData}
                   margin={{ top: 20, right: 20, left: 20, bottom: 0 }}
                 >
                   <CartesianGrid strokeDasharray='3 3' stroke='#f1f5f9' />
@@ -180,15 +182,27 @@ export default function DashboardPage() {
                     tick={{ fontSize: 11, fill: '#64748b' }}
                     axisLine={false}
                     tickLine={false}
-                    domain={[0, 6]}
-                    ticks={[0, 1, 2, 3, 4, 5, 6]}
+                    domain={[
+                      0,
+                      Math.max(...totalUsersChartData.map((d) => d.users), 6),
+                    ]}
+                    ticks={Array.from(
+                      {
+                        length:
+                          Math.max(
+                            ...totalUsersChartData.map((d) => d.users),
+                            6
+                          ) + 1,
+                      },
+                      (_, i) => i
+                    )}
                   />
                   <ChartTooltip
                     content={<ChartTooltipContent />}
                     cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
                   />
                   <Bar dataKey='users' radius={[4, 4, 0, 0]} stroke='none'>
-                    {totalUsersData.map((entry, index) => (
+                    {totalUsersChartData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Bar>
@@ -207,40 +221,38 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className='pt-0 flex items-center'>
               <div className='space-y-2'>
-                {therapyData.map((item) => {
-                  console.log('Current item in map:', item); // Add this line
-                  return (
-                    <div className='flex items-center gap-3'>
-                      <div
-                        className='w-3 h-3 rounded-full flex-shrink-0'
-                        // style={{ backgroundColor: item.fill }}
-                      />
-                      <div className='text-sm'>
-                        <span className='font-semibold text-gray-800'>
-                          {/* {item.value} */}
-                        </span>
-                        <p className='text-gray-600 ml-1'>{item.therapyName}</p>
-                      </div>
+                {therapyChartData.map((item, index) => (
+                  <div key={item.name} className='flex items-center gap-3'>
+                    <div
+                      className='w-3 h-3 rounded-full flex-shrink-0'
+                      style={{ backgroundColor: item.fill }}
+                    />
+                    <div className='text-sm'>
+                      <span className='font-semibold text-gray-800'>
+                        {item.value}
+                      </span>
+                      <p className='text-gray-600 ml-1'>{item.name}</p>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
               <div className='flex-1 min-h-0'>
                 <ChartContainer config={chartConfig} className='h-[160px]'>
                   <PieChart>
                     <Pie
-                      data={therapyData}
+                      data={therapyChartData}
                       cx='50%'
                       cy='50%'
                       innerRadius={35}
                       outerRadius={60}
                       paddingAngle={2}
                       dataKey='value'
+                      nameKey='name'
                       stroke='none'
                     >
-                      {/* {therapyData.map((entry, index) => (
+                      {therapyChartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))} */}
+                      ))}
                     </Pie>
                     <ChartTooltip content={<ChartTooltipContent />} />
                   </PieChart>
@@ -257,8 +269,8 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className='pt-0 flex-1 flex'>
               <div className='flex justify-center gap-6'>
-                {genderData.map((item, index) => (
-                  <div key={index} className='flex items-center gap-2'>
+                {genderChartData.map((item, index) => (
+                  <div key={item.name} className='flex items-center gap-2'>
                     <div
                       className='w-3 h-3 rounded-full flex-shrink-0'
                       style={{ backgroundColor: item.fill }}
@@ -276,14 +288,15 @@ export default function DashboardPage() {
                 <ChartContainer config={chartConfig} className='h-[160px]'>
                   <PieChart>
                     <Pie
-                      data={genderData}
+                      data={genderChartData}
                       cx='50%'
                       cy='50%'
                       outerRadius={60}
                       dataKey='value'
+                      nameKey='name'
                       stroke='none'
                     >
-                      {genderData.map((entry, index) => (
+                      {genderChartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
                     </Pie>
