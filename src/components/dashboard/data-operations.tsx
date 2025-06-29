@@ -15,12 +15,13 @@ export default function OperationDetail() {
   const router = useRouter();
   const [isDataRequested, setIsDataRequested] = useState(false);
   const [requestId, setRequestId] = useState<number | null>(null);
+  const [statusRequest, setStatusRequest] = useState('');
   const [detailedPatient, setDetailedPatient] = useState<DetailedPatientData[]>(
     []
   );
   const [isLoading, setIsLoading] = useState(true);
 
-  console.log('tata', params);
+  console.log('tata', detailedPatient);
 
   useEffect(() => {
     const fetchDetailedPatient = async () => {
@@ -40,13 +41,14 @@ export default function OperationDetail() {
 
       if (patient.length > 0) {
         setDetailedPatient(patient);
-        const { requested, requestId } = await checkIfDataRequested(
+        const { requested, requestId, status } = await checkIfDataRequested(
           token,
           patient[0].id
         );
         console.log(requestId);
         setIsDataRequested(requested);
         setRequestId(requestId);
+        setStatusRequest(status);
       }
       setIsLoading(false);
     };
@@ -63,6 +65,10 @@ export default function OperationDetail() {
 
   const handleRequestData = () => {
     router.push(`/operations/${detailPatient.id}/request`);
+  };
+
+  const handleDownloadData = () => {
+    router.push('');
   };
 
   const handleCancelRequest = async () => {
@@ -108,12 +114,39 @@ export default function OperationDetail() {
           <div className='flex items-center gap-4'>
             <CardTitle className='text-2xl font-bold'>Patient Data</CardTitle>
           </div>
-          <Button
-            className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white px-6 disabled:opacity-50'
-            onClick={isDataRequested ? handleCancelRequest : handleRequestData}
-          >
-            {isDataRequested ? 'Cancel Request' : 'Request Data'}
-          </Button>
+          <div className='space-x-4'>
+            {statusRequest === '' ? (
+              <></>
+            ) : (
+              <Button
+                className='bg-[#93BBF3] hover:bg-[#93BBF3]/90 cursor-pointer disabled:opacity-100'
+                disabled
+              >
+                {statusRequest === 'pending'
+                  ? 'Request Pending'
+                  : statusRequest === 'approved'
+                  ? 'Request Approved'
+                  : 'Request Data'}
+              </Button>
+            )}
+
+            <Button
+              className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white px-6 disabled:opacity-50'
+              onClick={
+                statusRequest === 'pending'
+                  ? handleCancelRequest
+                  : statusRequest === 'approved'
+                  ? handleDownloadData
+                  : handleRequestData
+              }
+            >
+              {statusRequest === 'pending'
+                ? 'Cancel Request'
+                : statusRequest === 'approved'
+                ? 'Download Data'
+                : 'Request Data'}
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className='flex justify-between'>
