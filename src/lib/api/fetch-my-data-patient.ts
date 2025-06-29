@@ -1,10 +1,10 @@
 import { PatientData } from '@/types/patient';
 
 export async function getMyPatient(
-  token: string,
-  currentUser: string
+  token: string
 ): Promise<PatientData[] | null> {
   try {
+    const userId = localStorage.getItem('userId');
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/pasien`, {
       headers: {
         'Content-Type': 'application/json',
@@ -14,7 +14,7 @@ export async function getMyPatient(
       },
     });
 
-    console.log('tes', currentUser);
+    // console.log('tes', currentUser);
 
     const contentType = res.headers.get('content-type');
 
@@ -33,8 +33,10 @@ export async function getMyPatient(
     let data = await res.json();
 
     let filteredData = data.data.filter(
-      (item: any) => item.operasi.operator.name === currentUser
+      (item: any) => item.operasi.operator.id === Number(userId)
     );
+
+    console.log(filteredData);
 
     filteredData = filteredData.map((item: any) => ({
       id: item.id,
