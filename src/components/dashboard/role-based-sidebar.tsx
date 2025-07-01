@@ -77,7 +77,6 @@ export function RoleBasedSidebar({ user }: RoleBasedSidebarProps) {
           </Avatar>
 
           <div className='cursor-pointer' onClick={toggleProfileMenu}>
-            {/* Profile Info */}
             <div className='text-center mt-2'>
               <div className='flex items-center gap-2 justify-center'>
                 <h3 className='font-semibold text-lg text-white'>

@@ -5,6 +5,7 @@ import {
   Settings,
   FileCheck,
   LayoutDashboard,
+  Newspaper,
 } from 'lucide-react';
 import type { MenuSection, UserRole } from '@/types/user';
 import Image from 'next/image';
@@ -40,6 +41,12 @@ export const menuSections: MenuSection[] = [
         title: 'MyData',
         url: '/my-data',
         icon: Database,
+        roles: ['admin', 'operator'],
+      },
+      {
+        title: 'Upload News',
+        url: '/upload-news',
+        icon: Newspaper,
         roles: ['admin', 'operator'],
       },
     ],
