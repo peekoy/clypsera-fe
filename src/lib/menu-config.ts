@@ -6,6 +6,7 @@ import {
   FileCheck,
   LayoutDashboard,
   Newspaper,
+  TextSearch,
 } from 'lucide-react';
 import type { MenuSection, UserRole } from '@/types/user';
 import Image from 'next/image';
@@ -43,11 +44,22 @@ export const menuSections: MenuSection[] = [
         icon: Database,
         roles: ['admin', 'operator'],
       },
+    ],
+  },
+  {
+    title: 'News',
+    items: [
+      {
+        title: 'Browse News',
+        url: '/browse-news',
+        icon: TextSearch,
+        roles: ['operator'],
+      },
       {
         title: 'Upload News',
         url: '/upload-news',
         icon: Newspaper,
-        roles: ['admin', 'operator'],
+        roles: ['operator'],
       },
     ],
   },

@@ -28,3 +28,10 @@ export type FilterAdmin = {
   email: string;
   role: UserRole;
 };
+
+export type FilterNews = {
+  title: string;
+  source: string;
+  status: string;
+  content: string;
+};
