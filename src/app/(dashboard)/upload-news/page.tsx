@@ -147,7 +147,7 @@ export default function CleftLipPatientForm() {
               <div className='space-y-4'>
                 <div>
                   <label className='text-sm font-medium text-gray-700 mb-2 block'>
-                    Photo before surgery
+                    News Image
                   </label>
                   <div className='border-2 border-dashed border-[#4971A9] bg-[#4971A9]/11 rounded-lg p-8 text-center'>
                     <input
