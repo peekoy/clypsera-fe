@@ -13,12 +13,12 @@ export async function Hero() {
           className='w-full'
         />
       </div>
-      <div className='flex flex-row gap-30 pt-20 pb-100'>
-        <div className='flex flex-col gap-8 justify-center w-200'>
-          <p className='text-[64px] text-white font-semibold text-shadow-lg'>
+      <div className='flex flex-col md:flex-row gap-8 md:gap-30 pt-20 pb-40 md:pb-100'>
+        <div className='flex flex-col gap-8 justify-center w-full md:w-200'>
+          <p className='text-4xl md:text-[64px] text-white font-semibold text-shadow-lg text-center md:text-left'>
             Smarter Healthcare Through Cleft Data
           </p>
-          <p className='text-2xl text-white font-semibold'>
+          <p className='text-lg md:text-2xl text-white font-semibold text-center md:text-left'>
             Clypsera is Indonesia’s trusted source for cleft lip and palate case
             br data. Our platform provides accurate, accessible, and up-to-date
             information to support research, healthcare, and better outcomes for

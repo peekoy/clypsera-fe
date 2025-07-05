@@ -21,7 +21,6 @@ export async function uploadPatientData(
         },
       }
     );
-
     const diagnosisData = await diagnosisResponse.json();
     const matchedDiagnosis = diagnosisData.data.find(
       (item: any) =>
@@ -38,7 +37,6 @@ export async function uploadPatientData(
         },
       }
     );
-
     const jenisKelainanData = await jenisKelainanResponse.json();
     const matchedJenisKelainan = jenisKelainanData.data.find(
       (item: any) =>
@@ -57,12 +55,18 @@ export async function uploadPatientData(
         },
       }
     );
-
     const jenisTerapiData = await jenisTerapiResponse.json();
     const matchedJenisTerapi = jenisTerapiData.data.find(
       (item: any) =>
         item.nama_terapi.toLowerCase() === payload.therapyType.toLowerCase()
     );
+
+    // --- PENAMBAHAN VALIDASI DI SINI ---
+    if (!matchedDiagnosis || !matchedJenisKelainan || !matchedJenisTerapi) {
+      throw new Error(
+        'Pastikan semua kolom dropdown (Diagnosis, Cleft Palate Type, Therapy Type) telah terisi dengan benar.'
+      );
+    }
 
     const operatorId = localStorage.getItem('userId');
 
@@ -97,14 +101,11 @@ export async function uploadPatientData(
       formData.append('foto_setelah_operasi', afterFiles[0]);
     }
 
-    // console.log('Data yang dikirim:', dataToSend);
-
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/pasien/store`,
       {
         method: 'POST',
         headers: {
-          // 'Content-Type': 'application/json',
           Accept: 'application/json',
           Authorization: `Bearer ${token}`,
           'ngrok-skip-browser-warning': 'true',
@@ -124,6 +125,7 @@ export async function uploadPatientData(
     return result;
   } catch (error: any) {
     console.error('Upload error:', error);
-    throw new Error(error.message || 'Terjadi kesalahan saat mengupload data.');
+    // Lempar kembali error agar bisa ditangkap oleh komponen UI
+    throw error;
   }
 }

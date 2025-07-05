@@ -137,6 +137,13 @@
   .surface-color {
     color: #f6f8d5;
   }
+  input[type='date']::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 0.75rem; /* Sesuaikan dengan padding kanan input (px-3) */
+    top: 60%;
+    transform: translateY(-50%);
+    cursor: pointer;
+  }
 }
 
 @layer base {

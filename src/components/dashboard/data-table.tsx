@@ -79,7 +79,7 @@ export default function DataTable<T>({
                 >
                   {columns.map((col) => (
                     <TableCell key={String(col.key)}>
-                      {String(item[col.key])}
+                      {String(item[col.key]).substring(0, 50)}
                     </TableCell>
                   ))}
                   {actions && <TableCell>{actions(item)}</TableCell>}

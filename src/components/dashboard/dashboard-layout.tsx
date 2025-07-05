@@ -68,7 +68,8 @@ export function DashboardLayout({ children, user }: DashboardLayoutProps) {
           title.includes('Add') ||
           title.includes('User') ||
           title.includes('Requests/') ||
-          title.includes('Profile') ? (
+          title.includes('Profile') ||
+          title.includes('News/') ? (
             <>
               <div className='flex flex-1 items-center justify-between'>
                 <Button

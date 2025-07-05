@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent, useEffect } from 'react';
+import { useState, type FormEvent, useEffect, DragEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,20 +12,41 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, X } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus, X } from 'lucide-react';
 import { uploadPatientData } from '@/lib/api/upload-patient';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { cn } from '@/lib/utils';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import Swal from 'sweetalert2';
 
 export default function CleftLipPatientForm() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     patientName: '',
     congenitalComorbidities: '',
-    whichChild: 0,
+    whichChild: '',
     dateOfBirth: '',
     patientGender: '',
     dateOfSurgery: '',
-    patientAge: 0,
+    patientAge: '',
     operationTechnique: '',
     patientAddress: '',
     providerName: '',
@@ -45,8 +66,8 @@ export default function CleftLipPatientForm() {
   const [afterSurgeryFiles, setAfterSurgeryFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [token, setToken] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     setToken(localStorage.getItem('token'));
@@ -60,56 +81,46 @@ export default function CleftLipPatientForm() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError('');
-    setSuccess('');
+  async function handleConfirmSubmit() {
     setLoading(true);
+    setError('');
+
+    const payload = {
+      ...formData,
+      whichChild: Number(formData.whichChild) || 0,
+      patientAge: Number(formData.patientAge) || 0,
+    };
 
     try {
       await uploadPatientData(
         token,
-        formData,
+        payload,
         beforeSurgeryFiles,
         afterSurgeryFiles
       );
 
-      alert('Data pasien berhasil diupload!');
-      router.push('/my-data');
-
-      // Reset form
-      // resetForm();
+      Swal.fire({
+        title: 'Success!',
+        text: 'Patient data has been successfully uploaded.',
+        icon: 'success',
+        confirmButtonColor: '#3085d6',
+      }).then(() => {
+        router.push('/my-data');
+      });
     } catch (error: any) {
-      setError(error.message || 'Gagal mengupload data. Silakan coba lagi.');
+      const errorMessage =
+        error.message || 'Gagal mengupload data. Silakan coba lagi.';
+      setError(errorMessage);
+      Swal.fire({
+        title: 'Upload Failed!',
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonColor: '#d33',
+      });
     } finally {
       setLoading(false);
     }
   }
-
-  // const resetForm = () => {
-  //   setPatientName('');
-  //   setCongenitalComorbidities('');
-  //   setWhichChild('');
-  //   setDateOfBirth('');
-  //   setPatientGender('');
-  //   setDateOfSurgery('');
-  //   setPatientAge(undefined);
-  //   setOperationTechnique('');
-  //   setPatientAddress('');
-  //   setProviderName('');
-  //   setEthnicity('');
-  //   setSurgeryLocation('');
-  //   setMotherPregnancyHistory('');
-  //   setFamilyHistory('');
-  //   setResidentsMaritalHistory('');
-  //   setPreviousMedicalHistory('');
-  //   setFollowUp('');
-  //   setCleftPalateType('');
-  //   setTherapyType('');
-  //   setDiagnosis('');
-  //   setBeforeSurgeryFiles([]);
-  //   setAfterSurgeryFiles([]);
-  // };
 
   const handleFileUpload = (
     files: FileList | null,
@@ -117,8 +128,6 @@ export default function CleftLipPatientForm() {
   ) => {
     if (files) {
       const fileArray = Array.from(files);
-
-      // Validate file types
       const validFiles = fileArray.filter((file) => {
         const isImage = file.type.startsWith('image/');
         if (!isImage) {
@@ -136,39 +145,65 @@ export default function CleftLipPatientForm() {
     }
   };
 
-  // const removeFile = (index: number, type: 'before' | 'after') => {
-  //   if (type === 'before') {
-  //     setBeforeSurgeryFiles((prev) => prev.filter((_, i) => i !== index));
-  //   } else {
-  //     setAfterSurgeryFiles((prev) => prev.filter((_, i) => i !== index));
-  //   }
-  // };
+  const removeFile = (index: number, type: 'before' | 'after') => {
+    if (type === 'before') {
+      setBeforeSurgeryFiles((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      setAfterSurgeryFiles((prev) => prev.filter((_, i) => i !== index));
+    }
+  };
 
-  // const FileList = ({
-  //   files,
-  //   type,
-  // }: {
-  //   files: File[];
-  //   type: 'before' | 'after';
-  // }) => (
-  //   <div className='mt-2 space-y-2'>
-  //     {files.map((file, index) => (
-  //       <div
-  //         key={index}
-  //         className='flex items-center justify-between bg-white p-2 rounded border'
-  //       >
-  //         <span className='text-sm text-gray-600 truncate'>{file.name}</span>
-  //         <button
-  //           type='button'
-  //           onClick={() => removeFile(index, type)}
-  //           className='text-red-500 hover:text-red-700'
-  //         >
-  //           <X className='h-4 w-4' />
-  //         </button>
-  //       </div>
-  //     ))}
-  //   </div>
-  // );
+  const handleDragEvents = (
+    e: DragEvent<HTMLDivElement>,
+    isEntering: boolean
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isEntering) {
+      setIsDragging(true);
+    } else {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDrop = (
+    e: DragEvent<HTMLDivElement>,
+    type: 'before' | 'after'
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    handleFileUpload(e.dataTransfer.files, type);
+  };
+
+  const FilePreview = ({
+    files,
+    type,
+  }: {
+    files: File[];
+    type: 'before' | 'after';
+  }) => (
+    <div className='mt-2 grid grid-cols-2 gap-2'>
+      {files.map((file, index) => (
+        <div key={index} className='relative'>
+          <Image
+            src={URL.createObjectURL(file)}
+            alt={`preview ${index}`}
+            width={100}
+            height={100}
+            className='w-full h-auto rounded-md'
+          />
+          <button
+            type='button'
+            onClick={() => removeFile(index, type)}
+            className='absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-700'
+          >
+            <X className='h-3 w-3' />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <Card className='w-full p-0'>
@@ -177,17 +212,40 @@ export default function CleftLipPatientForm() {
           <CardTitle className='text-xl font-medium'>
             Upload Cleft Lip Patient Data
           </CardTitle>
-          <Button
-            type='submit'
-            form='cleft-lip-form'
-            className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white px-6'
-          >
-            Submit
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                type='button'
+                className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white px-6'
+                disabled={loading}
+              >
+                {loading ? 'Submitting...' : 'Submit'}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Confirm Data Submission</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure all the data you entered is correct? This action
+                  will submit the patient data to the system.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleConfirmSubmit}>
+                  Yes, Submit Data
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </CardHeader>
       <CardContent className='px-6 pb-6'>
-        <form id='cleft-lip-form' onSubmit={onSubmit} className='space-y-6'>
+        <form
+          id='cleft-lip-form'
+          onSubmit={(e) => e.preventDefault()}
+          className='space-y-6 pt-6'
+        >
           <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
             <div className='space-y-2'>
               <label
@@ -202,6 +260,7 @@ export default function CleftLipPatientForm() {
                 className='bg-gray-100 border-0'
                 value={formData.patientName}
                 onChange={handleChange}
+                placeholder="Enter patient's name"
                 required
               />
             </div>
@@ -218,6 +277,7 @@ export default function CleftLipPatientForm() {
                 className='bg-gray-100 border-0'
                 value={formData.congenitalComorbidities}
                 onChange={handleChange}
+                placeholder='Enter congenital comorbidities'
                 required
               />
             </div>
@@ -234,6 +294,7 @@ export default function CleftLipPatientForm() {
                 className='bg-gray-100 border-0'
                 value={formData.whichChild}
                 onChange={handleChange}
+                placeholder='Enter child number'
                 required
               />
             </div>
@@ -247,14 +308,41 @@ export default function CleftLipPatientForm() {
               >
                 Date of Birth
               </label>
-              <Input
-                type='date'
-                name='dateOfBirth'
-                className='bg-gray-100 border-0'
-                value={formData.dateOfBirth}
-                onChange={handleChange}
-                required
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={'outline'}
+                    className={cn(
+                      'w-full justify-start text-left font-normal bg-gray-100 border-0',
+                      !formData.dateOfBirth && 'text-muted-foreground'
+                    )}
+                  >
+                    <CalendarIcon className='mr-2 h-4 w-4' />
+                    {formData.dateOfBirth ? (
+                      format(new Date(formData.dateOfBirth), 'PPP')
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className='w-auto p-0'>
+                  <Calendar
+                    mode='single'
+                    selected={
+                      formData.dateOfBirth
+                        ? new Date(formData.dateOfBirth)
+                        : undefined
+                    }
+                    onSelect={(date) =>
+                      setFormData({
+                        ...formData,
+                        dateOfBirth: date ? format(date, 'yyyy-MM-dd') : '',
+                      })
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div className='space-y-2'>
               <label
@@ -263,14 +351,41 @@ export default function CleftLipPatientForm() {
               >
                 Date of Surgery
               </label>
-              <Input
-                type='date'
-                name='dateOfSurgery'
-                className='bg-gray-100 border-0'
-                value={formData.dateOfSurgery}
-                onChange={handleChange}
-                required
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={'outline'}
+                    className={cn(
+                      'w-full justify-start text-left font-normal bg-gray-100 border-0',
+                      !formData.dateOfSurgery && 'text-muted-foreground'
+                    )}
+                  >
+                    <CalendarIcon className='mr-2 h-4 w-4' />
+                    {formData.dateOfSurgery ? (
+                      format(new Date(formData.dateOfSurgery), 'PPP')
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className='w-auto p-0'>
+                  <Calendar
+                    mode='single'
+                    selected={
+                      formData.dateOfSurgery
+                        ? new Date(formData.dateOfSurgery)
+                        : undefined
+                    }
+                    onSelect={(date) =>
+                      setFormData({
+                        ...formData,
+                        dateOfSurgery: date ? format(date, 'yyyy-MM-dd') : '',
+                      })
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div className='space-y-2'>
               <label
@@ -286,7 +401,7 @@ export default function CleftLipPatientForm() {
                 name='patientGender'
               >
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
-                  <SelectValue placeholder='Female' />
+                  <SelectValue placeholder='Select gender' />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value='P'>Female</SelectItem>
@@ -310,6 +425,7 @@ export default function CleftLipPatientForm() {
                 className='bg-gray-100 border-0'
                 value={formData.patientAge}
                 onChange={handleChange}
+                placeholder="Enter patient's age"
                 required
               />
             </div>
@@ -326,6 +442,7 @@ export default function CleftLipPatientForm() {
                 className='bg-gray-100 border-0'
                 value={formData.operationTechnique}
                 onChange={handleChange}
+                placeholder='Enter operation technique'
                 required
               />
             </div>
@@ -343,7 +460,7 @@ export default function CleftLipPatientForm() {
                 name='cleftPalateType'
               >
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
-                  <SelectValue placeholder='Sindromic Cleft' />
+                  <SelectValue placeholder='Select cleft palate type' />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value='Sindromic Cleft'>
@@ -371,6 +488,7 @@ export default function CleftLipPatientForm() {
                 className='bg-gray-100 border-0'
                 value={formData.patientAddress}
                 onChange={handleChange}
+                placeholder="Enter patient's address"
                 required
               />
             </div>
@@ -387,6 +505,7 @@ export default function CleftLipPatientForm() {
                 className='bg-gray-100 border-0'
                 value={formData.providerName}
                 onChange={handleChange}
+                placeholder='Enter provider name'
                 required
               />
             </div>
@@ -404,7 +523,7 @@ export default function CleftLipPatientForm() {
                 name='therapyType'
               >
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
-                  <SelectValue placeholder='Labioshisis' />
+                  <SelectValue placeholder='Select therapy type' />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value='Labioshisis'>Labioshisis</SelectItem>
@@ -431,6 +550,7 @@ export default function CleftLipPatientForm() {
                 className='bg-gray-100 border-0'
                 value={formData.ethnicity}
                 onChange={handleChange}
+                placeholder='Enter ethnicity'
                 required
               />
             </div>
@@ -447,6 +567,7 @@ export default function CleftLipPatientForm() {
                 className='bg-gray-100 border-0'
                 value={formData.surgeryLocation}
                 onChange={handleChange}
+                placeholder='Enter surgery location'
                 required
               />
             </div>
@@ -464,7 +585,7 @@ export default function CleftLipPatientForm() {
                 name='diagnosis'
               >
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
-                  <SelectValue placeholder='Labioschisis' />
+                  <SelectValue placeholder='Select diagnosis' />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value='labioschisis'>Labioschisis</SelectItem>
@@ -563,6 +684,7 @@ export default function CleftLipPatientForm() {
             </div>
           </div>
 
+          {/* Photo Upload Section */}
           <div className='bg-[#4F959D]/11 p-6 rounded-lg'>
             <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
               <div>
@@ -590,62 +712,88 @@ export default function CleftLipPatientForm() {
                   <label className='text-sm font-medium text-gray-700 mb-2 block'>
                     Photo before surgery
                   </label>
-                  <div className='border-2 border-dashed border-[#4971A9] bg-[#4971A9]/11 rounded-lg p-8 text-center'>
-                    <input
-                      type='file'
-                      multiple
-                      accept='image/*'
-                      onChange={(e) =>
-                        handleFileUpload(e.target.files, 'before')
-                      }
-                      className='hidden'
-                      id='before-surgery'
-                      name='beforeSurgery'
-                    />
-                    <label
-                      htmlFor='before-surgery'
-                      className='flex items-center justify-center gap-2 cursor-pointer'
+                  {beforeSurgeryFiles.length === 0 ? (
+                    <div
+                      className={cn(
+                        'border-2 border-dashed border-[#4971A9] bg-[#4971A9]/11 rounded-lg p-8 text-center transition-colors',
+                        isDragging && 'bg-blue-200 border-blue-500'
+                      )}
+                      onDragEnter={(e) => handleDragEvents(e, true)}
+                      onDragLeave={(e) => handleDragEvents(e, false)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => handleDrop(e, 'before')}
                     >
-                      <Plus className='h-6 w-6 primary-color' />
-                      <p className='primary-color text-sm'>
-                        Add files{' '}
-                        <span className='text-[#868686]'>
-                          or drop files here
-                        </span>
-                      </p>
-                    </label>
-                  </div>
+                      <input
+                        type='file'
+                        multiple
+                        accept='image/*'
+                        onChange={(e) =>
+                          handleFileUpload(e.target.files, 'before')
+                        }
+                        className='hidden'
+                        id='before-surgery'
+                        name='beforeSurgery'
+                      />
+                      <label
+                        htmlFor='before-surgery'
+                        className='flex items-center justify-center gap-2 cursor-pointer'
+                      >
+                        <Plus className='h-6 w-6 primary-color' />
+                        <p className='primary-color text-sm'>
+                          Add files{' '}
+                          <span className='text-[#868686]'>
+                            or drop files here
+                          </span>
+                        </p>
+                      </label>
+                    </div>
+                  ) : (
+                    <FilePreview files={beforeSurgeryFiles} type='before' />
+                  )}
                 </div>
 
                 <div>
                   <label className='text-sm font-medium text-gray-700 mb-2 block'>
                     Photo after surgery
                   </label>
-                  <div className='border-2 border-dashed border-[#4971A9] bg-[#4971A9]/11 rounded-lg p-8 text-center'>
-                    <input
-                      type='file'
-                      multiple
-                      accept='image/*'
-                      onChange={(e) =>
-                        handleFileUpload(e.target.files, 'after')
-                      }
-                      className='hidden'
-                      id='after-surgery'
-                      name='afterSurgery'
-                    />
-                    <label
-                      htmlFor='after-surgery'
-                      className='flex items-center justify-center gap-2 cursor-pointer'
+                  {afterSurgeryFiles.length === 0 ? (
+                    <div
+                      className={cn(
+                        'border-2 border-dashed border-[#4971A9] bg-[#4971A9]/11 rounded-lg p-8 text-center transition-colors',
+                        isDragging && 'bg-blue-200 border-blue-500'
+                      )}
+                      onDragEnter={(e) => handleDragEvents(e, true)}
+                      onDragLeave={(e) => handleDragEvents(e, false)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => handleDrop(e, 'after')}
                     >
-                      <Plus className='h-6 w-6 primary-color' />
-                      <p className='primary-color text-sm'>
-                        Add files{' '}
-                        <span className='text-[#868686]'>
-                          or drop files here
-                        </span>
-                      </p>
-                    </label>
-                  </div>
+                      <input
+                        type='file'
+                        multiple
+                        accept='image/*'
+                        onChange={(e) =>
+                          handleFileUpload(e.target.files, 'after')
+                        }
+                        className='hidden'
+                        id='after-surgery'
+                        name='afterSurgery'
+                      />
+                      <label
+                        htmlFor='after-surgery'
+                        className='flex items-center justify-center gap-2 cursor-pointer'
+                      >
+                        <Plus className='h-6 w-6 primary-color' />
+                        <p className='primary-color text-sm'>
+                          Add files{' '}
+                          <span className='text-[#868686]'>
+                            or drop files here
+                          </span>
+                        </p>
+                      </label>
+                    </div>
+                  ) : (
+                    <FilePreview files={afterSurgeryFiles} type='after' />
+                  )}
                 </div>
               </div>
             </div>

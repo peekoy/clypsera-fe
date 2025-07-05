@@ -1,9 +1,12 @@
+// src/app/(dashboard)/layout.tsx
+
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
 import type { UserAuth } from '@/types/user';
+import { Toaster } from '@/components/ui/sonner'; // <-- 1. Impor Toaster
 
 export default function DashboardLayoutWrapper({
   children,
@@ -39,5 +42,10 @@ export default function DashboardLayoutWrapper({
     );
   }
 
-  return <DashboardLayout user={user}>{children}</DashboardLayout>;
+  return (
+    <DashboardLayout user={user}>
+      {children}
+      <Toaster richColors /> {/* <-- 2. Tambahkan komponen ini */}
+    </DashboardLayout>
+  );
 }
