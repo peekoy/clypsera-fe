@@ -19,10 +19,7 @@ import {
   Cell,
 } from 'recharts';
 import Image from 'next/image';
-import { getAllPatient } from '@/lib/api/fetch-patient';
-import { getAllUsers } from '@/lib/api/fetch-user';
-import { PatientData } from '@/types/patient';
-import { AllUsers } from '@/types/user';
+import { getChartData } from '@/lib/api/fetch-chart';
 
 const chartConfig = {
   users: {
@@ -58,61 +55,53 @@ export default function DashboardPage() {
         return;
       }
 
-      const users: AllUsers[] | null = await getAllUsers(token);
-      if (users) {
-        const roleCounts: { [key: string]: number } = {};
-        users.forEach((user) => {
-          const roleName = user.role;
-          roleCounts[roleName] = (roleCounts[roleName] || 0) + 1;
-        });
+      const chartData = await getChartData(token);
 
-        const colors = ['#90C7CD', '#487F85', '#4971A9', '#808080'];
-        const formattedUsersData = Object.keys(roleCounts).map(
-          (role, index) => ({
-            role: role,
-            users: roleCounts[role],
-            fill: colors[index % colors.length],
-          })
-        );
-        setTotalUsersChartData(formattedUsersData);
-      }
+      if (chartData) {
+        // Proses data untuk Total Users Chart
+        if (chartData.user && chartData.user.role) {
+          const roleCounts = chartData.user.role;
+          const colors = ['#90C7CD', '#487F85', '#4971A9', '#808080'];
+          const formattedUsersData = Object.keys(roleCounts).map(
+            (role, index) => ({
+              role: role.charAt(0).toUpperCase() + role.slice(1), // Capitalize role
+              users: roleCounts[role],
+              fill: colors[index % colors.length],
+            })
+          );
+          setTotalUsersChartData(formattedUsersData);
+        }
 
-      const patients: PatientData[] | null = await getAllPatient(token);
-      if (patients) {
-        const therapyTypeCounts: { [key: string]: number } = {};
-        patients.forEach((patient) => {
-          therapyTypeCounts[patient.therapyType] =
-            (therapyTypeCounts[patient.therapyType] || 0) + 1;
-        });
+        // Proses data untuk Therapy Type Chart
+        if (chartData.chart_jenis_terapi) {
+          const therapyColors = ['#4971A9', '#4F959D', '#8DCCD3'];
+          const formattedTherapyData = chartData.chart_jenis_terapi.map(
+            (item: any, index: number) => ({
+              name: item.nama_terapi,
+              value: item.jumlah_operasi,
+              fill: therapyColors[index % therapyColors.length],
+            })
+          );
+          setTherapyChartData(formattedTherapyData);
+        }
 
-        const therapyColors = ['#4971A9', '#4F959D', '#8DCCD3'];
-        const formattedTherapyData = Object.keys(therapyTypeCounts).map(
-          (therapyName, index) => ({
-            name: therapyName,
-            value: therapyTypeCounts[therapyName],
-            fill: therapyColors[index % therapyColors.length],
-          })
-        );
-        setTherapyChartData(formattedTherapyData);
-
-        const genderCounts: { [key: string]: number } = { Men: 0, Women: 0 };
-        patients.forEach((patient) => {
-          if (patient.gender === 'Men') {
-            genderCounts.Men++;
-          } else if (patient.gender === 'Women') {
-            genderCounts.Women++;
-          }
-        });
-
-        const genderColors = ['#E4ADD4', '#4971A9'];
-        const formattedGenderData = Object.keys(genderCounts).map(
-          (gender, index) => ({
-            name: gender,
-            value: genderCounts[gender],
-            fill: genderColors[index % genderColors.length],
-          })
-        );
-        setGenderChartData(formattedGenderData);
+        // Proses data untuk Gender Chart
+        if (chartData.chart_jenis_kelamin) {
+          const genderData = chartData.chart_jenis_kelamin;
+          const genderMapping: { [key: string]: string } = {
+            L: 'Men',
+            P: 'Women',
+          };
+          const genderColors = ['#E4ADD4', '#4971A9'];
+          const formattedGenderData = Object.keys(genderData).map(
+            (key, index) => ({
+              name: genderMapping[key] || key,
+              value: genderData[key],
+              fill: genderColors[index % genderColors.length],
+            })
+          );
+          setGenderChartData(formattedGenderData);
+        }
       }
     };
 
@@ -182,20 +171,11 @@ export default function DashboardPage() {
                     tick={{ fontSize: 11, fill: '#64748b' }}
                     axisLine={false}
                     tickLine={false}
+                    allowDecimals={false}
                     domain={[
                       0,
-                      Math.max(...totalUsersChartData.map((d) => d.users), 6),
+                      (dataMax: number) => Math.max(dataMax, 6), // Ensure y-axis is at least 6
                     ]}
-                    ticks={Array.from(
-                      {
-                        length:
-                          Math.max(
-                            ...totalUsersChartData.map((d) => d.users),
-                            6
-                          ) + 1,
-                      },
-                      (_, i) => i
-                    )}
                   />
                   <ChartTooltip
                     content={<ChartTooltipContent />}
@@ -221,7 +201,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className='pt-0 flex items-center'>
               <div className='space-y-2'>
-                {therapyChartData.map((item, index) => (
+                {therapyChartData.map((item) => (
                   <div key={item.name} className='flex items-center gap-3'>
                     <div
                       className='w-3 h-3 rounded-full flex-shrink-0'
@@ -269,7 +249,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className='pt-0 flex-1 flex'>
               <div className='flex justify-center gap-6'>
-                {genderChartData.map((item, index) => (
+                {genderChartData.map((item) => (
                   <div key={item.name} className='flex items-center gap-2'>
                     <div
                       className='w-3 h-3 rounded-full flex-shrink-0'
