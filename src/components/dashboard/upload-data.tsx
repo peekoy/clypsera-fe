@@ -81,7 +81,61 @@ export default function CleftLipPatientForm() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const fieldLabels: { [key: string]: string } = {
+    patientName: 'Patient Name',
+    congenitalComorbidities: 'Congenital Comorbidities',
+    whichChild: 'Which Child',
+    dateOfBirth: 'Date Of Birth',
+    patientGender: 'Patient Gender',
+    dateOfSurgery: 'Date of Surgery',
+    patientAge: 'Patient Age',
+    operationTechnique: 'Operation Technique',
+    patientAddress: 'Patient Address',
+    providerName: 'Provider Name',
+    ethnicity: 'Ethnicity',
+    surgeryLocation: 'Surgery Location',
+    motherPregnancyHistory: 'Mother Pregnancy History',
+    familyHistory: 'Family History',
+    residentsMaritalHistory: 'Residents Marital History',
+    previousMedicalHistory: 'Previous Medical History',
+    followUp: 'Follow Up',
+    cleftPalateType: 'Cleft Palate Type',
+    therapyType: 'Therapy Type',
+    diagnosis: 'Diagnosis',
+  };
+
   async function handleConfirmSubmit() {
+    const requiredFields = Object.keys(fieldLabels);
+
+    const emptyFields = requiredFields.filter(
+      (field) => !formData[field as keyof typeof formData]
+    );
+
+    if (emptyFields.length > 0) {
+      const emptyFieldLabels = emptyFields.map((field) => fieldLabels[field]);
+      Swal.fire({
+        title: 'Error!',
+        text: `Please fill in all required fields: ${emptyFieldLabels.join(
+          ', '
+        )}`,
+        icon: 'error',
+        confirmButtonColor: '#d33',
+      });
+      return;
+    }
+
+    // Tambahkan validasi untuk gambar di sini
+    if (beforeSurgeryFiles.length === 0 || afterSurgeryFiles.length === 0) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Please upload both before and after surgery photos.',
+        icon: 'error',
+        confirmButtonColor: '#d33',
+      });
+      setLoading(false); // Hentikan loading jika gambar belum diunggah
+      return; // Hentikan eksekusi fungsi
+    }
+
     setLoading(true);
     setError('');
 
@@ -231,8 +285,13 @@ export default function CleftLipPatientForm() {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleConfirmSubmit}>
+                <AlertDialogCancel className='cursor-pointer'>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  className='hover:bg-[#4971A9]/90 cursor-pointer'
+                  onClick={handleConfirmSubmit}
+                >
                   Yes, Submit Data
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -590,8 +649,8 @@ export default function CleftLipPatientForm() {
                 <SelectContent>
                   <SelectItem value='labioschisis'>Labioschisis</SelectItem>
                   <SelectItem value='palatoschisis'>Palatoschisis</SelectItem>
-                  <SelectItem value='labiopalatoshisis'>
-                    Labiopalatoshisis
+                  <SelectItem value='labiopalatoschisis'>
+                    Labiopalatoschisis
                   </SelectItem>
                 </SelectContent>
               </Select>

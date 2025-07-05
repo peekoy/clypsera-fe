@@ -12,6 +12,7 @@ export interface PatientData {
 }
 
 export interface MyDataPatient {
+  id: number;
   patientName: string;
   age: number;
   gender: string;

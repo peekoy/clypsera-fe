@@ -12,6 +12,7 @@ import { MyDataPatient } from '@/types/patient';
 import { getMyPatient } from '@/lib/api/fetch-my-data-patient';
 import { useRouter } from 'next/navigation';
 import { deleteMyDataPatient } from '@/lib/api/delete-my-data-patient';
+import Swal from 'sweetalert2';
 
 const toSlug = (str: string) =>
   str
@@ -194,13 +195,38 @@ export default function MyDataPage() {
   ];
 
   const handleDeletePatient = async (patientId: number) => {
-    try {
-      const token = localStorage.getItem('token');
-      await deleteMyDataPatient(token!, patientId);
-      alert('Patient berhasil dihapus.');
-    } catch (error: any) {
-      alert(error.message);
-    }
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+      customClass: {
+        icon: 'no-border', // Class untuk menghapus border default dari ikon
+        cancelButton: 'swal-cancel-button-outline', // Class untuk tombol cancel
+      },
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const token = localStorage.getItem('token');
+          if (token) {
+            await deleteMyDataPatient(token, patientId);
+            // Hapus data dari state setelah berhasil dihapus dari API
+            setMyPatient((prev) =>
+              prev.filter((patient) => patient.id !== patientId)
+            );
+            Swal.fire('Deleted!', 'Your file has been deleted.', 'success');
+          }
+        } catch (error: any) {
+          Swal.fire(
+            'Error!',
+            error.message || 'Failed to delete patient.',
+            'error'
+          );
+        }
+      }
+    });
   };
 
   return (
