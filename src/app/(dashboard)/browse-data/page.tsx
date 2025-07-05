@@ -13,8 +13,19 @@ import { PatientData } from '@/types/patient';
 import { getAllPatient } from '@/lib/api/fetch-patient';
 // import { patientData } from '@/data/data';
 
+const toSlug = (str: string) =>
+  str
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Hapus semua karakter kecuali huruf, angka, spasi, dan hubung
+    .trim()
+    .replace(/\s+/g, '-');
+
 export default function BrowseDataPage() {
   const [allPatient, setAllPatient] = useState<PatientData[]>([]);
+  const [filterOptions, setFilterOptions] = useState<{
+    foundation: { label: string; value: string }[];
+    operationTechnique: { label: string; value: string }[];
+  }>({ foundation: [], operationTechnique: [] });
   const router = useRouter();
 
   useEffect(() => {
@@ -25,10 +36,28 @@ export default function BrowseDataPage() {
         return;
       }
       setIsLoading(true);
-      let patient = (await getAllPatient(token)) || [];
+      let patients = (await getAllPatient(token)) || [];
 
-      if (patient) {
-        setAllPatient(patient);
+      if (patients) {
+        setAllPatient(patients);
+
+        const uniqueFoundations = [
+          ...new Set(patients.map((p) => p.organizer)),
+        ];
+        const uniqueTechniques = [
+          ...new Set(patients.map((p) => p.operationalTechniques)),
+        ];
+
+        setFilterOptions({
+          foundation: uniqueFoundations.map((f) => ({
+            label: f,
+            value: toSlug(f),
+          })),
+          operationTechnique: uniqueTechniques.map((t) => ({
+            label: t,
+            value: toSlug(t),
+          })),
+        });
       }
       setIsLoading(false);
     };
@@ -64,18 +93,12 @@ export default function BrowseDataPage() {
     return allPatient.filter((patient) => {
       const matchesFoundation =
         !appliedFilters.foundation ||
-        patient.organizer
-          .toLowerCase()
-          .includes(appliedFilters.foundation.toLowerCase()) ||
-        patient.uploadedBy
-          .toLowerCase()
-          .includes(appliedFilters.foundation.toLowerCase());
+        toSlug(patient.organizer) === appliedFilters.foundation;
 
       const matchesTechnique =
         !appliedFilters.operationTechnique ||
-        patient.operationalTechniques
-          .toLowerCase()
-          .includes(appliedFilters.operationTechnique.toLowerCase());
+        toSlug(patient.operationalTechniques) ===
+          appliedFilters.operationTechnique;
 
       const matchesGender =
         !appliedFilters.gender ||
@@ -137,23 +160,14 @@ export default function BrowseDataPage() {
       label: 'Foundation/Uploader',
       type: 'select' as const,
       placeholder: 'Select foundation',
-      options: [
-        { label: 'RS Elizabeth', value: 'rs-elizabeth' },
-        { label: 'RS Bunda Halimah', value: 'rs-bunda' },
-        { label: 'X Foundation', value: 'x-foundation' },
-        { label: 'RS Al-Ikhlas', value: 'rs-al-ikhlas' },
-      ],
+      options: filterOptions.foundation,
     },
     {
       key: 'operationTechnique',
       label: 'Operation Technique',
       type: 'select' as const,
       placeholder: 'Select technique',
-      options: [
-        { label: 'Method A', value: 'method-a' },
-        { label: 'Method B', value: 'method-b' },
-        { label: 'Method C', value: 'method-c' },
-      ],
+      options: filterOptions.operationTechnique,
     },
     {
       key: 'gender',

@@ -6,7 +6,7 @@ import { Trash2 } from 'lucide-react';
 import DataTable from '@/components/dashboard/data-table';
 import FilterForm from '@/components/dashboard/filter-form';
 import Pagination from '@/components/dashboard/pagination';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import type { AllUsers } from '@/types/user';
 import { getAllUsers } from '@/lib/api/fetch-user';
 import { FilterAdmin } from '@/types/filter';
@@ -14,8 +14,6 @@ import { deleteUser } from '@/lib/api/delete-user';
 
 export default function AdministratorPage() {
   const router = useRouter();
-  const params = useParams();
-
   const [allUsersData, setAllUsersData] = useState<AllUsers[]>([]);
 
   useEffect(() => {
@@ -26,8 +24,7 @@ export default function AdministratorPage() {
         return;
       }
       setIsLoading(true);
-      let users = (await getAllUsers(token)) || [];
-
+      const users = (await getAllUsers(token)) || [];
       if (users) {
         setAllUsersData(users);
       }
@@ -65,7 +62,6 @@ export default function AdministratorPage() {
     return allUsersData.filter((user) => {
       const matchesRole =
         !appliedFilters.role ||
-        user.role.toLowerCase().includes(appliedFilters.role.toLowerCase()) ||
         user.role.toLowerCase().includes(appliedFilters.role.toLowerCase());
 
       const matchesEmail =
@@ -112,26 +108,24 @@ export default function AdministratorPage() {
   const filterFields = [
     {
       key: 'role',
-      label: 'User Role',
+      label: 'Role',
       type: 'select' as const,
       placeholder: 'Select role',
       options: [
-        { label: 'Administrator', value: 'administrator' },
+        { label: 'Administrator', value: 'admin' },
         { label: 'Operator', value: 'operator' },
-        { label: 'Doctor', value: 'doctor' },
-        { label: 'Oral Surgeon', value: 'oral-surgeon' },
-        { label: 'Researcher', value: 'researcher' },
-        { label: 'Nurse', value: 'nurse' },
+        { label: 'User', value: 'user' },
+        { label: 'Not Found', value: 'not found' },
       ],
     },
     {
-      key: 'userEmail',
+      key: 'email',
       label: 'Email',
       type: 'text' as const,
       placeholder: 'Enter email',
     },
     {
-      key: 'userName',
+      key: 'name',
       label: 'Name',
       type: 'text' as const,
       placeholder: 'Enter name',
@@ -141,8 +135,11 @@ export default function AdministratorPage() {
   const handleDeleteUser = async (userId: number) => {
     try {
       const token = localStorage.getItem('token');
-      await deleteUser(token!, userId);
-      alert('User berhasil dihapus.');
+      if (token) {
+        await deleteUser(token, userId);
+        alert('User berhasil dihapus.');
+        setAllUsersData(allUsersData.filter((user) => user.id !== userId));
+      }
     } catch (error: any) {
       alert(error.message);
     }

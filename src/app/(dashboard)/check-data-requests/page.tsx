@@ -11,32 +11,40 @@ import { CheckRequestData } from '@/types/check-request-data';
 import { getAllRequestData } from '@/lib/api/fetch-request-data';
 import { deleteRequest } from '@/lib/api/delete-request';
 import { useRouter } from 'next/navigation';
+import { getRequestCategories } from '@/lib/api/fetch-request-categories';
 
 export default function CheckDataRequestPage() {
   const router = useRouter();
   const [requestData, setRequestData] = useState<CheckRequestData[]>([]);
-  const [isDataRequested, setIsDataRequested] = useState(false);
-  const [requestId, setRequestId] = useState<number | null>(null);
-
-  console.log(requestData);
+  const [categories, setCategories] = useState<
+    { label: string; value: string }[]
+  >([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.log('Token tidak ditemukan');
-        return;
-      }
-      setIsLoading(true);
-      let request = (await getAllRequestData(token)) || [];
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.log('Token tidak ditemukan');
+      return;
+    }
 
-      if (request) {
-        setRequestData(request);
+    const fetchData = async () => {
+      setIsLoading(true);
+      const [requests, fetchedCategories] = await Promise.all([
+        getAllRequestData(token),
+        getRequestCategories(token),
+      ]);
+
+      if (requests) {
+        setRequestData(requests);
+      }
+      if (fetchedCategories) {
+        setCategories(fetchedCategories);
       }
       setIsLoading(false);
     };
 
-    fetchUsers();
+    fetchData();
   }, []);
 
   const handleGoToCheckRequestUser = (requestId: number) => {
@@ -58,7 +66,6 @@ export default function CheckDataRequestPage() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
   const itemsPerPage = 7;
 
   const filteredData = useMemo(() => {
@@ -75,7 +82,7 @@ export default function CheckDataRequestPage() {
 
       const matchesEmail =
         !appliedFilters.email ||
-        data.email.toLowerCase() === appliedFilters.email.toLowerCase();
+        data.email.toLowerCase().includes(appliedFilters.email.toLowerCase());
 
       const matchesName =
         !appliedFilters.name ||
@@ -120,15 +127,11 @@ export default function CheckDataRequestPage() {
 
   const filterFields = [
     {
-      key: 'categories',
+      key: 'category',
       label: 'Categories',
       type: 'select' as const,
       placeholder: 'Select categories',
-      options: [
-        { label: 'Riset', value: 'riset' },
-        { label: 'Komersil', value: 'komersil' },
-        { label: 'Lainnya', value: 'lainnya' },
-      ],
+      options: categories,
     },
     {
       key: 'status',
@@ -137,18 +140,18 @@ export default function CheckDataRequestPage() {
       placeholder: 'Select status',
       options: [
         { label: 'Pending', value: 'pending' },
-        { label: 'Accepted', value: 'accepted' },
+        { label: 'Approved', value: 'approved' },
         { label: 'Rejected', value: 'rejected' },
       ],
     },
     {
-      key: 'userEmail',
+      key: 'email',
       label: 'Email',
       type: 'text' as const,
       placeholder: 'Enter email',
     },
     {
-      key: 'userName',
+      key: 'name',
       label: 'Name',
       type: 'text' as const,
       placeholder: 'Enter name',
@@ -158,10 +161,11 @@ export default function CheckDataRequestPage() {
   const handleDeleteRequest = async (requestId: number) => {
     try {
       const token = localStorage.getItem('token');
-      await deleteRequest(token!, requestId);
-      setIsDataRequested(false);
-      setRequestId(null);
-      alert('Permohonan berhasil dibatalkan.');
+      if (token) {
+        await deleteRequest(token, requestId);
+        setRequestData(requestData.filter((req) => req.id !== requestId));
+        alert('Permohonan berhasil dibatalkan.');
+      }
     } catch (error: any) {
       alert(error.message);
     }

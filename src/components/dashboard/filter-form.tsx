@@ -56,7 +56,7 @@ export default function FilterForm({
                 value={values[field.key]}
                 onValueChange={(value) => onChange(field.key, value)}
               >
-                <SelectTrigger className='cursor-pointer min-w-[180px]'>
+                <SelectTrigger className='cursor-pointer w-[180px]'>
                   <SelectValue placeholder={field.placeholder || 'Select'} />
                 </SelectTrigger>
                 <SelectContent>
