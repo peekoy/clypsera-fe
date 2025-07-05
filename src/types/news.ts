@@ -13,4 +13,13 @@ export type NewsPayload = {
   image: string;
   source: string;
   content: string;
+  status: string;
 };
+
+export interface EditNewsPayload {
+  title: string;
+  source: string;
+  image: string;
+  content: string;
+  status: string;
+}
