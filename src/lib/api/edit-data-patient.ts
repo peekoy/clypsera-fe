@@ -75,18 +75,13 @@ export async function editPatientData(
     }
 
     const operatorId = localStorage.getItem('userId') ?? '';
-    const gender =
-      payload.patientGender === 'male'
-        ? 'L'
-        : payload.patientGender === 'female'
-        ? 'P'
-        : '';
 
     const formData = new FormData();
     formData.append('nama_pasien', payload.patientName);
     formData.append('tanggal_lahir', payload.dateOfBirth);
     formData.append('umur_pasien', payload.patientAge.toString());
-    formData.append('jenis_kelamin', gender);
+    // Langsung gunakan nilai dari payload.patientGender ('L' atau 'P')
+    formData.append('jenis_kelamin', payload.patientGender);
     formData.append('alamat_pasien', payload.patientAddress);
     formData.append('suku_pasien', payload.ethnicity);
     formData.append('kelainan_kotigental', payload.congenitalComorbidities);

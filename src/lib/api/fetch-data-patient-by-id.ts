@@ -32,22 +32,9 @@ export async function getMyPatientById(
     }
 
     let data = await res.json();
-
-    // let filteredData = data.data.filter(
-    //   (item: any) => item.operasi.operator.name === currentUser
-    // );
-
-    // filteredData = filteredData.map((item: any) => ({
-    //   patientName: item.nama_pasien,
-    //   age: item.umur_pasien,
-    //   gender: item.jenis_kelamin === 'P' ? 'Women' : 'Men',
-    //   dateOfBirth: item.tanggal_lahir,
-    //   operationDate: item.operasi.tanggal_operasi,
-    //   organizer: item.operasi.lokasi_operasi, // ini masih bingung
-    //   operationalTechniques: item.operasi.tehnik_operasi,
-    // }));
-    // console.log('yaya', filteredData);
     data = data.data[0];
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
     return {
       id: data.id,
       name: data.nama_pasien,
@@ -73,8 +60,12 @@ export async function getMyPatientById(
       uploadedBy: data.operasi.operator.name,
       creationDate: data.created_at,
       lastUpdate: data.updated_at,
-      preOpImage: data.operasi.foto_sebelum_operasi,
-      postOpImage: data.operasi.foto_setelah_operasi,
+      preOpImage: data.operasi.foto_sebelum_operasi
+        ? `${baseUrl}${data.operasi.foto_sebelum_operasi}`.replace('/api', '')
+        : '',
+      postOpImage: data.operasi.foto_setelah_operasi
+        ? `${baseUrl}${data.operasi.foto_setelah_operasi}`.replace('/api', '')
+        : '',
     };
   } catch (error) {
     console.error('Error fetching users:', error);

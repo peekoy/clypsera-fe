@@ -17,8 +17,6 @@ export async function getDetailedPatient(
       }
     );
 
-    console.log('Fetching patient ID:', id);
-
     const contentType = res.headers.get('content-type');
 
     if (!res.ok) {
@@ -37,6 +35,7 @@ export async function getDetailedPatient(
     const dataArray = Array.isArray(response.data)
       ? response.data
       : [response.data];
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
     const mappedData = dataArray.map((item: any) => ({
       id: id,
@@ -63,10 +62,13 @@ export async function getDetailedPatient(
       uploadedBy: item.operator.name,
       creationDate: item.created_at,
       lastUpdate: item.updated_at,
-      preOpImage: item.foto_sebelum_operasi,
-      postOpImage: item.foto_setelah_operasi,
+      preOpImage: item.foto_sebelum_operasi
+        ? `${baseUrl}${item.foto_sebelum_operasi}`.replace('/api', '')
+        : '',
+      postOpImage: item.foto_setelah_operasi
+        ? `${baseUrl}${item.foto_setelah_operasi}`.replace('/api', '')
+        : '',
     }));
-    console.log('yaya', mappedData);
     return mappedData;
   } catch (error) {
     console.error('Error fetching users:', error);

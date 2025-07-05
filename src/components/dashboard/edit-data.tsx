@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent, DragEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,11 +12,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus, X } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { DetailedPatientData, EditPatientPayload } from '@/types/patient';
 import { getMyPatientById } from '@/lib/api/fetch-data-patient-by-id';
 import { editPatientData } from '@/lib/api/edit-data-patient';
+import { cn } from '@/lib/utils';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import Image from 'next/image';
 
 type PatientFormState = DetailedPatientData & {
   patientName: string;
@@ -42,8 +51,7 @@ export default function EditDataForm() {
   const [patientData, setPatientData] = useState<PatientFormState | null>(null);
   const [beforeSurgeryFiles, setBeforeSurgeryFiles] = useState<File[]>([]);
   const [afterSurgeryFiles, setAfterSurgeryFiles] = useState<File[]>([]);
-
-  console.log(patientData?.gender);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const fetchPatientById = async () => {
@@ -82,23 +90,25 @@ export default function EditDataForm() {
       }
     };
     fetchPatientById();
-  }, []);
+  }, [params.id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!patientData) return;
     setPatientData({
       ...patientData,
       [e.target.name]:
         e.target.type === 'number'
           ? parseFloat(e.target.value)
           : e.target.value,
-    } as PatientFormState);
+    });
   };
 
   const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (!patientData) return;
     setPatientData({
       ...patientData,
       [e.target.name]: e.target.value,
-    } as PatientFormState);
+    });
   };
 
   const handleFileUpload = (
@@ -115,40 +125,97 @@ export default function EditDataForm() {
     }
   };
 
+  const removeFile = (index: number, type: 'before' | 'after') => {
+    if (type === 'before') {
+      setBeforeSurgeryFiles((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      setAfterSurgeryFiles((prev) => prev.filter((_, i) => i !== index));
+    }
+  };
+
+  const FilePreview = ({
+    files,
+    type,
+  }: {
+    files: File[];
+    type: 'before' | 'after';
+  }) => (
+    <div className='mt-2 grid grid-cols-2 gap-2'>
+      {files.map((file, index) => (
+        <div key={index} className='relative'>
+          <Image
+            src={URL.createObjectURL(file)}
+            alt={`preview ${index}`}
+            width={100}
+            height={100}
+            className='w-full h-auto rounded-md'
+          />
+          <button
+            type='button'
+            onClick={() => removeFile(index, type)}
+            className='absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-700'
+          >
+            <X className='h-3 w-3' />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+
+  const handleDragEvents = (
+    e: DragEvent<HTMLDivElement>,
+    isEntering: boolean
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isEntering) {
+      setIsDragging(true);
+    } else {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDrop = (
+    e: DragEvent<HTMLDivElement>,
+    type: 'before' | 'after'
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    handleFileUpload(e.dataTransfer.files, type);
+  };
+
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const token = localStorage.getItem('token');
-    const formData = new FormData(event.currentTarget);
 
-    const formValues: { [key: string]: any } = {};
-    formData.forEach((value, key) => {
-      formValues[key] = value;
-    });
+    if (!patientData) {
+      alert('Patient data is not loaded yet.');
+      return;
+    }
 
     const payloadToSend: EditPatientPayload = {
-      patientName: formValues.patientName || '',
-      congenitalComorbidities: formValues.congenitalComorbidities || '',
-      whichChild: parseFloat(formValues.whichChild || '0'),
-      dateOfBirth: formValues.dateOfBirth || '',
-      patientGender: formValues.patientGender || '',
-      dateOfSurgery: formValues.dateOfSurgery || '',
-      patientAge: parseFloat(formValues.patientAge || '0'),
-      operationTechnique: formValues.operationTechnique || '',
-      patientAddress: formValues.patientAddress || '',
-      providerName: formValues.providerName || '',
-      ethnicity: formValues.ethnicity || '',
-      surgeryLocation: formValues.surgeryLocation || '',
-      motherPregnancyHistory: formValues.motherPregnancyHistory || '',
-      familyHistory: formValues.familyHistory || '',
-      residentsMaritalHistory: formValues.residentsMaritalHistory || '',
-      previousMedicalHistory: formValues.previousMedicalHistory || '',
-      followUp: formValues.followUp || '',
-      cleftPalateType: formValues.cleftPalateType || '',
-      therapyType: formValues.therapyType || '',
-      diagnosis: formValues.diagnosis || '',
+      patientName: patientData.patientName,
+      congenitalComorbidities: patientData.congenitalComorbidities,
+      whichChild: patientData.whichChild,
+      dateOfBirth: patientData.dateOfBirth,
+      patientGender: patientData.patientGender,
+      dateOfSurgery: patientData.dateOfSurgery,
+      patientAge: patientData.patientAge,
+      operationTechnique: patientData.operationTechnique,
+      patientAddress: patientData.patientAddress,
+      providerName: patientData.providerName,
+      ethnicity: patientData.ethnicity,
+      surgeryLocation: patientData.surgeryLocation,
+      motherPregnancyHistory: patientData.motherPregnancyHistory,
+      familyHistory: patientData.familyHistory,
+      residentsMaritalHistory: patientData.residentsMaritalHistory,
+      previousMedicalHistory: patientData.previousMedicalHistory,
+      followUp: patientData.followUp,
+      cleftPalateType: patientData.cleftPalateType,
+      therapyType: patientData.therapyType,
+      diagnosis: patientData.diagnosis,
     };
-
-    console.log('Payload to send:', payloadToSend);
 
     try {
       await editPatientData(
@@ -161,9 +228,18 @@ export default function EditDataForm() {
       alert('Data berhasil diperbarui!');
       router.push('/my-data');
     } catch (error: any) {
-      alert(error.message);
+      console.error('Upload error:', error.message);
+      alert(`Gagal memperbarui data: ${error.message}`);
     }
   };
+
+  if (!patientData) {
+    return (
+      <div className='flex items-center justify-center h-full'>
+        <p>Loading patient data...</p>
+      </div>
+    );
+  }
 
   return (
     <Card className='w-full p-0'>
@@ -182,7 +258,12 @@ export default function EditDataForm() {
         </div>
       </CardHeader>
       <CardContent className='px-6 pb-6'>
-        <form id='cleft-lip-form' onSubmit={onSubmit} className='space-y-6'>
+        <form
+          id='cleft-lip-form'
+          onSubmit={onSubmit}
+          className='space-y-6 pt-6'
+        >
+          {/* Patient Details */}
           <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
             <div className='space-y-2'>
               <label
@@ -194,7 +275,7 @@ export default function EditDataForm() {
               <Input
                 name='patientName'
                 className='bg-gray-100 border-0'
-                value={patientData?.patientName || ''}
+                value={patientData.patientName}
                 onChange={handleChange}
                 required
               />
@@ -209,7 +290,7 @@ export default function EditDataForm() {
               <Input
                 name='congenitalComorbidities'
                 className='bg-gray-100 border-0'
-                value={patientData?.congenitalComorbidities || ''}
+                value={patientData.congenitalComorbidities}
                 onChange={handleChange}
                 required
               />
@@ -225,7 +306,7 @@ export default function EditDataForm() {
                 type='number'
                 name='whichChild'
                 className='bg-gray-100 border-0'
-                value={patientData?.whichChild || ''}
+                value={patientData.whichChild}
                 onChange={handleChange}
                 required
               />
@@ -240,14 +321,41 @@ export default function EditDataForm() {
               >
                 Date of Birth
               </label>
-              <Input
-                name='dateOfBirth'
-                type='date'
-                className='bg-gray-100 border-0'
-                value={patientData?.dateOfBirth || ''}
-                onChange={handleChange}
-                required
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={'outline'}
+                    className={cn(
+                      'w-full justify-start text-left font-normal bg-gray-100 border-0',
+                      !patientData.dateOfBirth && 'text-muted-foreground'
+                    )}
+                  >
+                    <CalendarIcon className='mr-2 h-4 w-4' />
+                    {patientData.dateOfBirth ? (
+                      format(new Date(patientData.dateOfBirth), 'PPP')
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className='w-auto p-0'>
+                  <Calendar
+                    mode='single'
+                    selected={
+                      patientData.dateOfBirth
+                        ? new Date(patientData.dateOfBirth)
+                        : undefined
+                    }
+                    onSelect={(date) =>
+                      setPatientData({
+                        ...patientData,
+                        dateOfBirth: date ? format(date, 'yyyy-MM-dd') : '',
+                      })
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div className='space-y-2'>
               <label
@@ -256,14 +364,41 @@ export default function EditDataForm() {
               >
                 Date of Surgery
               </label>
-              <Input
-                name='dateOfSurgery'
-                type='date'
-                className='bg-gray-100 border-0'
-                value={patientData?.dateOfSurgery || ''}
-                onChange={handleChange}
-                required
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={'outline'}
+                    className={cn(
+                      'w-full justify-start text-left font-normal bg-gray-100 border-0',
+                      !patientData.dateOfSurgery && 'text-muted-foreground'
+                    )}
+                  >
+                    <CalendarIcon className='mr-2 h-4 w-4' />
+                    {patientData.dateOfSurgery ? (
+                      format(new Date(patientData.dateOfSurgery), 'PPP')
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className='w-auto p-0'>
+                  <Calendar
+                    mode='single'
+                    selected={
+                      patientData.dateOfSurgery
+                        ? new Date(patientData.dateOfSurgery)
+                        : undefined
+                    }
+                    onSelect={(date) =>
+                      setPatientData({
+                        ...patientData,
+                        dateOfSurgery: date ? format(date, 'yyyy-MM-dd') : '',
+                      })
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div className='space-y-2'>
               <label
@@ -274,26 +409,17 @@ export default function EditDataForm() {
               </label>
               <Select
                 onValueChange={(value) =>
-                  setPatientData({
-                    ...patientData,
-                    patientGender: value,
-                  } as PatientFormState)
+                  setPatientData({ ...patientData, patientGender: value })
                 }
                 name='patientGender'
-                value={
-                  patientData?.patientGender === 'L'
-                    ? 'male'
-                    : patientData?.patientGender === 'P'
-                    ? 'female'
-                    : ''
-                }
+                value={patientData.patientGender}
               >
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
-                  <SelectValue placeholder='Female' />
+                  <SelectValue placeholder='Select gender' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value='female'>Female</SelectItem>
-                  <SelectItem value='male'>Male</SelectItem>
+                  <SelectItem value='P'>Female</SelectItem>
+                  <SelectItem value='L'>Male</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -311,7 +437,7 @@ export default function EditDataForm() {
                 type='number'
                 name='patientAge'
                 className='bg-gray-100 border-0'
-                value={patientData?.patientAge || ''}
+                value={patientData.patientAge}
                 onChange={handleChange}
                 required
               />
@@ -326,7 +452,7 @@ export default function EditDataForm() {
               <Input
                 name='operationTechnique'
                 className='bg-gray-100 border-0'
-                value={patientData?.operationTechnique || ''}
+                value={patientData.operationTechnique}
                 onChange={handleChange}
                 required
               />
@@ -340,22 +466,13 @@ export default function EditDataForm() {
               </label>
               <Select
                 onValueChange={(value) =>
-                  setPatientData({
-                    ...patientData,
-                    cleftPalateType: value,
-                  } as PatientFormState)
+                  setPatientData({ ...patientData, cleftPalateType: value })
                 }
                 name='cleftPalateType'
-                value={
-                  patientData?.cleftPalateType === 'Sindromic Cleft'
-                    ? 'Sindromic Cleft'
-                    : patientData?.cleftPalateType === 'Nonsindromic Cleft'
-                    ? 'Nonsindromic Cleft'
-                    : ''
-                }
+                value={patientData.cleftPalateType}
               >
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
-                  <SelectValue placeholder='Sindromic Cleft' />
+                  <SelectValue placeholder='Select type' />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value='Sindromic Cleft'>
@@ -380,7 +497,7 @@ export default function EditDataForm() {
               <Input
                 name='patientAddress'
                 className='bg-gray-100 border-0'
-                value={patientData?.patientAddress || ''}
+                value={patientData.patientAddress}
                 onChange={handleChange}
                 required
               />
@@ -395,7 +512,7 @@ export default function EditDataForm() {
               <Input
                 name='providerName'
                 className='bg-gray-100 border-0'
-                value={patientData?.providerName || ''}
+                value={patientData.providerName}
                 onChange={handleChange}
                 required
               />
@@ -409,16 +526,13 @@ export default function EditDataForm() {
               </label>
               <Select
                 onValueChange={(value) =>
-                  setPatientData({
-                    ...patientData,
-                    therapyType: value,
-                  } as PatientFormState)
+                  setPatientData({ ...patientData, therapyType: value })
                 }
                 name='therapyType'
-                value={patientData?.therapyType || ''}
+                value={patientData.therapyType}
               >
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
-                  <SelectValue placeholder='Palatoschisis' />
+                  <SelectValue placeholder='Select therapy' />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value='Labioshisis'>Labioshisis</SelectItem>
@@ -442,7 +556,7 @@ export default function EditDataForm() {
               <Input
                 name='ethnicity'
                 className='bg-gray-100 border-0'
-                value={patientData?.ethnicity || ''}
+                value={patientData.ethnicity}
                 onChange={handleChange}
                 required
               />
@@ -457,7 +571,7 @@ export default function EditDataForm() {
               <Input
                 name='surgeryLocation'
                 className='bg-gray-100 border-0'
-                value={patientData?.surgeryLocation || ''}
+                value={patientData.surgeryLocation}
                 onChange={handleChange}
                 required
               />
@@ -471,16 +585,13 @@ export default function EditDataForm() {
               </label>
               <Select
                 onValueChange={(value) =>
-                  setPatientData({
-                    ...patientData,
-                    diagnosis: value,
-                  } as PatientFormState)
+                  setPatientData({ ...patientData, diagnosis: value })
                 }
                 name='diagnosis'
-                value={patientData?.diagnosis || ''}
+                value={patientData.diagnosis}
               >
                 <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
-                  <SelectValue placeholder='Labioschisis' />
+                  <SelectValue placeholder='Select diagnosis' />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value='Labioschisis'>Labioschisis</SelectItem>
@@ -505,7 +616,7 @@ export default function EditDataForm() {
                 name='motherPregnancyHistory'
                 placeholder="Please fill in the patient's mother's pregnancy history"
                 className='bg-gray-100 border-0 min-h-[100px] text-sm'
-                value={patientData?.motherPregnancyHistory || ''}
+                value={patientData.motherPregnancyHistory}
                 onChange={handleTextAreaChange}
                 required
               />
@@ -521,7 +632,7 @@ export default function EditDataForm() {
                 name='familyHistory'
                 placeholder="Please fill in the patient's family history"
                 className='bg-gray-100 border-0 min-h-[100px] text-sm'
-                value={patientData?.familyHistory || ''}
+                value={patientData.familyHistory}
                 onChange={handleTextAreaChange}
                 required
               />
@@ -537,7 +648,7 @@ export default function EditDataForm() {
                 name='residentsMaritalHistory'
                 placeholder="Residents' marital history"
                 className='bg-gray-100 border-0 min-h-[100px] text-sm'
-                value={patientData?.residentsMaritalHistory || ''}
+                value={patientData.residentsMaritalHistory}
                 onChange={handleTextAreaChange}
                 required
               />
@@ -556,7 +667,7 @@ export default function EditDataForm() {
                 name='previousMedicalHistory'
                 placeholder="Please fill in the patient's previous medical history"
                 className='bg-gray-100 border-0 min-h-[120px] text-sm'
-                value={patientData?.previousMedicalHistory || ''}
+                value={patientData.previousMedicalHistory}
                 onChange={handleTextAreaChange}
                 required
               />
@@ -572,13 +683,14 @@ export default function EditDataForm() {
                 name='followUp'
                 placeholder='Please fill in the follow up'
                 className='bg-gray-100 border-0 min-h-[120px] text-sm'
-                value={patientData?.followUp || ''}
+                value={patientData.followUp}
                 onChange={handleTextAreaChange}
                 required
               />
             </div>
           </div>
 
+          {/* Photo Upload Section */}
           <div className='bg-[#4F959D]/11 p-6 rounded-lg'>
             <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
               <div>
@@ -606,30 +718,63 @@ export default function EditDataForm() {
                   <label className='text-sm font-medium text-gray-700 mb-2 block'>
                     Photo before surgery
                   </label>
-                  <div className='border-2 border-dashed border-[#4971A9] bg-[#4971A9]/11 rounded-lg p-8 text-center'>
-                    <input
-                      type='file'
-                      multiple
-                      accept='image/*'
-                      onChange={(e) =>
-                        handleFileUpload(e.target.files, 'before')
-                      }
-                      className='hidden'
-                      id='before-surgery'
-                      name='foto_sebelum_operasi'
-                    />
-                    <label
-                      htmlFor='before-surgery'
-                      className='flex items-center justify-center gap-2 cursor-pointer'
-                    >
-                      <Plus className='h-6 w-6 primary-color' />
-                      <p className='primary-color text-sm'>
-                        Add files{' '}
-                        <span className='text-[#868686]'>
-                          or drop files here
-                        </span>
-                      </p>
-                    </label>
+                  <div
+                    className={cn(
+                      'border-2 border-dashed border-[#4971A9] bg-[#4971A9]/11 rounded-lg p-4 text-center transition-colors',
+                      isDragging && 'bg-blue-200 border-blue-500'
+                    )}
+                    onDragEnter={(e) => handleDragEvents(e, true)}
+                    onDragLeave={(e) => handleDragEvents(e, false)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => handleDrop(e, 'before')}
+                  >
+                    {beforeSurgeryFiles.length > 0 ? (
+                      <FilePreview files={beforeSurgeryFiles} type='before' />
+                    ) : patientData.preOpImage ? (
+                      <div className='relative'>
+                        <Image
+                          src={patientData.preOpImage}
+                          alt='Preview before surgery'
+                          width={200}
+                          height={200}
+                          className='w-full h-auto rounded-md'
+                        />
+                        <Button
+                          type='button'
+                          size='sm'
+                          onClick={() =>
+                            setPatientData({ ...patientData, preOpImage: '' })
+                          }
+                          className='absolute cursor-pointer  top-1 right-1 bg-red-500 hover:bg-red-600 text-white'
+                        >
+                          Change
+                        </Button>
+                      </div>
+                    ) : (
+                      <label
+                        htmlFor='before-surgery'
+                        className='flex items-center justify-center gap-2 cursor-pointer h-full py-4'
+                      >
+                        <input
+                          type='file'
+                          multiple
+                          accept='image/*'
+                          onChange={(e) =>
+                            handleFileUpload(e.target.files, 'before')
+                          }
+                          className='hidden'
+                          id='before-surgery'
+                          name='foto_sebelum_operasi'
+                        />
+                        <Plus className='h-6 w-6 primary-color' />
+                        <p className='primary-color text-sm'>
+                          Add files{' '}
+                          <span className='text-[#868686]'>
+                            or drop files here
+                          </span>
+                        </p>
+                      </label>
+                    )}
                   </div>
                 </div>
 
@@ -637,30 +782,63 @@ export default function EditDataForm() {
                   <label className='text-sm font-medium text-gray-700 mb-2 block'>
                     Photo after surgery
                   </label>
-                  <div className='border-2 border-dashed border-[#4971A9] bg-[#4971A9]/11 rounded-lg p-8 text-center'>
-                    <input
-                      type='file'
-                      multiple
-                      accept='image/*'
-                      onChange={(e) =>
-                        handleFileUpload(e.target.files, 'after')
-                      }
-                      className='hidden'
-                      id='after-surgery'
-                      name='foto_setelah_operasi'
-                    />
-                    <label
-                      htmlFor='after-surgery'
-                      className='flex items-center justify-center gap-2 cursor-pointer'
-                    >
-                      <Plus className='h-6 w-6 primary-color' />
-                      <p className='primary-color text-sm'>
-                        Add files{' '}
-                        <span className='text-[#868686]'>
-                          or drop files here
-                        </span>
-                      </p>
-                    </label>
+                  <div
+                    className={cn(
+                      'border-2 border-dashed border-[#4971A9] bg-[#4971A9]/11 rounded-lg p-4 text-center transition-colors',
+                      isDragging && 'bg-blue-200 border-blue-500'
+                    )}
+                    onDragEnter={(e) => handleDragEvents(e, true)}
+                    onDragLeave={(e) => handleDragEvents(e, false)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => handleDrop(e, 'after')}
+                  >
+                    {afterSurgeryFiles.length > 0 ? (
+                      <FilePreview files={afterSurgeryFiles} type='after' />
+                    ) : patientData.postOpImage ? (
+                      <div className='relative'>
+                        <Image
+                          src={patientData.postOpImage}
+                          alt='Preview after surgery'
+                          width={200}
+                          height={200}
+                          className='w-full h-auto rounded-md'
+                        />
+                        <Button
+                          type='button'
+                          size='sm'
+                          onClick={() =>
+                            setPatientData({ ...patientData, postOpImage: '' })
+                          }
+                          className='absolute cursor-pointer top-1 right-1 bg-red-500 hover:bg-red-600 text-white'
+                        >
+                          Change
+                        </Button>
+                      </div>
+                    ) : (
+                      <label
+                        htmlFor='after-surgery'
+                        className='flex items-center justify-center gap-2 cursor-pointer h-full py-4'
+                      >
+                        <input
+                          type='file'
+                          multiple
+                          accept='image/*'
+                          onChange={(e) =>
+                            handleFileUpload(e.target.files, 'after')
+                          }
+                          className='hidden'
+                          id='after-surgery'
+                          name='foto_setelah_operasi'
+                        />
+                        <Plus className='h-6 w-6 primary-color' />
+                        <p className='primary-color text-sm'>
+                          Add files{' '}
+                          <span className='text-[#868686]'>
+                            or drop files here
+                          </span>
+                        </p>
+                      </label>
+                    )}
                   </div>
                 </div>
               </div>
