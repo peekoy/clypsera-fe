@@ -26,6 +26,7 @@ export default function CleftLipPatientForm() {
     image: '',
     source: '',
     content: '',
+    status: '',
   });
   const [newsImage, setNewsImage] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
@@ -78,7 +79,7 @@ export default function CleftLipPatientForm() {
       await uploadNews(token, formData, newsImage); // Sesuaikan dengan signature editUser Anda
       alert('upload data successfully!');
 
-      router.refresh;
+      router.push('/browse-news');
 
       // Reset form
       // resetForm();
@@ -143,13 +144,35 @@ export default function CleftLipPatientForm() {
                   onChange={handleChange}
                   required
                 />
+                <div className='space-y-2'>
+                  <label
+                    htmlFor='status'
+                    className='text-sm font-medium text-gray-700'
+                  >
+                    Status
+                  </label>
+                  <Select
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, status: value })
+                    }
+                    name='status'
+                  >
+                    <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
+                      <SelectValue placeholder='Draft' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='draft'>Draft</SelectItem>
+                      <SelectItem value='published'>Published</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className='space-y-4'>
                 <div>
                   <label className='text-sm font-medium text-gray-700 mb-2 block'>
                     News Image
                   </label>
-                  <div className='border-2 border-dashed border-[#4971A9] bg-[#4971A9]/11 rounded-lg p-8 text-center'>
+                  <div className='border-2 border-dashed border-[#4971A9] bg-[#4971A9]/11 rounded-lg p-10 text-center'>
                     <input
                       type='file'
                       multiple

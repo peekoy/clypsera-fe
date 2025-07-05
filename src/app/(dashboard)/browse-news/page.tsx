@@ -12,6 +12,7 @@ import { FilterNews } from '@/types/filter';
 // import { patientData } from '@/data/data';
 import { News } from '@/types/news';
 import { getAllNews } from '@/lib/api/fetch-news';
+import { deleteNews } from '@/lib/api/delete-news';
 
 export default function BrowseDataPage() {
   const [allNews, setAllNews] = useState<News[]>([]);
@@ -142,6 +143,16 @@ export default function BrowseDataPage() {
     },
   ];
 
+  const handleDeleteNews = async (newsId: number) => {
+    try {
+      const token = localStorage.getItem('token');
+      await deleteNews(token!, newsId);
+      alert('berita berhasil dihapus.');
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
+
   return (
     <>
       {allNews ? (
@@ -183,7 +194,7 @@ export default function BrowseDataPage() {
                 <Button
                   size='sm'
                   className='bg-[#CE6872] hover:bg-[#CE6872]/90 cursor-pointer text-white ml-1'
-                  // onClick={() => handleDeletePatient(item.id)}
+                  onClick={() => handleDeleteNews(item.id)}
                 >
                   <Trash2 />
                 </Button>
@@ -197,10 +208,6 @@ export default function BrowseDataPage() {
               totalPages={totalPages}
               onPageChange={setCurrentPage}
             />
-            <Button className='bg-secondary hover:bg-[#4F959D]/90 cursor-pointer text-white flex items-center gap-2'>
-              <Download className='h-4 w-4' />
-              Download All Data
-            </Button>
           </div>
         </div>
       ) : (
