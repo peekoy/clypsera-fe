@@ -80,7 +80,6 @@ export async function editPatientData(
     formData.append('nama_pasien', payload.patientName);
     formData.append('tanggal_lahir', payload.dateOfBirth);
     formData.append('umur_pasien', payload.patientAge.toString());
-    // Langsung gunakan nilai dari payload.patientGender ('L' atau 'P')
     formData.append('jenis_kelamin', payload.patientGender);
     formData.append('alamat_pasien', payload.patientAddress);
     formData.append('suku_pasien', payload.ethnicity);
