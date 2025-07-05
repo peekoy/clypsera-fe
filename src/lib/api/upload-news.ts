@@ -15,7 +15,7 @@ export async function uploadNews(
     const formData = new FormData();
     formData.append('judul', payload.title);
     formData.append('sumber', payload.source);
-    formData.append('status', 'draft');
+    formData.append('status', payload.status);
     formData.append('content', payload.content);
     formData.append('user_id', operatorId ?? '');
 
