@@ -12,6 +12,15 @@ import { getAllRequestData } from '@/lib/api/fetch-request-data';
 import { deleteRequest } from '@/lib/api/delete-request';
 import { useRouter } from 'next/navigation';
 import { getRequestCategories } from '@/lib/api/fetch-request-categories';
+import Swal from 'sweetalert2';
+
+// Fungsi untuk memformat tanggal
+const formatDateTime = (isoString: string) => {
+  if (!isoString) return 'N/A';
+  const date = new Date(isoString);
+  // Menggunakan lokal Swedia untuk format yyyy-MM-dd HH:mm:ss
+  return date.toLocaleString('sv-SE');
+};
 
 export default function CheckDataRequestPage() {
   const router = useRouter();
@@ -94,7 +103,15 @@ export default function CheckDataRequestPage() {
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentData = filteredData.slice(startIndex, startIndex + itemsPerPage);
+
+  const formattedData = useMemo(() => {
+    return filteredData
+      .slice(startIndex, startIndex + itemsPerPage)
+      .map((req) => ({
+        ...req,
+        createdAt: formatDateTime(req.createdAt),
+      }));
+  }, [filteredData, currentPage, itemsPerPage]);
 
   const handleTempFilterChange = (
     key: keyof FilterRequestData,
@@ -159,16 +176,33 @@ export default function CheckDataRequestPage() {
   ];
 
   const handleDeleteRequest = async (requestId: number) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        await deleteRequest(token, requestId);
-        setRequestData(requestData.filter((req) => req.id !== requestId));
-        alert('Permohonan berhasil dibatalkan.');
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const token = localStorage.getItem('token');
+          if (token) {
+            await deleteRequest(token, requestId);
+            setRequestData((prev) =>
+              prev.filter((req) => req.id !== requestId)
+            );
+            Swal.fire('Deleted!', 'The request has been deleted.', 'success');
+          }
+        } catch (error: any) {
+          Swal.fire(
+            'Error!',
+            error.message || 'Failed to delete request.',
+            'error'
+          );
+        }
       }
-    } catch (error: any) {
-      alert(error.message);
-    }
+    });
   };
 
   return (
@@ -190,7 +224,7 @@ export default function CheckDataRequestPage() {
           </div>
 
           <DataTable
-            data={currentData}
+            data={formattedData}
             columns={[
               { key: 'id', label: 'Request ID' },
               { key: 'name', label: 'Name' },

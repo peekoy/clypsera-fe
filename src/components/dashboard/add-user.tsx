@@ -14,11 +14,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { addUser } from '@/lib/api/add-user';
 import { useRouter } from 'next/navigation';
+import Swal from 'sweetalert2';
 
 export default function AddNewUserForm() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -38,26 +40,50 @@ export default function AddNewUserForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+
+    for (const key in formData) {
+      if (formData[key as keyof typeof formData] === '') {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Please fill in all fields!',
+        });
+        setIsLoading(false);
+        return;
+      }
+    }
 
     if (formData.password !== formData.confirmPassword) {
-      alert('Password and Confirm Password do not match');
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'Password and Confirm Password do not match',
+      });
+      setIsLoading(false);
       return;
     }
 
     try {
       await addUser(formData);
-      alert('User registered successfully!');
-      setFormData({
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        role: '',
+      setIsLoading(true); // Menonaktifkan input setelah sukses
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: 'User registered successfully!',
+        timer: 2000,
+        showConfirmButton: false,
+      }).then(() => {
+        router.push('/administrator');
       });
-      router.push('/administrator');
     } catch (error: any) {
       console.error(error);
-      alert(`Error: ${error.message || 'Something went wrong.'}`);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: error.message || 'Something went wrong.',
+      });
+      setIsLoading(false);
     }
   };
 
@@ -84,6 +110,7 @@ export default function AddNewUserForm() {
               placeholder='Name'
               className='bg-gray-100 border-0'
               required
+              disabled={isLoading}
             />
           </div>
           <div>
@@ -96,6 +123,7 @@ export default function AddNewUserForm() {
               placeholder='Email'
               className='bg-gray-100 border-0'
               required
+              disabled={isLoading}
             />
           </div>
           <div className='relative'>
@@ -110,6 +138,7 @@ export default function AddNewUserForm() {
                 placeholder='Password'
                 className='bg-gray-100 border-0'
                 required
+                disabled={isLoading}
               />
               <Button
                 type='button'
@@ -117,6 +146,7 @@ export default function AddNewUserForm() {
                 size='icon'
                 className='absolute right-0 px-3 py-2 text-muted-foreground cursor-pointer'
                 onClick={() => setShowPassword(!showPassword)}
+                disabled={isLoading}
               >
                 {showPassword ? (
                   <EyeOff className='h-4 w-4' />
@@ -141,6 +171,7 @@ export default function AddNewUserForm() {
                 placeholder='Confirm Password'
                 className='bg-gray-100 border-0'
                 required
+                disabled={isLoading}
               />
               <Button
                 type='button'
@@ -148,6 +179,7 @@ export default function AddNewUserForm() {
                 size='icon'
                 className='absolute right-0 px-3 py-2 text-muted-foreground cursor-pointer'
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                disabled={isLoading}
               >
                 {showConfirmPassword ? (
                   <EyeOff className='h-4 w-4' />
@@ -162,15 +194,16 @@ export default function AddNewUserForm() {
           </div>
           <div>
             <label>Role</label>
-            <Select onValueChange={handleSelectChange}>
+            <Select
+              onValueChange={handleSelectChange}
+              name='role'
+              disabled={isLoading}
+            >
               <SelectTrigger className='bg-gray-100 border-0 w-full cursor-pointer'>
                 <SelectValue placeholder='Select a role' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='nurse'>Nurse</SelectItem>
-                <SelectItem value='doctor'>Doctor</SelectItem>
-                <SelectItem value='oralSurgeon'>Oral Surgeon</SelectItem>
-                <SelectItem value='research'>Research</SelectItem>
+                <SelectItem value='user'>User</SelectItem>
                 <SelectItem value='operator'>Operator</SelectItem>
                 <SelectItem value='admin'>Admin</SelectItem>
               </SelectContent>
@@ -180,8 +213,9 @@ export default function AddNewUserForm() {
             <Button
               type='submit'
               className='mt-4 hover:bg-[#4971A9]/90 cursor-pointer w-50'
+              disabled={isLoading}
             >
-              Submit
+              {isLoading ? 'Submitting...' : 'Submit'}
             </Button>
           </div>
         </CardContent>

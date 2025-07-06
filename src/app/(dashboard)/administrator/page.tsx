@@ -11,6 +11,14 @@ import type { AllUsers } from '@/types/user';
 import { getAllUsers } from '@/lib/api/fetch-user';
 import { FilterAdmin } from '@/types/filter';
 import { deleteUser } from '@/lib/api/delete-user';
+import Swal from 'sweetalert2';
+
+// Fungsi untuk memformat tanggal
+const formatDateTime = (date: Date) => {
+  if (!date || !(date instanceof Date)) return 'N/A';
+  // Menggunakan toLocaleString dengan lokal Swedia untuk format YYYY-MM-DD HH:mm:ss
+  return date.toLocaleString('sv-SE');
+};
 
 export default function AdministratorPage() {
   const router = useRouter();
@@ -76,9 +84,18 @@ export default function AdministratorPage() {
     });
   }, [appliedFilters, allUsersData]);
 
+  // Memformat data sebelum dikirim ke DataTable
+  const formattedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredData
+      .slice(startIndex, startIndex + itemsPerPage)
+      .map((user) => ({
+        ...user,
+        userCreationDate: formatDateTime(new Date(user.userCreationDate)),
+      }));
+  }, [filteredData, currentPage, itemsPerPage]);
+
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
   const handleTempFilterChange = (key: keyof FilterAdmin, value: string) => {
     setTempFilters((prev) => ({ ...prev, [key]: value }));
@@ -133,16 +150,31 @@ export default function AdministratorPage() {
   ];
 
   const handleDeleteUser = async (userId: number) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        await deleteUser(token, userId);
-        alert('User berhasil dihapus.');
-        setAllUsersData(allUsersData.filter((user) => user.id !== userId));
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const token = localStorage.getItem('token');
+          if (token) {
+            await deleteUser(token, userId);
+            setAllUsersData(allUsersData.filter((user) => user.id !== userId));
+            Swal.fire('Deleted!', 'User has been deleted.', 'success');
+          }
+        } catch (error: any) {
+          Swal.fire(
+            'Error!',
+            error.message || 'Failed to delete user.',
+            'error'
+          );
+        }
       }
-    } catch (error: any) {
-      alert(error.message);
-    }
+    });
   };
 
   return (
@@ -164,7 +196,7 @@ export default function AdministratorPage() {
           </div>
 
           <DataTable
-            data={currentData}
+            data={formattedData} // Menggunakan data yang sudah diformat
             columns={[
               { key: 'id', label: 'User ID' },
               { key: 'name', label: 'Name' },

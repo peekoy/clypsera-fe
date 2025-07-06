@@ -9,6 +9,95 @@ import { DetailedPatientData } from '@/types/patient';
 import { getDetailedPatient } from '@/lib/api/fetch-show-patient-data';
 import { checkIfDataRequested } from '@/lib/api/check-request';
 import { deleteRequest } from '@/lib/api/delete-request';
+import Swal from 'sweetalert2';
+
+const downloadAsCSV = (patient: DetailedPatientData) => {
+  if (!patient) return;
+
+  const headers = [
+    'ID',
+    'Patient Name',
+    'Birth Date',
+    'Age',
+    'Address',
+    'Ethnicity',
+    'Congenital Abnormalities',
+    'Operation Date',
+    'Surgical Technique',
+    'Organizer',
+    'Operation Location',
+    'Child Number',
+    'Gender',
+    'Cleft Type',
+    'Therapy Type',
+    'Diagnosis',
+    'Pregnancy History',
+    'Family History',
+    'Relative Marriage History',
+    'Previous Illness History',
+    'Follow Up',
+    'Uploaded By',
+    'Creation Date',
+    'Last Update',
+  ];
+
+  const row = [
+    patient.id,
+    patient.name,
+    patient.birthDate,
+    patient.age,
+    patient.address,
+    patient.ethnicity,
+    patient.congenitalAbnormalities,
+    patient.operationDate,
+    patient.surgicalTechnique,
+    patient.organizer,
+    patient.operationLocation,
+    patient.childNumber,
+    patient.gender,
+    patient.cleftType,
+    patient.therapyType,
+    patient.diagnosis,
+    patient.pregnancyHistory,
+    patient.familyHistory,
+    patient.relativeMarriageHistory,
+    patient.previousIllnessHistory,
+    patient.followUp,
+    patient.uploadedBy,
+    patient.creationDate,
+    patient.lastUpdate,
+  ];
+
+  const escapeCSV = (value: any) => {
+    const str = String(value ?? '');
+    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
+  const csvContent = [headers.join(','), row.map(escapeCSV).join(',')].join(
+    '\n'
+  );
+
+  const blob = new Blob([`\uFEFF${csvContent}`], {
+    type: 'text/csv;charset=utf-8;',
+  });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', `patient_data_${patient.id}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+const formatDateTime = (isoString: string) => {
+  if (!isoString) return 'N/A';
+  const date = new Date(isoString);
+  return date.toLocaleString('sv-SE'); // Menggunakan lokal Swedia untuk format YYYY-MM-DD HH:mm:ss
+};
 
 export default function OperationDetail() {
   const params = useParams();
@@ -21,67 +110,92 @@ export default function OperationDetail() {
   );
   const [isLoading, setIsLoading] = useState(true);
 
-  console.log('tata', detailedPatient);
-
   useEffect(() => {
     const fetchDetailedPatient = async () => {
       const token = localStorage.getItem('token');
       if (!token) {
         console.log('Token tidak ditemukan');
+        setIsLoading(false);
         return;
       }
       setIsLoading(true);
-      let patient =
-        (await getDetailedPatient(
-          token,
-          Number.parseInt(params.id as string)
-        )) || [];
+      try {
+        const patient =
+          (await getDetailedPatient(
+            token,
+            Number.parseInt(params.id as string)
+          )) || [];
 
-      console.log(patient);
-
-      if (patient.length > 0) {
-        setDetailedPatient(patient);
-        const { requested, requestId, status } = await checkIfDataRequested(
-          token,
-          patient[0].id
-        );
-        console.log(requestId);
-        setIsDataRequested(requested);
-        setRequestId(requestId);
-        setStatusRequest(status);
+        if (patient.length > 0) {
+          setDetailedPatient(patient);
+          const { requested, requestId, status } = await checkIfDataRequested(
+            token,
+            patient[0].id
+          );
+          setIsDataRequested(requested);
+          setRequestId(requestId);
+          setStatusRequest(status);
+        }
+      } catch (error) {
+        console.error('Failed to fetch patient details', error);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     fetchDetailedPatient();
-  }, []);
+  }, [params.id]);
 
-  console.log(detailedPatient);
-  let detailPatient = detailedPatient[0];
-
-  const handleBackToBrowse = () => {
-    router.push('/browse-data');
-  };
+  const detailPatient = detailedPatient[0];
 
   const handleRequestData = () => {
-    router.push(`/operations/${detailPatient.id}/request`);
+    if (detailPatient) {
+      router.push(`/operations/${detailPatient.id}/request`);
+    }
   };
 
   const handleDownloadData = () => {
-    router.push('');
+    if (detailPatient) {
+      downloadAsCSV(detailPatient);
+    }
   };
 
   const handleCancelRequest = async () => {
     if (!requestId) return;
-    const token = localStorage.getItem('token');
-    try {
-      await deleteRequest(token!, requestId);
-      setIsDataRequested(false);
-      setRequestId(null);
-      alert('Permohonan berhasil dibatalkan.');
-    } catch (error: any) {
-      alert(error.message);
-    }
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you want to cancel this request?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Yes, cancel it!',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          Swal.fire('Error!', 'Authentication token not found.', 'error');
+          return;
+        }
+        try {
+          await deleteRequest(token, requestId);
+          setIsDataRequested(false);
+          setRequestId(null);
+          setStatusRequest('');
+          Swal.fire(
+            'Cancelled!',
+            'Your request has been cancelled.',
+            'success'
+          );
+        } catch (error: any) {
+          Swal.fire(
+            'Error!',
+            error.message || 'Failed to cancel the request.',
+            'error'
+          );
+        }
+      }
+    });
   };
 
   if (isLoading) {
@@ -115,18 +229,14 @@ export default function OperationDetail() {
             <CardTitle className='text-2xl font-bold'>Patient Data</CardTitle>
           </div>
           <div className='space-x-4'>
-            {statusRequest === '' ? (
-              <></>
-            ) : (
+            {statusRequest && (
               <Button
                 className='bg-[#93BBF3] hover:bg-[#93BBF3]/90 cursor-pointer disabled:opacity-100'
                 disabled
               >
                 {statusRequest === 'pending'
                   ? 'Request Pending'
-                  : statusRequest === 'approved'
-                  ? 'Request Approved'
-                  : 'Request Data'}
+                  : 'Request Approved'}
               </Button>
             )}
 
@@ -167,7 +277,7 @@ export default function OperationDetail() {
             <strong>Suku:</strong> {detailPatient.ethnicity}
           </p>
           <p>
-            <strong>Kelainan Kongenital Penyerta</strong>{' '}
+            <strong>Kelainan Kongenital Penyerta:</strong>{' '}
             {detailPatient.congenitalAbnormalities}
           </p>
           <p>
@@ -246,13 +356,13 @@ export default function OperationDetail() {
                 </p>
                 <p>
                   <span className='font-medium'>Tanggal pembuatan data:</span>{' '}
-                  {detailPatient.creationDate}
+                  {formatDateTime(detailPatient.creationDate)}
                 </p>
                 <p>
                   <span className='font-medium'>
                     Tanggal terakhir update data:
                   </span>{' '}
-                  {detailPatient.lastUpdate}
+                  {formatDateTime(detailPatient.lastUpdate)}
                 </p>
               </div>
             </div>
