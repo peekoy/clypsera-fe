@@ -106,8 +106,11 @@ export default function RequestData() {
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: isApproving ? '#3085d6' : '#d33',
-      cancelButtonColor: '#6e7881',
       confirmButtonText: `Yes, ${actionText} it!`,
+      customClass: {
+        icon: 'no-border', // Class untuk menghapus border default dari ikon
+        cancelButton: 'swal-cancel-button-outline', // Class untuk tombol cancel
+      },
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {

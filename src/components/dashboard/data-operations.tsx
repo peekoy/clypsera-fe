@@ -10,93 +10,14 @@ import { getDetailedPatient } from '@/lib/api/fetch-show-patient-data';
 import { checkIfDataRequested } from '@/lib/api/check-request';
 import { deleteRequest } from '@/lib/api/delete-request';
 import Swal from 'sweetalert2';
+// Impor fungsi yang baru dibuat
+import { exportSingleFile } from '@/lib/api/export-single-file';
 
-const downloadAsCSV = (patient: DetailedPatientData) => {
-  if (!patient) return;
-
-  const headers = [
-    'ID',
-    'Patient Name',
-    'Birth Date',
-    'Age',
-    'Address',
-    'Ethnicity',
-    'Congenital Abnormalities',
-    'Operation Date',
-    'Surgical Technique',
-    'Organizer',
-    'Operation Location',
-    'Child Number',
-    'Gender',
-    'Cleft Type',
-    'Therapy Type',
-    'Diagnosis',
-    'Pregnancy History',
-    'Family History',
-    'Relative Marriage History',
-    'Previous Illness History',
-    'Follow Up',
-    'Uploaded By',
-    'Creation Date',
-    'Last Update',
-  ];
-
-  const row = [
-    patient.id,
-    patient.name,
-    patient.birthDate,
-    patient.age,
-    patient.address,
-    patient.ethnicity,
-    patient.congenitalAbnormalities,
-    patient.operationDate,
-    patient.surgicalTechnique,
-    patient.organizer,
-    patient.operationLocation,
-    patient.childNumber,
-    patient.gender,
-    patient.cleftType,
-    patient.therapyType,
-    patient.diagnosis,
-    patient.pregnancyHistory,
-    patient.familyHistory,
-    patient.relativeMarriageHistory,
-    patient.previousIllnessHistory,
-    patient.followUp,
-    patient.uploadedBy,
-    patient.creationDate,
-    patient.lastUpdate,
-  ];
-
-  const escapeCSV = (value: any) => {
-    const str = String(value ?? '');
-    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-      return `"${str.replace(/"/g, '""')}"`;
-    }
-    return str;
-  };
-
-  const csvContent = [headers.join(','), row.map(escapeCSV).join(',')].join(
-    '\n'
-  );
-
-  const blob = new Blob([`\uFEFF${csvContent}`], {
-    type: 'text/csv;charset=utf-8;',
-  });
-  const link = document.createElement('a');
-  const url = URL.createObjectURL(blob);
-  link.setAttribute('href', url);
-  link.setAttribute('download', `patient_data_${patient.id}.csv`);
-  link.style.visibility = 'hidden';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
-
+// Fungsi untuk memformat tanggal dan waktu
 const formatDateTime = (isoString: string) => {
   if (!isoString) return 'N/A';
   const date = new Date(isoString);
-  return date.toLocaleString('sv-SE'); // Menggunakan lokal Swedia untuk format YYYY-MM-DD HH:mm:ss
+  return date.toLocaleString('sv-SE');
 };
 
 export default function OperationDetail() {
@@ -109,6 +30,8 @@ export default function OperationDetail() {
     []
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDetailedPatient = async () => {
@@ -148,19 +71,56 @@ export default function OperationDetail() {
 
   const detailPatient = detailedPatient[0];
 
+  // Fungsi handleExport sekarang menggunakan fungsi API yang terpisah
+  const handleExport = async () => {
+    if (!requestId) {
+      setDownloadError('Request ID not found.');
+      Swal.fire('Error!', 'Request ID not found.', 'error');
+      return;
+    }
+
+    setIsDownloading(true);
+    setDownloadError(null);
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication token not found.');
+      }
+
+      // Panggil fungsi API yang sudah dipisahkan
+      const response = await exportSingleFile(token, requestId);
+
+      const blob = await response.blob();
+      const fileNameHeader = response.headers.get('Content-Disposition');
+      const fileName =
+        fileNameHeader?.match(/filename="(.+)"/)?.[1] ||
+        `request-${requestId}-export.xlsx`;
+
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err: any) {
+      setDownloadError(err.message);
+      Swal.fire('Download Error!', err.message, 'error');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const handleRequestData = () => {
     if (detailPatient) {
       router.push(`/operations/${detailPatient.id}/request`);
     }
   };
 
-  const handleDownloadData = () => {
-    if (detailPatient) {
-      downloadAsCSV(detailPatient);
-    }
-  };
-
   const handleCancelRequest = async () => {
+    // ... (logika handleCancelRequest tetap sama)
     if (!requestId) return;
 
     Swal.fire({
@@ -199,6 +159,7 @@ export default function OperationDetail() {
   };
 
   if (isLoading) {
+    // ... (logika isLoading tetap sama)
     return (
       <div className='flex items-center justify-center h-full'>
         <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
@@ -207,6 +168,7 @@ export default function OperationDetail() {
   }
 
   if (!detailPatient) {
+    // ... (logika detailPatient tidak ditemukan tetap sama)
     return (
       <div className='flex justify-center items-center h-full p-6'>
         <div className='text-center'>
@@ -221,7 +183,41 @@ export default function OperationDetail() {
     );
   }
 
+  // Menentukan logika tombol utama
+  const renderMainButton = () => {
+    if (statusRequest === 'approved') {
+      return (
+        <Button
+          className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white px-6'
+          onClick={handleExport}
+          disabled={isDownloading}
+        >
+          {isDownloading ? 'Downloading...' : 'Download Data'}
+        </Button>
+      );
+    }
+    if (statusRequest === 'pending') {
+      return (
+        <Button
+          className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white px-6'
+          onClick={handleCancelRequest}
+        >
+          Cancel Request
+        </Button>
+      );
+    }
+    return (
+      <Button
+        className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white px-6'
+        onClick={handleRequestData}
+      >
+        Request Data
+      </Button>
+    );
+  };
+
   return (
+    // ... (sisa JSX dari komponen tetap sama)
     <Card className='mx-6 p-0'>
       <CardHeader className='bg-gradient-to-r from-[#4F959D]/78 to-[#4971A9]/78 text-white rounded-lg p-6 gap-0'>
         <div className='flex items-center justify-between'>
@@ -229,38 +225,25 @@ export default function OperationDetail() {
             <CardTitle className='text-2xl font-bold'>Patient Data</CardTitle>
           </div>
           <div className='space-x-4'>
-            {statusRequest && (
+            {statusRequest && statusRequest !== 'approved' && (
               <Button
                 className='bg-[#93BBF3] hover:bg-[#93BBF3]/90 cursor-pointer disabled:opacity-100'
                 disabled
               >
                 {statusRequest === 'pending'
                   ? 'Request Pending'
-                  : 'Request Approved'}
+                  : `Request ${
+                      statusRequest.charAt(0).toUpperCase() +
+                      statusRequest.slice(1)
+                    }`}
               </Button>
             )}
-
-            <Button
-              className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white px-6 disabled:opacity-50'
-              onClick={
-                statusRequest === 'pending'
-                  ? handleCancelRequest
-                  : statusRequest === 'approved'
-                  ? handleDownloadData
-                  : handleRequestData
-              }
-            >
-              {statusRequest === 'pending'
-                ? 'Cancel Request'
-                : statusRequest === 'approved'
-                ? 'Download Data'
-                : 'Request Data'}
-            </Button>
+            {renderMainButton()}
           </div>
         </div>
       </CardHeader>
-      <CardContent className='flex justify-between'>
-        <div className='text-md space-y-4'>
+      <CardContent className='flex justify-between p-6'>
+        <div className='text-md space-y-4 w-1/2 pr-4'>
           <p>
             <strong>Nama Pasien:</strong> {detailPatient.name}
           </p>
@@ -310,7 +293,7 @@ export default function OperationDetail() {
             <strong>Diagnosa:</strong> {detailPatient.diagnosis}
           </p>
         </div>
-        <Card className='rounded-xl w-150 p-0'>
+        <Card className='rounded-xl w-1/2 p-0'>
           <CardContent className='p-6 space-y-4'>
             <div>
               <h3 className='font-semibold text-gray-800 mb-2'>
@@ -351,7 +334,7 @@ export default function OperationDetail() {
             <div className='pt-4 border-t'>
               <div className='text-xs text-gray-500 space-y-1'>
                 <p>
-                  <span className='font-medium'>Data diuangah oleh:</span>{' '}
+                  <span className='font-medium'>Data diunggah oleh:</span>{' '}
                   {detailPatient.uploadedBy}
                 </p>
                 <p>

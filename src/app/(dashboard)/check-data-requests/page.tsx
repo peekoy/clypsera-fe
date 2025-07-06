@@ -183,6 +183,10 @@ export default function CheckDataRequestPage() {
       showCancelButton: true,
       confirmButtonColor: '#d33',
       confirmButtonText: 'Yes, delete it!',
+      customClass: {
+        icon: 'no-border', // Class untuk menghapus border default dari ikon
+        cancelButton: 'swal-cancel-button-outline', // Class untuk tombol cancel
+      },
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
