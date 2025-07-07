@@ -12,6 +12,10 @@ import { FilterBrowse } from '@/types/filter';
 import { PatientData } from '@/types/patient';
 import { getAllPatient } from '@/lib/api/fetch-patient';
 // import { patientData } from '@/data/data';
+import Link from 'next/link';
+import { checkAllDataRequest } from '@/lib/api/check-all-request-data';
+import { exportAllData } from '@/lib/api/export-all-data';
+import Swal from 'sweetalert2';
 
 const toSlug = (str: string) =>
   str
@@ -26,6 +30,7 @@ export default function BrowseDataPage() {
     foundation: { label: string; value: string }[];
     operationTechnique: { label: string; value: string }[];
   }>({ foundation: [], operationTechnique: [] });
+  const [isDownloading, setIsDownloading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -193,6 +198,35 @@ export default function BrowseDataPage() {
     },
   ];
 
+  const handleDownloadAll = async () => {
+    setIsDownloading(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Authentication token not found.');
+
+      const response = await exportAllData(token);
+
+      const blob = await response.blob();
+      const fileNameHeader = response.headers.get('Content-Disposition');
+      const fileName =
+        fileNameHeader?.match(/filename="(.+)"/)?.[1] ||
+        'all_patient_data.xlsx';
+
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err: any) {
+      Swal.fire('Download Error!', err.message, 'error');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <>
       {allPatient ? (
@@ -245,10 +279,12 @@ export default function BrowseDataPage() {
               totalPages={totalPages}
               onPageChange={setCurrentPage}
             />
-            <Button className='bg-secondary hover:bg-[#4F959D]/90 cursor-pointer text-white flex items-center gap-2'>
-              <Download className='h-4 w-4' />
-              Download All Data
-            </Button>
+            <Link href='/requests/all'>
+              <Button className='bg-secondary hover:bg-[#4F959D]/90 cursor-pointer text-white flex items-center gap-2'>
+                <Download className='h-4 w-4' />
+                Download All Data
+              </Button>
+            </Link>
           </div>
         </div>
       ) : (

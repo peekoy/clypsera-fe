@@ -13,7 +13,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useRouter, usePathname, useParams } from 'next/navigation';
+// Impor kedua fungsi API
 import { singleRequestData } from '@/lib/api/single-request-data';
+import { requestAllData } from '@/lib/api/request-all-data';
 import { RequestDataById } from '@/types/check-request-data';
 import { getRequestDataById } from '@/lib/api/fetch-request-data-by-id';
 import { updateRequestData } from '@/lib/api/update-status';
@@ -38,6 +40,7 @@ export default function RequestData() {
   const router = useRouter();
   const params = useParams();
   const pathname = usePathname();
+  const isRequestAll = pathname.includes('/requests/all');
   const path = convertPathToTitle(pathname);
 
   const [loading, setLoading] = useState(false);
@@ -140,11 +143,17 @@ export default function RequestData() {
     setLoading(true);
 
     try {
-      await singleRequestData(
-        token,
-        formData,
-        Number.parseInt(params.id as string)
-      );
+      if (isRequestAll) {
+        // Panggil API untuk meminta semua data
+        await requestAllData(token, formData);
+      } else {
+        // Panggil API untuk meminta satu data operasi
+        await singleRequestData(
+          token,
+          formData,
+          Number.parseInt(params.id as string)
+        );
+      }
 
       Swal.fire({
         icon: 'success',
@@ -186,7 +195,7 @@ export default function RequestData() {
 
   return (
     <>
-      {path.includes('Operations') ? (
+      {path.includes('Operations') || path.includes('Requests/') ? (
         <Card className='gap-4'>
           <CardHeader className='text-center primary-color gap-0 font-bold text-3xl'>
             Data Use Request Form

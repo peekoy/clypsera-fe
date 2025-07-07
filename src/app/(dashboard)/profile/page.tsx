@@ -13,15 +13,26 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
-import { Pencil } from 'lucide-react';
+import { Pencil, Calendar as CalendarIcon } from 'lucide-react';
 import { getUserProfile } from '@/lib/api/fetch-profile';
 import { editProfile } from '@/lib/api/edit-profile';
-import { UserProfile } from '@/types/user';
+import { UserProfile, UserAuth } from '@/types/user';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 
 export default function CleftLipPatientForm() {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState<UserProfile | null>(null);
+  const [role, setRole] = useState('');
+  const [isFetchingData, setIsFetchingData] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -42,13 +53,24 @@ export default function CleftLipPatientForm() {
 
   useEffect(() => {
     setToken(localStorage.getItem('token'));
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsedUser: UserAuth = JSON.parse(storedUser);
+        setRole(parsedUser.role);
+      } catch (e) {
+        console.error('Failed to parse user from localStorage', e);
+      }
+    }
   }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
+      setIsFetchingData(true);
       const token = localStorage.getItem('token');
       if (!token) {
         console.log('Token tidak ditemukan');
+        setIsFetchingData(false);
         return;
       }
       try {
@@ -60,6 +82,8 @@ export default function CleftLipPatientForm() {
         }
       } catch (error) {
         console.error('Error fetching user:', error);
+      } finally {
+        setIsFetchingData(false);
       }
     };
 
@@ -82,8 +106,6 @@ export default function CleftLipPatientForm() {
       });
     }
   }, [userData]);
-
-  console.log(userData);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -109,19 +131,16 @@ export default function CleftLipPatientForm() {
         address: formData.address || '',
       };
 
-      const token = localStorage.getItem('token'); // Pastikan token juga dikirim jika API membutuhkannya
+      const token = localStorage.getItem('token');
       if (!token) {
         alert('Token tidak ditemukan. Silakan login kembali.');
         return;
       }
 
-      await editProfile(payload, token); // Sesuaikan dengan signature editUser Anda
+      await editProfile(payload, token);
       alert('Edit User successfully!');
 
       router.refresh;
-
-      // Reset form
-      // resetForm();
     } catch (error: any) {
       setError(error.message || 'Gagal mengupload data. Silakan coba lagi.');
     } finally {
@@ -133,6 +152,46 @@ export default function CleftLipPatientForm() {
     setIsEditing(!isEditing);
   };
 
+  if (isFetchingData) {
+    return (
+      <div className='relative flex justify-center p-4 z-10'>
+        <Card className='w-200 p-0'>
+          <CardHeader className='bg-gradient-to-r from-[#4F959D]/78 to-[#4971A9]/78 text-white rounded-lg p-6 h-20 gap-0'>
+            <div className='flex items-center gap-4'>
+              <Skeleton className='h-24 w-24 rounded-full' />
+              <div className='space-y-2'>
+                <Skeleton className='h-4 w-40' />
+                <Skeleton className='h-4 w-20' />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className='px-6 pb-6 pt-10 space-y-4'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <div className='space-y-2'>
+                <Skeleton className='h-4 w-20' />
+                <Skeleton className='h-10 w-full' />
+              </div>
+              <div className='space-y-2'>
+                <Skeleton className='h-4 w-20' />
+                <Skeleton className='h-10 w-full' />
+              </div>
+            </div>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <div className='space-y-2'>
+                <Skeleton className='h-4 w-20' />
+                <Skeleton className='h-10 w-full' />
+              </div>
+              <div className='space-y-2'>
+                <Skeleton className='h-4 w-20' />
+                <Skeleton className='h-10 w-full' />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className='relative flex justify-center p-4 z-10'>
       <Card className='w-200 p-0'>
@@ -141,8 +200,8 @@ export default function CleftLipPatientForm() {
             <Avatar className='h-24 w-24 border-2 bg-black border-white/20 relative'>
               <AvatarImage src={'/placeholder.svg'} alt='' />
               <AvatarFallback className='bg-white/10 text-white text-3xl font-semibold'>
-                {'fwafwaef'
-                  .split(' ')
+                {userData?.name
+                  ?.split(' ')
                   .map((n) => n[0])
                   .join('')}
               </AvatarFallback>
@@ -156,9 +215,11 @@ export default function CleftLipPatientForm() {
             </Button>
             <div className='flex flex-col justify-end'>
               <CardTitle className='text-md text-black font-bold'>
-                owanfdewbao
+                {userData?.name}
               </CardTitle>
-              <p className='text-sm font-medium text-black capitalize'>role</p>
+              <p className='text-sm font-medium text-black capitalize'>
+                {role}
+              </p>
             </div>
             {isEditing ? (
               <div className='flex gap-2'>
@@ -202,7 +263,7 @@ export default function CleftLipPatientForm() {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                disabled={isEditing ? false : true}
+                disabled={!isEditing}
               />
             </div>
             <div className='space-y-2'>
@@ -219,7 +280,7 @@ export default function CleftLipPatientForm() {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                disabled={isEditing ? false : true}
+                disabled={!isEditing}
               />
             </div>
           </div>
@@ -233,13 +294,13 @@ export default function CleftLipPatientForm() {
                 Password
               </label>
               <Input
-                type='text'
+                type='password'
                 name='password'
+                placeholder='Enter new password to update'
                 className='bg-gray-100 border-0 disabled:opacity-100'
                 value={formData.password}
                 onChange={handleChange}
-                required
-                disabled={isEditing ? false : true}
+                disabled={!isEditing}
               />
             </div>
             <div className='space-y-2'>
@@ -254,21 +315,15 @@ export default function CleftLipPatientForm() {
                   setFormData({ ...formData, gender: value })
                 }
                 name='gender'
-                value={
-                  formData?.gender === 'L'
-                    ? 'male'
-                    : formData?.gender === 'P'
-                    ? 'female'
-                    : ''
-                }
-                disabled={isEditing ? false : true}
+                value={formData.gender}
+                disabled={!isEditing}
               >
                 <SelectTrigger className='bg-gray-100 border-0 disabled:opacity-100 w-full cursor-pointer'>
-                  <SelectValue placeholder='Female' />
+                  <SelectValue placeholder='Select gender' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value='female'>Female</SelectItem>
-                  <SelectItem value='male'>Male</SelectItem>
+                  <SelectItem value='P'>Female</SelectItem>
+                  <SelectItem value='L'>Male</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -282,15 +337,42 @@ export default function CleftLipPatientForm() {
               >
                 Birthdate
               </label>
-              <Input
-                type='date'
-                name='birthDate'
-                className='bg-gray-100 border-0 disabled:opacity-100'
-                value={formData.birthDate}
-                onChange={handleChange}
-                required
-                disabled={isEditing ? false : true}
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={'outline'}
+                    disabled={!isEditing}
+                    className={cn(
+                      'w-full justify-start text-left font-normal bg-gray-100 border-0 disabled:opacity-100 disabled:cursor-not-allowed',
+                      !formData.birthDate && 'text-muted-foreground'
+                    )}
+                  >
+                    <CalendarIcon className='mr-2 h-4 w-4' />
+                    {formData.birthDate ? (
+                      format(new Date(formData.birthDate), 'PPP')
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className='w-auto p-0'>
+                  <Calendar
+                    mode='single'
+                    selected={
+                      formData.birthDate
+                        ? new Date(formData.birthDate)
+                        : undefined
+                    }
+                    onSelect={(date) =>
+                      setFormData({
+                        ...formData,
+                        birthDate: date ? format(date, 'yyyy-MM-dd') : '',
+                      })
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div className='space-y-2'>
               <label
@@ -306,7 +388,7 @@ export default function CleftLipPatientForm() {
                 value={formData.age}
                 onChange={handleChange}
                 required
-                disabled={isEditing ? false : true}
+                disabled={!isEditing}
               />
             </div>
           </div>
@@ -328,7 +410,7 @@ export default function CleftLipPatientForm() {
                 value={formData.job}
                 onChange={handleChange}
                 required
-                disabled={isEditing ? false : true}
+                disabled={!isEditing}
               />
             </div>
             <div className='space-y-2'>
@@ -345,7 +427,7 @@ export default function CleftLipPatientForm() {
                 value={formData.nik}
                 onChange={handleChange}
                 required
-                disabled={isEditing ? false : true}
+                disabled={!isEditing}
               />
             </div>
           </div>
@@ -365,7 +447,7 @@ export default function CleftLipPatientForm() {
                 value={formData.address}
                 onChange={handleChange}
                 required
-                disabled={isEditing ? false : true}
+                disabled={!isEditing}
               />
             </div>
             <div className='space-y-2'>
@@ -382,7 +464,7 @@ export default function CleftLipPatientForm() {
                 value={formData.phone}
                 onChange={handleChange}
                 required
-                disabled={isEditing ? false : true}
+                disabled={!isEditing}
               />
             </div>
           </div>
