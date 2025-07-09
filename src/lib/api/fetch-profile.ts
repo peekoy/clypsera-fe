@@ -1,3 +1,4 @@
+// src/lib/api/fetch-profile.ts - Updated version
 import { UserProfile } from '@/types/user';
 
 export async function getUserProfile(
@@ -44,6 +45,7 @@ export async function getUserProfile(
       nik: data.detail_user.nik,
       address: data.detail_user.alamat,
       age: data.detail_user.umur,
+      photo: data.detail_user.foto, // Added foto field
     };
 
     // data = data.data.map((item: any) => ({

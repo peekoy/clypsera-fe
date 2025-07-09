@@ -31,6 +31,9 @@ export function RoleBasedSidebar({ user }: RoleBasedSidebarProps) {
   const router = useRouter();
   const menuSections = getMenuForRole(user.role);
   const [isProfileExpanded, setIsProfileExpanded] = useState(false);
+  const photo = `https://0cf6-182-253-58-176.ngrok-free.app/${user.photo}`;
+
+  console.log('sidbar', photo);
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -64,16 +67,13 @@ export function RoleBasedSidebar({ user }: RoleBasedSidebarProps) {
       <SidebarHeader className='p-6 bg-primary rounded-tr-xl'>
         <div className='flex flex-col items-center'>
           <Avatar className='h-16 w-16 border-2 border-white/20'>
-            <AvatarImage
-              src={user.avatar || '/placeholder.svg'}
-              alt={user.name}
-            />
-            <AvatarFallback className='bg-white/10 text-white text-lg font-semibold'>
+            <AvatarImage src={photo} alt={user.name} />
+            {/* <AvatarFallback className='bg-white/10 text-white text-lg font-semibold'>
               {user.name
                 .split(' ')
                 .map((n) => n[0])
                 .join('')}
-            </AvatarFallback>
+            </AvatarFallback> */}
           </Avatar>
 
           <div className='cursor-pointer' onClick={toggleProfileMenu}>

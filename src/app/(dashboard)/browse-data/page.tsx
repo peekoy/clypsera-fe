@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
-// import { patientData } from '@/data/data';
 import DataTable from '@/components/dashboard/data-table';
 import FilterForm from '@/components/dashboard/filter-form';
 import Pagination from '@/components/dashboard/pagination';
@@ -11,7 +10,6 @@ import { useRouter } from 'next/navigation';
 import { FilterBrowse } from '@/types/filter';
 import { PatientData } from '@/types/patient';
 import { getAllPatient } from '@/lib/api/fetch-patient';
-// import { patientData } from '@/data/data';
 import Link from 'next/link';
 import { checkAllDataRequest } from '@/lib/api/check-all-request-data';
 import { exportAllData } from '@/lib/api/export-all-data';
@@ -20,7 +18,7 @@ import Swal from 'sweetalert2';
 const toSlug = (str: string) =>
   str
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '') // Hapus semua karakter kecuali huruf, angka, spasi, dan hubung
+    .replace(/[^a-z0-9\s-]/g, '')
     .trim()
     .replace(/\s+/g, '-');
 
@@ -32,27 +30,34 @@ export default function BrowseDataPage() {
   }>({ foundation: [], operationTechnique: [] });
   const [isDownloading, setIsDownloading] = useState(false);
   const router = useRouter();
+  const [allDataRequestStatus, setAllDataRequestStatus] = useState<
+    string | null
+  >(null);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true);
 
   useEffect(() => {
-    const fetchPatient = async () => {
+    const fetchPatientAndRequestStatus = async () => {
       const token = localStorage.getItem('token');
       if (!token) {
         console.log('Token tidak ditemukan');
         return;
       }
       setIsLoading(true);
-      let patients = (await getAllPatient(token)) || [];
+      setIsCheckingStatus(true);
+
+      const [patients, requestStatus] = await Promise.all([
+        getAllPatient(token),
+        checkAllDataRequest(token),
+      ]);
 
       if (patients) {
         setAllPatient(patients);
-
         const uniqueFoundations = [
           ...new Set(patients.map((p) => p.organizer)),
         ];
         const uniqueTechniques = [
           ...new Set(patients.map((p) => p.operationalTechniques)),
         ];
-
         setFilterOptions({
           foundation: uniqueFoundations.map((f) => ({
             label: f,
@@ -64,10 +69,16 @@ export default function BrowseDataPage() {
           })),
         });
       }
+
+      if (requestStatus) {
+        setAllDataRequestStatus(requestStatus.status);
+      }
+
       setIsLoading(false);
+      setIsCheckingStatus(false);
     };
 
-    fetchPatient();
+    fetchPatientAndRequestStatus();
   }, []);
 
   const handleViewOperation = (patientId: number) => {
@@ -227,6 +238,50 @@ export default function BrowseDataPage() {
     }
   };
 
+  console.log(allDataRequestStatus);
+
+  const renderRequestButton = () => {
+    if (isCheckingStatus) {
+      return (
+        <Button disabled className='bg-gray-400 cursor-not-allowed'>
+          Checking Status...
+        </Button>
+      );
+    }
+
+    if (allDataRequestStatus === 'approved') {
+      return (
+        <Button
+          className='bg-secondary hover:bg-[#4F959D]/90 cursor-pointer text-white flex items-center gap-2'
+          onClick={handleDownloadAll}
+          disabled={isDownloading}
+        >
+          <Download className='h-4 w-4' />
+          {isDownloading ? 'Downloading...' : 'Download All Data'}
+        </Button>
+      );
+    }
+
+    if (allDataRequestStatus === 'pending') {
+      return (
+        <Button
+          className='bg-yellow-500 hover:bg-yellow-600 cursor-not-allowed text-white'
+          disabled
+        >
+          Request Pending
+        </Button>
+      );
+    }
+
+    return (
+      <Link href='/requests/all'>
+        <Button className='bg-secondary hover:bg-[#4F959D]/90 cursor-pointer text-white flex items-center gap-2'>
+          Request All Data
+        </Button>
+      </Link>
+    );
+  };
+
   return (
     <>
       {allPatient ? (
@@ -279,12 +334,7 @@ export default function BrowseDataPage() {
               totalPages={totalPages}
               onPageChange={setCurrentPage}
             />
-            <Link href='/requests/all'>
-              <Button className='bg-secondary hover:bg-[#4F959D]/90 cursor-pointer text-white flex items-center gap-2'>
-                <Download className='h-4 w-4' />
-                Download All Data
-              </Button>
-            </Link>
+            {renderRequestButton()}
           </div>
         </div>
       ) : (

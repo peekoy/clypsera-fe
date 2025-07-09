@@ -21,6 +21,7 @@ export interface UserProfile {
   email: string;
   gender: string;
   password?: string;
+  photo?: string;
   age: number;
   birthDate: string;
   phone: string;
@@ -35,6 +36,7 @@ export interface User {
   password: string;
   confirmPassword: string;
   role: string;
+  photo?: string;
 }
 
 export interface EditUserPayload {

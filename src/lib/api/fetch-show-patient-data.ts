@@ -47,7 +47,7 @@ export async function getDetailedPatient(
       congenitalAbnormalities: item.pasien.kelainan_kotigental,
       operationDate: item.tanggal_operasi,
       surgicalTechnique: item.tehnik_operasi,
-      organizer: item.nama_penyelengara,
+      organizer: item.nama_penyelenggara,
       operationLocation: item.lokasi_operasi,
       childNumber: item.pasien.pasien_anak_ke_berapa,
       gender: item.pasien.jenis_kelamin,

@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
             hostname: `${process.env.NEXT_CONFIG_API_BASE_URL}`,
             port: '',
             // Pathname disesuaikan dengan struktur URL gambar dari API
-            pathname: '/images/data_pasien/**',
+            pathname: '/images/**',
           },
         ]
       : [],

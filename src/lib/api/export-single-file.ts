@@ -1,26 +1,33 @@
-// src/lib/api/export-single-file.ts
-
+// src/lib/api/download-with-token.ts
 export async function exportSingleFile(
-  token: string,
-  requestId: number
+  downloadToken: string
 ): Promise<Response> {
-  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/permohonan/${requestId}/export`;
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/export/${downloadToken}`;
 
   const response = await fetch(url, {
     method: 'GET',
     headers: {
-      Authorization: `Bearer ${token}`,
       Accept:
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // Atau 'text/csv' tergantung respons API
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'ngrok-skip-browser-warning': 'true',
     },
   });
 
   if (!response.ok) {
-    // Mencoba membaca pesan error dari body jika ada
-    const errorData = await response.json().catch(() => null);
-    const errorMessage =
-      errorData?.message || `Failed to download file: ${response.statusText}`;
+    let errorMessage = `Failed to download file: ${response.status} ${response.statusText}`;
+    try {
+      // PERBAIKAN: Clone respons sebelum membacanya.
+      // Kita coba baca kloningnya sebagai JSON.
+      const errorData = await response.clone().json();
+      errorMessage = errorData?.message || errorMessage;
+    } catch (jsonError) {
+      // Jika kloning gagal dibaca sebagai JSON, baca respons asli sebagai teks.
+      const textError = await response.text();
+      errorMessage = `Download failed. Server response: ${textError.substring(
+        0,
+        150
+      )}...`;
+    }
     throw new Error(errorMessage);
   }
 

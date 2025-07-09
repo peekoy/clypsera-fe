@@ -43,6 +43,7 @@ export async function requestAllData(
     formData.append('nik_pemohon', payload.nik);
     formData.append('status_permohonan', status);
     formData.append('alasan_permohonan', payload.purpose);
+    formData.append('operasi_id', '100');
     // Tambahkan scope 'semua' dan jangan sertakan operasi_id
     formData.append('scope', 'semua');
 

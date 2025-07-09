@@ -40,6 +40,7 @@ export async function singleRequestData(
     formData.append('status_permohonan', status);
     formData.append('alasan_permohonan', payload.purpose);
     formData.append('operasi_id', operasiId.toString());
+    formData.append('scope', 'sendiri');
 
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/permohonan/store`,

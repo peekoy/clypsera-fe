@@ -19,6 +19,7 @@ import { requestAllData } from '@/lib/api/request-all-data';
 import { RequestDataById } from '@/types/check-request-data';
 import { getRequestDataById } from '@/lib/api/fetch-request-data-by-id';
 import { updateRequestData } from '@/lib/api/update-status';
+import { exportSingleFile } from '@/lib/api/export-single-file';
 import Swal from 'sweetalert2';
 
 function convertPathToTitle(path: string) {
@@ -32,7 +33,7 @@ function convertPathToTitle(path: string) {
 const formatDateTime = (isoString: string) => {
   if (!isoString) return 'N/A';
   const date = new Date(isoString);
-  // Menggunakan lokal Swedia untuk format YYYY-MM-DD HH:mm:ss
+  // Menggunakan lokal Swedia untuk format yyyy-MM-dd HH:mm:ss
   return date.toLocaleString('sv-SE');
 };
 
@@ -40,11 +41,12 @@ export default function RequestData() {
   const router = useRouter();
   const params = useParams();
   const pathname = usePathname();
-  const isRequestAll = pathname.includes('/requests/all');
+  const isCreateMode =
+    pathname.includes('/operations/') || pathname.includes('/requests/all');
   const path = convertPathToTitle(pathname);
 
   const [loading, setLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(true);
+  const [isFetching, setIsFetching] = useState(!isCreateMode); // Hanya fetching jika tidak dalam mode create
   const [error, setError] = useState('');
   const [requestData, setRequestData] = useState<RequestDataById | null>(null);
   const [formData, setFormData] = useState({
@@ -64,8 +66,9 @@ export default function RequestData() {
   useEffect(() => {
     const fetchRequestDataById = async () => {
       const token = localStorage.getItem('token');
-      if (!token) {
-        console.log('Token tidak ditemukan');
+      if (!token || !params.id) {
+        // Periksa keberadaan params.id
+        console.log('Token atau ID tidak ditemukan');
         setIsFetching(false);
         return;
       }
@@ -87,12 +90,38 @@ export default function RequestData() {
       }
     };
 
-    if (!path.includes('Operations')) {
+    if (!isCreateMode) {
+      // Gunakan isCreateMode untuk menentukan apakah perlu fetch data
       fetchRequestDataById();
-    } else {
-      setIsFetching(false);
     }
-  }, [params.id, path]);
+  }, [params.id, isCreateMode]);
+
+  const handleDownload = async (
+    downloadToken: string,
+    fileNamePrefix: string
+  ) => {
+    setLoading(true);
+    try {
+      const response = await exportSingleFile(downloadToken);
+      const blob = await response.blob();
+      const fileName = `${fileNamePrefix}-${Date.now()}.xlsx`;
+
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err: any) {
+      console.error('Download process failed:', err);
+      Swal.fire('Download Error!', err.message, 'error');
+    } finally {
+      setLoading(false);
+      router.back(); // Kembali setelah download selesai atau gagal
+    }
+  };
 
   const submitStatus = async (status: string) => {
     if (!token) {
@@ -143,27 +172,44 @@ export default function RequestData() {
     setLoading(true);
 
     try {
+      const isRequestAll = pathname.includes('/requests/all');
+      let result;
+
+      console.log(isRequestAll);
+
       if (isRequestAll) {
-        // Panggil API untuk meminta semua data
-        await requestAllData(token, formData);
+        result = await requestAllData(token, formData);
       } else {
-        // Panggil API untuk meminta satu data operasi
-        await singleRequestData(
+        result = await singleRequestData(
           token,
           formData,
           Number.parseInt(params.id as string)
         );
       }
 
-      Swal.fire({
-        icon: 'success',
-        title: 'Request Submitted!',
-        text: 'Your request has been sent and will be reviewed.',
-        showConfirmButton: false,
-        timer: 2500,
-      }).then(() => {
-        router.back();
-      });
+      // -- LOGIKA BARU SETELAH SUBMIT --
+      if (result.data?.download_token) {
+        // Jika ada token, langsung download
+        Swal.fire({
+          icon: 'success',
+          title: 'Request Approved!',
+          text: 'Your download will start automatically.',
+          showConfirmButton: false,
+          timer: 2000,
+        });
+        await handleDownload(result.data.download_token, 'patient-data');
+      } else {
+        // Jika tidak ada token, tampilkan pesan sukses biasa
+        Swal.fire({
+          icon: 'success',
+          title: 'Request Submitted!',
+          text: 'Your request has been sent and will be reviewed.',
+          showConfirmButton: false,
+          timer: 2500,
+        }).then(() => {
+          router.back();
+        });
+      }
     } catch (error: any) {
       setError(error.message || 'Gagal mengupload data. Silakan coba lagi.');
       Swal.fire({
@@ -195,7 +241,7 @@ export default function RequestData() {
 
   return (
     <>
-      {path.includes('Operations') || path.includes('Requests/') ? (
+      {isCreateMode ? (
         <Card className='gap-4'>
           <CardHeader className='text-center primary-color gap-0 font-bold text-3xl'>
             Data Use Request Form
@@ -265,12 +311,11 @@ export default function RequestData() {
                     <SelectValue placeholder='Select a category' />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value='KTP'>KTP</SelectItem>
-                    <SelectItem value='KK'>KK</SelectItem>
-                    <SelectItem value='Akta Kelahiran'>
-                      Akta Kelahiran
+                    <SelectItem value='Riset/Penelitian'>
+                      Riset/Penelitian
                     </SelectItem>
-                    <SelectItem value='Akta Kematian'>Akta Kematian</SelectItem>
+                    <SelectItem value='Komersial'>Komersial</SelectItem>
+                    <SelectItem value='Lainya'>Lainya</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -306,22 +351,18 @@ export default function RequestData() {
             <div>
               <label>Applicant's full name</label>
               <Input
-                id=''
-                name=''
                 placeholder='Name'
                 className='bg-gray-100 border-0'
-                value={requestData?.name}
+                value={requestData?.name || ''}
                 disabled
               />
             </div>
             <div>
               <label>Email</label>
               <Input
-                id=''
-                name=''
                 placeholder='Email'
                 className='bg-gray-100 border-0'
-                value={requestData?.email}
+                value={requestData?.email || ''}
                 disabled
               />
             </div>
@@ -329,22 +370,18 @@ export default function RequestData() {
               <div>
                 <label>Mobile Phone number</label>
                 <Input
-                  id=''
-                  name=''
                   placeholder='Number'
                   className='bg-gray-100 border-0 w-100'
-                  value={requestData?.phoneNumber}
+                  value={requestData?.phoneNumber || ''}
                   disabled
                 />
               </div>
               <div>
                 <label>NIK</label>
                 <Input
-                  id=''
-                  name=''
                   placeholder='NIK'
                   className='bg-gray-100 border-0 w-100'
-                  value={requestData?.nik}
+                  value={requestData?.nik || ''}
                   disabled
                 />
               </div>
@@ -353,22 +390,18 @@ export default function RequestData() {
               <div>
                 <label>Submission Categories</label>
                 <Input
-                  id=''
-                  name=''
                   placeholder='Research'
                   className='bg-gray-100 border-0 w-100'
-                  value={requestData?.category}
+                  value={requestData?.category || ''}
                   disabled
                 />
               </div>
               <div>
                 <label>Purpose of application</label>
                 <Input
-                  id=''
-                  name=''
                   placeholder=''
                   className='bg-gray-100 border-0 w-100'
-                  value={requestData?.purpose}
+                  value={requestData?.purpose || ''}
                   disabled
                 />
               </div>

@@ -1,10 +1,9 @@
 export async function exportAllData(token: string): Promise<Response> {
-  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/export`;
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/export/${token}`;
 
   const response = await fetch(url, {
     method: 'GET',
     headers: {
-      Authorization: `Bearer ${token}`,
       Accept:
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'ngrok-skip-browser-warning': 'true',

@@ -10,10 +10,10 @@ import { getDetailedPatient } from '@/lib/api/fetch-show-patient-data';
 import { checkIfDataRequested } from '@/lib/api/check-request';
 import { deleteRequest } from '@/lib/api/delete-request';
 import Swal from 'sweetalert2';
-// Impor fungsi yang baru dibuat
+// --- MODIFIKASI IMPORT ---
+import { generateDownloadToken } from '@/lib/api/generate-download-token';
 import { exportSingleFile } from '@/lib/api/export-single-file';
 
-// Fungsi untuk memformat tanggal dan waktu
 const formatDateTime = (isoString: string) => {
   if (!isoString) return 'N/A';
   const date = new Date(isoString);
@@ -71,11 +71,11 @@ export default function OperationDetail() {
 
   const detailPatient = detailedPatient[0];
 
-  // Fungsi handleExport sekarang menggunakan fungsi API yang terpisah
+  // --- MODIFIKASI TOTAL FUNGSI HANDLEEXPORT ---
   const handleExport = async () => {
     if (!requestId) {
       setDownloadError('Request ID not found.');
-      Swal.fire('Error!', 'Request ID not found.', 'error');
+      Swal.fire('Error!', 'Request ID not found to generate token.', 'error');
       return;
     }
 
@@ -88,14 +88,11 @@ export default function OperationDetail() {
         throw new Error('Authentication token not found.');
       }
 
-      // Panggil fungsi API yang sudah dipisahkan
-      const response = await exportSingleFile(token, requestId);
+      const downloadToken = await generateDownloadToken(token, requestId);
+      const response = await exportSingleFile(downloadToken);
 
       const blob = await response.blob();
-      const fileNameHeader = response.headers.get('Content-Disposition');
-      const fileName =
-        fileNameHeader?.match(/filename="(.+)"/)?.[1] ||
-        `request-${requestId}-export.xlsx`;
+      const fileName = `patient-data-${detailPatient.id}.xlsx`;
 
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -105,7 +102,11 @@ export default function OperationDetail() {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
+
+      // Tidak perlu menampilkan Swal success di sini karena file sudah terunduh
     } catch (err: any) {
+      // TAMBAHKAN LOGGING INI untuk melihat error lengkap di console browser
+      console.error('Download process failed:', err);
       setDownloadError(err.message);
       Swal.fire('Download Error!', err.message, 'error');
     } finally {
@@ -120,7 +121,6 @@ export default function OperationDetail() {
   };
 
   const handleCancelRequest = async () => {
-    // ... (logika handleCancelRequest tetap sama)
     if (!requestId) return;
 
     Swal.fire({
@@ -159,7 +159,6 @@ export default function OperationDetail() {
   };
 
   if (isLoading) {
-    // ... (logika isLoading tetap sama)
     return (
       <div className='flex items-center justify-center h-full'>
         <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
@@ -168,7 +167,6 @@ export default function OperationDetail() {
   }
 
   if (!detailPatient) {
-    // ... (logika detailPatient tidak ditemukan tetap sama)
     return (
       <div className='flex justify-center items-center h-full p-6'>
         <div className='text-center'>
@@ -183,7 +181,6 @@ export default function OperationDetail() {
     );
   }
 
-  // Menentukan logika tombol utama
   const renderMainButton = () => {
     if (statusRequest === 'approved') {
       return (
@@ -206,6 +203,7 @@ export default function OperationDetail() {
         </Button>
       );
     }
+    // Jika belum pernah request
     return (
       <Button
         className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white px-6'
@@ -217,7 +215,6 @@ export default function OperationDetail() {
   };
 
   return (
-    // ... (sisa JSX dari komponen tetap sama)
     <Card className='mx-6 p-0'>
       <CardHeader className='bg-gradient-to-r from-[#4F959D]/78 to-[#4971A9]/78 text-white rounded-lg p-6 gap-0'>
         <div className='flex items-center justify-between'>
