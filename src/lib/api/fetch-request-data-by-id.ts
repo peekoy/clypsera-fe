@@ -1,3 +1,5 @@
+// src/lib/api/fetch-request-data-by-id.ts
+
 import { RequestDataById } from '@/types/check-request-data';
 
 export async function getRequestDataById(
@@ -5,8 +7,10 @@ export async function getRequestDataById(
   requestId: number
 ): Promise<RequestDataById | null> {
   try {
+    // ALIHKAN LOGIKA: Ambil semua data request, lalu filter di frontend.
+    // Ini untuk menghindari error 404 dari endpoint /permohonan/find/[id]
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/permohonan/find/${requestId}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/permohonan`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -17,23 +21,27 @@ export async function getRequestDataById(
       }
     );
 
-    const contentType = res.headers.get('content-type');
-
     if (!res.ok) {
       const text = await res.text();
-      console.error('Failed to fetch users:', res.status, text);
+      console.error('Failed to fetch request list:', res.status, text);
       return null;
     }
 
-    if (!contentType?.includes('application/json')) {
-      const text = await res.text();
-      console.error('Expected JSON but got:', text);
+    const result = await res.json();
+    if (!result || !Array.isArray(result.data)) {
+      console.error('Expected an array of requests, but got:', result);
       return null;
     }
 
-    let data = await res.json();
-    data = data.data;
-    console.log('data user', data);
+    // Cari request yang spesifik dari daftar yang ada
+    const data = result.data.find((item: any) => item.id === requestId);
+
+    if (!data) {
+      console.error(`Request with ID ${requestId} not found in the list.`);
+      return null;
+    }
+
+    // Mapping data yang ditemukan ke format yang benar
     return {
       name: data.nama_pemohon,
       email: data.email_pemohon,
@@ -46,7 +54,7 @@ export async function getRequestDataById(
       requestOperationId: data.operasi_id,
     };
   } catch (error) {
-    console.error('Error fetching users:', error);
+    console.error('Error in getRequestDataById:', error);
     return null;
   }
 }

@@ -45,7 +45,12 @@ export default function CheckDataRequestPage() {
       ]);
 
       if (requests) {
-        setRequestData(requests);
+        // DIUBAH: Urutkan data di sini sebelum disimpan ke state
+        const sortedRequests = requests.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setRequestData(sortedRequests);
       }
       if (fetchedCategories) {
         setCategories(fetchedCategories);
@@ -184,8 +189,8 @@ export default function CheckDataRequestPage() {
       confirmButtonColor: '#d33',
       confirmButtonText: 'Yes, delete it!',
       customClass: {
-        icon: 'no-border', // Class untuk menghapus border default dari ikon
-        cancelButton: 'swal-cancel-button-outline', // Class untuk tombol cancel
+        icon: 'no-border',
+        cancelButton: 'swal-cancel-button-outline',
       },
     }).then(async (result) => {
       if (result.isConfirmed) {
@@ -230,7 +235,6 @@ export default function CheckDataRequestPage() {
           <DataTable
             data={formattedData}
             columns={[
-              { key: 'id', label: 'Request ID' },
               { key: 'name', label: 'Name' },
               { key: 'email', label: 'Email' },
               { key: 'category', label: 'Category' },

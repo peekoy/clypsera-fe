@@ -11,9 +11,9 @@ import { FilterBrowse } from '@/types/filter';
 import { PatientData } from '@/types/patient';
 import { getAllPatient } from '@/lib/api/fetch-patient';
 import Link from 'next/link';
-import { generateDownloadToken } from '@/lib/api/generate-download-token';
 import { checkAllDataRequest } from '@/lib/api/check-all-request-data';
 import { exportAllData } from '@/lib/api/export-all-data';
+import { deleteRequest } from '@/lib/api/delete-request';
 import Swal from 'sweetalert2';
 
 const toSlug = (str: string) =>
@@ -36,6 +36,8 @@ export default function BrowseDataPage() {
   >(null);
   const [allDataRequestId, setAllDataRequestId] = useState<number | null>(null);
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
+
+  console.log(allDataRequestStatus);
 
   useEffect(() => {
     const fetchPatientAndRequestStatus = async () => {
@@ -212,22 +214,62 @@ export default function BrowseDataPage() {
     },
   ];
 
-  const handleDownloadAll = async () => {
-    setIsDownloading(true);
+  const handleCancelRequest = async () => {
     if (!allDataRequestId) {
-      Swal.fire('Error!', 'Request ID for all data not found.', 'error');
-      setIsDownloading(false);
+      Swal.fire('Error!', 'Request ID not found.', 'error');
       return;
     }
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "Do you want to cancel this 'All Data' request?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Yes, cancel it!',
+      customClass: {
+        icon: 'no-border',
+        cancelButton: 'swal-cancel-button-outline',
+      },
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          Swal.fire('Error!', 'Authentication token not found.', 'error');
+          return;
+        }
+        try {
+          await deleteRequest(token, allDataRequestId);
+          setAllDataRequestStatus(null);
+          setAllDataRequestId(null);
+          Swal.fire(
+            'Cancelled!',
+            'Your request has been cancelled.',
+            'success'
+          );
+        } catch (error: any) {
+          Swal.fire(
+            'Error!',
+            error.message || 'Failed to cancel the request.',
+            'error'
+          );
+        }
+      }
+    });
+  };
+
+  const handleDownloadAll = async () => {
+    if (!allDataRequestId) {
+      Swal.fire('Error!', 'Request ID for all data not found.', 'error');
+      return;
+    }
+    setIsDownloading(true);
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('Authentication token not found.');
+      // PERBAIKAN: Kirim ID request ke fungsi export
+      const response = await exportAllData(token, allDataRequestId);
 
-      const downloadToken = await generateDownloadToken(
-        token,
-        allDataRequestId
-      );
-      const response = await exportAllData(downloadToken);
       const blob = await response.blob();
       const fileNameHeader = response.headers.get('Content-Disposition');
       const fileName =
@@ -248,8 +290,6 @@ export default function BrowseDataPage() {
       setIsDownloading(false);
     }
   };
-
-  console.log(allDataRequestStatus);
 
   const renderRequestButton = () => {
     if (isCheckingStatus) {
@@ -275,17 +315,25 @@ export default function BrowseDataPage() {
 
     if (allDataRequestStatus === 'pending') {
       return (
-        <Button
-          className='bg-yellow-500 hover:bg-yellow-600 cursor-not-allowed text-white'
-          disabled
-        >
-          Request Pending
-        </Button>
+        <div className='space-x-4'>
+          <Button
+            className='bg-[#93BBF3] disabled:opacity-100 cursor-not-allowed text-white'
+            disabled
+          >
+            Request Pending
+          </Button>
+          <Button
+            className='bg-secondary hover:bg-[#4F959D]/90 cursor-pointer text-white'
+            onClick={handleCancelRequest}
+          >
+            Cancel Request
+          </Button>
+        </div>
       );
     }
 
     return (
-      <Link href='/requests/all'>
+      <Link href='/request-all'>
         <Button className='bg-secondary hover:bg-[#4F959D]/90 cursor-pointer text-white flex items-center gap-2'>
           Request All Data
         </Button>

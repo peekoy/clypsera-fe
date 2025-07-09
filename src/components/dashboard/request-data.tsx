@@ -13,27 +13,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useRouter, usePathname, useParams } from 'next/navigation';
-// Impor kedua fungsi API
 import { singleRequestData } from '@/lib/api/single-request-data';
 import { requestAllData } from '@/lib/api/request-all-data';
-import { RequestDataById } from '@/types/check-request-data';
+import {
+  RequestDataById,
+  RequestDataPayload,
+} from '@/types/check-request-data';
 import { getRequestDataById } from '@/lib/api/fetch-request-data-by-id';
 import { updateRequestData } from '@/lib/api/update-status';
-import { exportSingleFile } from '@/lib/api/export-single-file';
 import Swal from 'sweetalert2';
-
-function convertPathToTitle(path: string) {
-  return path
-    .replace(/^\//, '')
-    .replace(/-/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
+import { UserAuth } from '@/types/user';
 
 // Fungsi untuk memformat tanggal dan waktu
 const formatDateTime = (isoString: string) => {
   if (!isoString) return 'N/A';
   const date = new Date(isoString);
-  // Menggunakan lokal Swedia untuk format yyyy-MM-dd HH:mm:ss
   return date.toLocaleString('sv-SE');
 };
 
@@ -42,14 +36,14 @@ export default function RequestData() {
   const params = useParams();
   const pathname = usePathname();
   const isCreateMode =
-    pathname.includes('/operations/') || pathname.includes('/requests/all');
-  const path = convertPathToTitle(pathname);
+    pathname.includes('/operations/') || pathname.includes('/request-all');
 
   const [loading, setLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(!isCreateMode); // Hanya fetching jika tidak dalam mode create
+  const [isFetching, setIsFetching] = useState(!isCreateMode);
   const [error, setError] = useState('');
   const [requestData, setRequestData] = useState<RequestDataById | null>(null);
-  const [formData, setFormData] = useState({
+  const [currentUser, setCurrentUser] = useState<UserAuth | null>(null); // State untuk menyimpan data user
+  const [formData, setFormData] = useState<RequestDataPayload>({
     name: '',
     email: '',
     nik: '',
@@ -60,68 +54,38 @@ export default function RequestData() {
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    setToken(localStorage.getItem('token'));
+    const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    setToken(storedToken);
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
+    }
   }, []);
 
   useEffect(() => {
     const fetchRequestDataById = async () => {
-      const token = localStorage.getItem('token');
       if (!token || !params.id) {
-        // Periksa keberadaan params.id
-        console.log('Token atau ID tidak ditemukan');
         setIsFetching(false);
         return;
       }
       setIsFetching(true);
       try {
-        const user = await getRequestDataById(
+        const data = await getRequestDataById(
           token,
           Number.parseInt(params.id as string)
         );
-        if (user) {
-          setRequestData(user);
-        } else {
-          console.log('User tidak ditemukan');
-        }
+        setRequestData(data);
       } catch (error) {
-        console.error('Error fetching user:', error);
+        console.error('Error fetching request data:', error);
       } finally {
         setIsFetching(false);
       }
     };
 
     if (!isCreateMode) {
-      // Gunakan isCreateMode untuk menentukan apakah perlu fetch data
       fetchRequestDataById();
     }
-  }, [params.id, isCreateMode]);
-
-  const handleDownload = async (
-    downloadToken: string,
-    fileNamePrefix: string
-  ) => {
-    setLoading(true);
-    try {
-      const response = await exportSingleFile(downloadToken);
-      const blob = await response.blob();
-      const fileName = `${fileNamePrefix}-${Date.now()}.xlsx`;
-
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(downloadUrl);
-    } catch (err: any) {
-      console.error('Download process failed:', err);
-      Swal.fire('Download Error!', err.message, 'error');
-    } finally {
-      setLoading(false);
-      router.back(); // Kembali setelah download selesai atau gagal
-    }
-  };
+  }, [params.id, isCreateMode, token]);
 
   const submitStatus = async (status: string) => {
     if (!token) {
@@ -140,8 +104,8 @@ export default function RequestData() {
       confirmButtonColor: isApproving ? '#3085d6' : '#d33',
       confirmButtonText: `Yes, ${actionText} it!`,
       customClass: {
-        icon: 'no-border', // Class untuk menghapus border default dari ikon
-        cancelButton: 'swal-cancel-button-outline', // Class untuk tombol cancel
+        icon: 'no-border',
+        cancelButton: 'swal-cancel-button-outline',
       },
     }).then(async (result) => {
       if (result.isConfirmed) {
@@ -172,44 +136,24 @@ export default function RequestData() {
     setLoading(true);
 
     try {
-      const isRequestAll = pathname.includes('/requests/all');
-      let result;
+      const isRequestAll = pathname.includes('/request-all');
+      const result = isRequestAll
+        ? await requestAllData(token, formData)
+        : await singleRequestData(
+            token,
+            formData,
+            Number.parseInt(params.id as string)
+          );
 
-      console.log(isRequestAll);
-
-      if (isRequestAll) {
-        result = await requestAllData(token, formData);
-      } else {
-        result = await singleRequestData(
-          token,
-          formData,
-          Number.parseInt(params.id as string)
-        );
-      }
-
-      // -- LOGIKA BARU SETELAH SUBMIT --
-      if (result.data?.download_token) {
-        // Jika ada token, langsung download
-        Swal.fire({
-          icon: 'success',
-          title: 'Request Approved!',
-          text: 'Your download will start automatically.',
-          showConfirmButton: false,
-          timer: 2000,
-        });
-        await handleDownload(result.data.download_token, 'patient-data');
-      } else {
-        // Jika tidak ada token, tampilkan pesan sukses biasa
-        Swal.fire({
-          icon: 'success',
-          title: 'Request Submitted!',
-          text: 'Your request has been sent and will be reviewed.',
-          showConfirmButton: false,
-          timer: 2500,
-        }).then(() => {
-          router.back();
-        });
-      }
+      Swal.fire({
+        icon: 'success',
+        title: 'Request Submitted!',
+        text: 'Your request has been sent and will be reviewed.',
+        showConfirmButton: false,
+        timer: 2500,
+      }).then(() => {
+        router.back();
+      });
     } catch (error: any) {
       setError(error.message || 'Gagal mengupload data. Silakan coba lagi.');
       Swal.fire({
@@ -243,6 +187,7 @@ export default function RequestData() {
     <>
       {isCreateMode ? (
         <Card className='gap-4'>
+          {/* Form untuk membuat request (tidak diubah) */}
           <CardHeader className='text-center primary-color gap-0 font-bold text-3xl'>
             Data Use Request Form
           </CardHeader>
@@ -413,26 +358,28 @@ export default function RequestData() {
               </p>
               <p>
                 Requested Operation ID: Data ID-
-                {requestData?.requestOperationId}
+                {requestData?.requestOperationId || 'All Data'}
               </p>
             </Card>
             <div className='space-x-4'>
-              {requestData?.status.toLowerCase() === 'pending' && (
-                <>
-                  <Button
-                    className='mt-4 bg-[#93BBF3] hover:bg-[#93BBF3]/90 cursor-pointer w-50'
-                    onClick={() => submitStatus('approved')}
-                  >
-                    Approve Request
-                  </Button>
-                  <Button
-                    className='hover:bg-[#4971A9]/90 cursor-pointer w-50'
-                    onClick={() => submitStatus('rejected')}
-                  >
-                    Reject Request
-                  </Button>
-                </>
-              )}
+              {/* DIUBAH: Tambahkan pengecekan peran admin DI SINI */}
+              {currentUser?.role === 'admin' &&
+                requestData?.status.toLowerCase() === 'pending' && (
+                  <>
+                    <Button
+                      className='mt-4 bg-[#93BBF3] hover:bg-[#93BBF3]/90 cursor-pointer w-50'
+                      onClick={() => submitStatus('approved')}
+                    >
+                      Approve Request
+                    </Button>
+                    <Button
+                      className='hover:bg-[#4971A9]/90 cursor-pointer w-50'
+                      onClick={() => submitStatus('rejected')}
+                    >
+                      Reject Request
+                    </Button>
+                  </>
+                )}
             </div>
           </CardContent>
         </Card>

@@ -130,6 +130,10 @@ export default function OperationDetail() {
       showCancelButton: true,
       confirmButtonColor: '#d33',
       confirmButtonText: 'Yes, cancel it!',
+      customClass: {
+        icon: 'no-border',
+        cancelButton: 'swal-cancel-button-outline',
+      },
     }).then(async (result) => {
       if (result.isConfirmed) {
         const token = localStorage.getItem('token');
