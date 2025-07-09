@@ -56,7 +56,7 @@ export async function getDetailedPatient(
       diagnosis: item.diagnosis.nama_diagnosis,
       pregnancyHistory: item.pasien.riwayat_kehamilan,
       familyHistory: item.pasien.riwayat_keluarga_pasien,
-      relativeMarriageHistory: item.pasien.riwayat_kawin_berabat,
+      relativeMarriageHistory: item.pasien.riwayat_kawin_kerabat,
       previousIllnessHistory: item.pasien.riwayat_terdahulu,
       followUp: item.follow_up,
       uploadedBy: item.operator.name,

@@ -30,6 +30,8 @@ export async function singleRequestData(
     const categoryId = matchedCategory.id;
     // const operatorId = localStorage.getItem('userId');
     const status = 'pending';
+    const userId = localStorage.getItem('userId');
+    console.log(userId);
 
     const formData = new FormData();
     formData.append('kategori_id', categoryId);
@@ -41,6 +43,7 @@ export async function singleRequestData(
     formData.append('alasan_permohonan', payload.purpose);
     formData.append('operasi_id', operasiId.toString());
     formData.append('scope', 'sendiri');
+    formData.append('user_id', userId || '');
 
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/permohonan/store`,

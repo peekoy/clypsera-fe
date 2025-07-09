@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
   Sidebar,
@@ -15,15 +15,16 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { getMenuForRole } from '@/lib/menu-config';
-import type { User } from '@/types/user';
+import type { UserAuth } from '@/types/user';
 import Link from 'next/link';
 import { ChevronDown, UserIcon, LogOut } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface RoleBasedSidebarProps {
-  user: User;
+  user: UserAuth;
 }
 
 export function RoleBasedSidebar({ user }: RoleBasedSidebarProps) {
@@ -31,9 +32,9 @@ export function RoleBasedSidebar({ user }: RoleBasedSidebarProps) {
   const router = useRouter();
   const menuSections = getMenuForRole(user.role);
   const [isProfileExpanded, setIsProfileExpanded] = useState(false);
-  const photo = `https://0cf6-182-253-58-176.ngrok-free.app/${user.photo}`;
-
-  console.log('sidbar', photo);
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL?.replace('/api', '') || '';
+  const photoUrl = user.avatar ? `${baseUrl}${user.avatar}` : null;
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -67,13 +68,22 @@ export function RoleBasedSidebar({ user }: RoleBasedSidebarProps) {
       <SidebarHeader className='p-6 bg-primary rounded-tr-xl'>
         <div className='flex flex-col items-center'>
           <Avatar className='h-16 w-16 border-2 border-white/20'>
-            <AvatarImage src={photo} alt={user.name} />
-            {/* <AvatarFallback className='bg-white/10 text-white text-lg font-semibold'>
-              {user.name
-                .split(' ')
-                .map((n) => n[0])
-                .join('')}
-            </AvatarFallback> */}
+            {photoUrl ? (
+              <Image
+                src={photoUrl}
+                alt={user.name}
+                width={64}
+                height={64}
+                className='rounded-full object-cover'
+              />
+            ) : (
+              <AvatarFallback className='bg-white/10 text-white text-lg font-semibold'>
+                {user.name
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')}
+              </AvatarFallback>
+            )}
           </Avatar>
 
           <div className='cursor-pointer' onClick={toggleProfileMenu}>
@@ -98,7 +108,6 @@ export function RoleBasedSidebar({ user }: RoleBasedSidebarProps) {
             {user.role}
           </Badge>
 
-          {/* Profile Menu Items - Conditionally Rendered */}
           {isProfileExpanded && (
             <div className='w-full space-y-1 mt-2 animate-fadeIn'>
               <SidebarMenuButton
@@ -124,7 +133,7 @@ export function RoleBasedSidebar({ user }: RoleBasedSidebarProps) {
                 className='text-white/90 hover:text-white hover:bg-white/10 transition-all duration-200 bg-primary border-none w-full justify-start'
                 onClick={handleLogout}
               >
-                <div className='flex items-center gap-3 w-full px-3 py-2'>
+                <div className='flex items-center gap-3 w-full px-1 cursor-pointer'>
                   <LogOut className='h-4 w-4' />
                   <span>Log Out</span>
                 </div>

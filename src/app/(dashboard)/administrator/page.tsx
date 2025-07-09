@@ -157,6 +157,10 @@ export default function AdministratorPage() {
       showCancelButton: true,
       confirmButtonColor: '#d33',
       confirmButtonText: 'Yes, delete it!',
+      customClass: {
+        icon: 'no-border',
+        cancelButton: 'swal-cancel-button-outline',
+      },
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {

@@ -1,5 +1,5 @@
-export async function exportAllData(token: string): Promise<Response> {
-  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/export/${token}`;
+export async function exportAllData(downloadToken: string): Promise<Response> {
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/export/${downloadToken}`;
 
   const response = await fetch(url, {
     method: 'GET',

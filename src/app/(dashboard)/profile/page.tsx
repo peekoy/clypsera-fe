@@ -27,6 +27,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import Image from 'next/image';
+import Swal from 'sweetalert2';
 
 export default function CleftLipPatientForm() {
   const router = useRouter();
@@ -147,16 +148,33 @@ export default function CleftLipPatientForm() {
 
       const token = localStorage.getItem('token');
       if (!token) {
-        alert('Token tidak ditemukan. Silakan login kembali.');
+        Swal.fire('Error!', 'Token not found. Please log in again.', 'error');
+        setLoading(false);
         return;
       }
 
       await editProfile(payload, token, profileImage);
-      alert('Edit User successfully!');
 
-      router.refresh();
+      // Kirim sinyal bahwa profil telah diperbarui
+      window.dispatchEvent(new Event('profileUpdated'));
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: 'Your profile has been updated successfully.',
+        timer: 2000,
+        showConfirmButton: false,
+      }).then(() => {
+        setIsEditing(false);
+        router.refresh();
+      });
     } catch (error: any) {
       setError(error.message || 'Gagal mengupload data. Silakan coba lagi.');
+      Swal.fire(
+        'Error!',
+        error.message || 'Failed to upload data. Please try again.',
+        'error'
+      );
     } finally {
       setLoading(false);
     }
@@ -220,14 +238,6 @@ export default function CleftLipPatientForm() {
                   height={100}
                   className='rounded-full object-cover h-24 w-24'
                 />
-                {/* <Avatar>
-                  <AvatarFallback className='bg-white/10 text-white text-3xl font-semibold'>
-                    {userData?.name
-                      ?.split(' ')
-                      .map((n) => n[0])
-                      .join('')}
-                  </AvatarFallback>
-                </Avatar> */}
                 {isEditing && (
                   <label
                     htmlFor='profile-image-upload'

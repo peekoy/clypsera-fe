@@ -11,6 +11,7 @@ import { FilterBrowse } from '@/types/filter';
 import { PatientData } from '@/types/patient';
 import { getAllPatient } from '@/lib/api/fetch-patient';
 import Link from 'next/link';
+import { generateDownloadToken } from '@/lib/api/generate-download-token';
 import { checkAllDataRequest } from '@/lib/api/check-all-request-data';
 import { exportAllData } from '@/lib/api/export-all-data';
 import Swal from 'sweetalert2';
@@ -33,6 +34,7 @@ export default function BrowseDataPage() {
   const [allDataRequestStatus, setAllDataRequestStatus] = useState<
     string | null
   >(null);
+  const [allDataRequestId, setAllDataRequestId] = useState<number | null>(null);
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
 
   useEffect(() => {
@@ -72,6 +74,7 @@ export default function BrowseDataPage() {
 
       if (requestStatus) {
         setAllDataRequestStatus(requestStatus.status);
+        setAllDataRequestId(requestStatus.requestId);
       }
 
       setIsLoading(false);
@@ -211,12 +214,20 @@ export default function BrowseDataPage() {
 
   const handleDownloadAll = async () => {
     setIsDownloading(true);
+    if (!allDataRequestId) {
+      Swal.fire('Error!', 'Request ID for all data not found.', 'error');
+      setIsDownloading(false);
+      return;
+    }
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('Authentication token not found.');
 
-      const response = await exportAllData(token);
-
+      const downloadToken = await generateDownloadToken(
+        token,
+        allDataRequestId
+      );
+      const response = await exportAllData(downloadToken);
       const blob = await response.blob();
       const fileNameHeader = response.headers.get('Content-Disposition');
       const fileName =

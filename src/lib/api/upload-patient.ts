@@ -86,7 +86,7 @@ export async function uploadPatientData(
     formData.append('jenis_terapi', payload.therapyType);
     formData.append('riwayat_kehamilan', payload.motherPregnancyHistory);
     formData.append('riwayat_keluarga_pasien', payload.familyHistory);
-    formData.append('riwayat_kawin_berabat', payload.residentsMaritalHistory);
+    formData.append('riwayat_kawin_kerabat', payload.residentsMaritalHistory);
     formData.append('riwayat_terdahulu', payload.previousMedicalHistory);
     formData.append('follow_up', payload.followUp);
     formData.append('jenis_kelainan_cleft_id', matchedJenisKelainan.id);

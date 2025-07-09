@@ -87,7 +87,7 @@ export async function editPatientData(
     formData.append('pasien_anak_ke_berapa', payload.whichChild.toString());
     formData.append('riwayat_kehamilan', payload.motherPregnancyHistory);
     formData.append('riwayat_keluarga_pasien', payload.familyHistory);
-    formData.append('riwayat_kawin_berabat', payload.residentsMaritalHistory);
+    formData.append('riwayat_kawin_kerabat', payload.residentsMaritalHistory);
     formData.append('riwayat_terdahulu', payload.previousMedicalHistory);
     formData.append('tanggal_operasi', payload.dateOfSurgery);
     formData.append('tehnik_operasi', payload.operationTechnique);

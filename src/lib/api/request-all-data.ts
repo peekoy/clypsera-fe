@@ -34,6 +34,7 @@ export async function requestAllData(
 
     const categoryId = matchedCategory.id;
     const status = 'pending';
+    const userId = localStorage.getItem('userId');
 
     const formData = new FormData();
     formData.append('kategori_id', categoryId);
@@ -46,6 +47,7 @@ export async function requestAllData(
     formData.append('operasi_id', '100');
     // Tambahkan scope 'semua' dan jangan sertakan operasi_id
     formData.append('scope', 'semua');
+    formData.append('user_id', userId || '');
 
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/permohonan/store`,

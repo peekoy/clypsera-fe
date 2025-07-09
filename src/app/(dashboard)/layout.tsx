@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
 import type { UserAuth } from '@/types/user';
@@ -14,6 +14,36 @@ export default function DashboardLayoutWrapper({
   const [user, setUser] = useState<UserAuth | null>(null);
   const router = useRouter();
 
+  const fetchFreshUserData = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('Token tidak ditemukan untuk fetch data baru.');
+      return;
+    }
+    try {
+      const freshUserProfile = await getUserProfile(token);
+
+      if (freshUserProfile) {
+        setUser((prevUser) => {
+          const newUser = {
+            ...(prevUser || ({} as UserAuth)),
+            id: prevUser?.id || 0,
+            role: prevUser?.role || 'user',
+            name: freshUserProfile.name,
+            avatar: freshUserProfile.photo,
+          };
+          const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+          storedUser.name = freshUserProfile.name;
+          storedUser.avatar = freshUserProfile.photo;
+          localStorage.setItem('user', JSON.stringify(storedUser));
+          return newUser;
+        });
+      }
+    } catch (error) {
+      console.error('Terjadi kesalahan saat mengambil profil pengguna:', error);
+    }
+  }, []);
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
@@ -23,44 +53,25 @@ export default function DashboardLayoutWrapper({
       return;
     }
 
-    let parsedUser: UserAuth;
     try {
-      // 1. Set state pengguna awal dari localStorage untuk mencegah flicker pada UI
-      parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
+      setUser(JSON.parse(storedUser));
     } catch (err) {
       console.error('Gagal parse user dari localStorage', err);
       router.push('/login');
       return;
     }
 
-    // 2. Buat fungsi untuk mengambil data pengguna terbaru dari API
-    const fetchFreshUserData = async () => {
-      try {
-        const freshUserProfile = await getUserProfile(token);
+    // Panggil saat pertama kali load
+    fetchFreshUserData();
 
-        if (freshUserProfile) {
-          // 3. Perbarui state dengan nama baru dari API
-          setUser((prevUser) => {
-            if (!prevUser) return null;
-            return {
-              ...prevUser, // Pertahankan id, role, avatar dari localStorage
-              name: freshUserProfile.name, // Perbarui nama dari respons API
-            };
-          });
-        } else {
-          console.error('Gagal mengambil profil pengguna dari API.');
-        }
-      } catch (error) {
-        console.error(
-          'Terjadi kesalahan saat mengambil profil pengguna:',
-          error
-        );
-      }
+    // Tambahkan listener untuk event 'profileUpdated'
+    window.addEventListener('profileUpdated', fetchFreshUserData);
+
+    // Hapus listener saat komponen tidak lagi digunakan
+    return () => {
+      window.removeEventListener('profileUpdated', fetchFreshUserData);
     };
-
-    fetchFreshUserData(); // Panggil fungsi fetch
-  }, [router]);
+  }, [router, fetchFreshUserData]);
 
   if (!user) {
     return (

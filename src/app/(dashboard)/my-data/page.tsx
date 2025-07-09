@@ -203,8 +203,8 @@ export default function MyDataPage() {
       confirmButtonColor: '#d33',
       confirmButtonText: 'Yes, delete it!',
       customClass: {
-        icon: 'no-border', // Class untuk menghapus border default dari ikon
-        cancelButton: 'swal-cancel-button-outline', // Class untuk tombol cancel
+        icon: 'no-border',
+        cancelButton: 'swal-cancel-button-outline',
       },
     }).then(async (result) => {
       if (result.isConfirmed) {

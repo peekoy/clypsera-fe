@@ -8,7 +8,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { RoleBasedSidebar } from './role-based-sidebar';
-import type { User } from '@/types/user';
+import type { UserAuth } from '@/types/user';
 import { Button } from '@/components/ui/button';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
@@ -16,7 +16,7 @@ import { useRouter } from 'next/navigation';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  user: User;
+  user: UserAuth;
 }
 
 function convertPathToTitle(title: string) {
