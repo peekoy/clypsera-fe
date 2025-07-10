@@ -148,7 +148,7 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className='relative p-6 space-y-6'>
+    <div className='relative pt-6 px-2 pb-2 space-y-6'>
       <Card className='z-10 bg-[#4971a9]/80 text-white overflow-hidden'>
         <CardContent className='p-6'>
           <div className='flex items-center justify-between mx-30'>
@@ -238,25 +238,28 @@ export default function DashboardPage() {
                   Patient data by type of therapy
                 </CardTitle>
               </CardHeader>
-              <CardContent className='pt-0 flex items-center'>
-                <div className='space-y-2'>
+              <CardContent className='pt-0 flex items-center justify-between'>
+                <div className='w-1/2 space-y-2'>
                   {therapyChartData.map((item) => (
                     <div key={item.name} className='flex items-center gap-3'>
                       <div
                         className='w-3 h-3 rounded-full flex-shrink-0'
                         style={{ backgroundColor: item.fill }}
                       />
-                      <div className='text-sm'>
-                        <span className='font-semibold text-gray-800'>
+                      <div className='flex-1 text-sm truncate'>
+                        <span className='font-semibold text-gray-800 mr-1'>
                           {item.value}
                         </span>
-                        <p className='text-gray-600 ml-1'>{item.name}</p>
+                        <span className='text-gray-600'>{item.name}</span>
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className='flex-1 min-h-0'>
-                  <ChartContainer config={chartConfig} className='h-[160px]'>
+                <div className='w-1/2 h-[160px]'>
+                  <ChartContainer
+                    config={chartConfig}
+                    className='h-full w-full'
+                  >
                     <PieChart>
                       <Pie
                         data={therapyChartData}
@@ -286,31 +289,34 @@ export default function DashboardPage() {
                   Patient data by gender
                 </CardTitle>
               </CardHeader>
-              <CardContent className='pt-0 flex-1 flex'>
-                <div className='flex justify-center gap-6'>
+              <CardContent className='pt-0 flex-1 flex items-center justify-between'>
+                <div className='w-1/2 flex flex-col items-start justify-center gap-2'>
                   {genderChartData.map((item) => (
-                    <div key={item.name} className='flex items-center gap-2'>
+                    <div key={item.name} className='flex items-center gap-3'>
                       <div
                         className='w-3 h-3 rounded-full flex-shrink-0'
                         style={{ backgroundColor: item.fill }}
                       />
                       <div className='text-sm'>
-                        <span className='font-semibold text-gray-800'>
+                        <span className='font-semibold text-gray-800 mr-1'>
                           {item.value}
                         </span>
-                        <span className='text-gray-600 ml-1'>{item.name}</span>
+                        <span className='text-gray-600'>{item.name}</span>
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className='flex-1 min-h-0'>
-                  <ChartContainer config={chartConfig} className='h-[160px]'>
+                <div className='w-1/2 h-[110px]'>
+                  <ChartContainer
+                    config={chartConfig}
+                    className='h-full w-full'
+                  >
                     <PieChart>
                       <Pie
                         data={genderChartData}
                         cx='50%'
                         cy='50%'
-                        outerRadius={60}
+                        outerRadius={50}
                         dataKey='value'
                         nameKey='name'
                         stroke='none'
