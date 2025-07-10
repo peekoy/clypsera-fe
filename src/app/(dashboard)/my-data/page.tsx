@@ -216,7 +216,13 @@ export default function MyDataPage() {
             setMyPatient((prev) =>
               prev.filter((patient) => patient.id !== patientId)
             );
-            Swal.fire('Deleted!', 'Your file has been deleted.', 'success');
+            Swal.fire({
+              title: 'Deleted!',
+              text: 'Your file has been deleted.',
+              icon: 'success',
+              showConfirmButton: false,
+              timer: 2000,
+            });
           }
         } catch (error: any) {
           Swal.fire(

@@ -203,9 +203,15 @@ export default function AddNewUserForm() {
                 <SelectValue placeholder='Select a role' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='user'>User</SelectItem>
-                <SelectItem value='operator'>Operator</SelectItem>
-                <SelectItem value='admin'>Admin</SelectItem>
+                <SelectItem className='cursor-pointer' value='user'>
+                  User
+                </SelectItem>
+                <SelectItem className='cursor-pointer' value='operator'>
+                  Operator
+                </SelectItem>
+                <SelectItem className='cursor-pointer' value='admin'>
+                  Admin
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>

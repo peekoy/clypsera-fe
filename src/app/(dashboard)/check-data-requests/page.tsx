@@ -201,7 +201,13 @@ export default function CheckDataRequestPage() {
             setRequestData((prev) =>
               prev.filter((req) => req.id !== requestId)
             );
-            Swal.fire('Deleted!', 'The request has been deleted.', 'success');
+            Swal.fire({
+              icon: 'success',
+              title: 'Deleted!',
+              text: 'The request has been deleted.',
+              showConfirmButton: false,
+              timer: 2000,
+            });
           }
         } catch (error: any) {
           Swal.fire(

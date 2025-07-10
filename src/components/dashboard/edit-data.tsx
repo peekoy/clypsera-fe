@@ -26,6 +26,13 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import Image from 'next/image';
+import Swal from 'sweetalert2';
+// DIUBAH: Impor fungsi untuk mengambil data dropdown
+import {
+  getTherapyTypes,
+  getDiagnosisTypes,
+  getCleftPalateTypes,
+} from '@/lib/api/fetch-form-options';
 
 type PatientFormState = DetailedPatientData & {
   patientName: string;
@@ -49,22 +56,44 @@ export default function EditDataForm() {
   const params = useParams();
   const router = useRouter();
   const [patientData, setPatientData] = useState<PatientFormState | null>(null);
-  const [beforeSurgeryFiles, setBeforeSurgeryFiles] = useState<File[]>([]);
-  const [afterSurgeryFiles, setAfterSurgeryFiles] = useState<File[]>([]);
+
+  const [beforeSurgeryFile, setBeforeSurgeryFile] = useState<File | null>(null);
+  const [afterSurgeryFile, setAfterSurgeryFile] = useState<File | null>(null);
+
   const [isDragging, setIsDragging] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFetchingData, setIsFetchingData] = useState(true);
+
+  // DIUBAH: Tambahkan state untuk menyimpan opsi dropdown
+  const [therapyOptions, setTherapyOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
+  const [diagnosisOptions, setDiagnosisOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
+  const [cleftPalateTypeOptions, setCleftPalateTypeOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
 
   useEffect(() => {
-    const fetchPatientById = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.log('Token tidak ditemukan');
+      setIsFetchingData(false);
+      return;
+    }
+
+    const fetchInitialData = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          console.log('Token tidak ditemukan');
-          return;
-        }
-        let patient = await getMyPatientById(
-          token,
-          Number.parseInt(params.id as string)
-        );
+        // Ambil semua data secara bersamaan
+        const [patient, therapies, diagnoses, cleftTypes] = await Promise.all([
+          getMyPatientById(token, Number.parseInt(params.id as string)),
+          getTherapyTypes(token),
+          getDiagnosisTypes(token),
+          getCleftPalateTypes(token),
+        ]);
+
+        // Set state untuk data pasien
         if (patient) {
           setPatientData({
             ...patient,
@@ -85,11 +114,24 @@ export default function EditDataForm() {
             patientAddress: patient.address,
           });
         }
+
+        // Set state untuk opsi dropdown
+        setTherapyOptions(therapies);
+        setDiagnosisOptions(diagnoses);
+        setCleftPalateTypeOptions(cleftTypes);
       } catch (error) {
-        console.error('Failed to fetch patient:', error);
+        console.error('Failed to fetch initial data:', error);
+        Swal.fire(
+          'Error',
+          'Failed to load initial data. Please try again.',
+          'error'
+        );
+      } finally {
+        setIsFetchingData(false);
       }
     };
-    fetchPatientById();
+
+    fetchInitialData();
   }, [params.id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,52 +157,15 @@ export default function EditDataForm() {
     files: FileList | null,
     type: 'before' | 'after'
   ) => {
-    if (files) {
-      const fileArray = Array.from(files);
+    if (files && files[0]) {
+      const file = files[0];
       if (type === 'before') {
-        setBeforeSurgeryFiles(fileArray);
+        setBeforeSurgeryFile(file);
       } else {
-        setAfterSurgeryFiles(fileArray);
+        setAfterSurgeryFile(file);
       }
     }
   };
-
-  const removeFile = (index: number, type: 'before' | 'after') => {
-    if (type === 'before') {
-      setBeforeSurgeryFiles((prev) => prev.filter((_, i) => i !== index));
-    } else {
-      setAfterSurgeryFiles((prev) => prev.filter((_, i) => i !== index));
-    }
-  };
-
-  const FilePreview = ({
-    files,
-    type,
-  }: {
-    files: File[];
-    type: 'before' | 'after';
-  }) => (
-    <div className='mt-2 grid grid-cols-2 gap-2'>
-      {files.map((file, index) => (
-        <div key={index} className='relative'>
-          <Image
-            src={URL.createObjectURL(file)}
-            alt={`preview ${index}`}
-            width={100}
-            height={100}
-            className='w-full h-auto rounded-md'
-          />
-          <button
-            type='button'
-            onClick={() => removeFile(index, type)}
-            className='absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-700'
-          >
-            <X className='h-3 w-3' />
-          </button>
-        </div>
-      ))}
-    </div>
-  );
 
   const handleDragEvents = (
     e: DragEvent<HTMLDivElement>,
@@ -168,11 +173,7 @@ export default function EditDataForm() {
   ) => {
     e.preventDefault();
     e.stopPropagation();
-    if (isEntering) {
-      setIsDragging(true);
-    } else {
-      setIsDragging(false);
-    }
+    setIsDragging(isEntering);
   };
 
   const handleDrop = (
@@ -187,56 +188,95 @@ export default function EditDataForm() {
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const token = localStorage.getItem('token');
 
-    if (!patientData) {
-      alert('Patient data is not loaded yet.');
-      return;
-    }
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "Do you want to update this patient's data?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, update it!',
+      customClass: {
+        icon: 'no-border',
+        cancelButton: 'swal-cancel-button-outline',
+      },
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        setIsSubmitting(true);
+        const token = localStorage.getItem('token');
 
-    const payloadToSend: EditPatientPayload = {
-      patientName: patientData.patientName,
-      congenitalComorbidities: patientData.congenitalComorbidities,
-      whichChild: patientData.whichChild,
-      dateOfBirth: patientData.dateOfBirth,
-      patientGender: patientData.patientGender,
-      dateOfSurgery: patientData.dateOfSurgery,
-      patientAge: patientData.patientAge,
-      operationTechnique: patientData.operationTechnique,
-      patientAddress: patientData.patientAddress,
-      providerName: patientData.providerName,
-      ethnicity: patientData.ethnicity,
-      surgeryLocation: patientData.surgeryLocation,
-      motherPregnancyHistory: patientData.motherPregnancyHistory,
-      familyHistory: patientData.familyHistory,
-      residentsMaritalHistory: patientData.residentsMaritalHistory,
-      previousMedicalHistory: patientData.previousMedicalHistory,
-      followUp: patientData.followUp,
-      cleftPalateType: patientData.cleftPalateType,
-      therapyType: patientData.therapyType,
-      diagnosis: patientData.diagnosis,
-    };
+        if (!patientData) {
+          Swal.fire('Error!', 'Patient data is not loaded yet.', 'error');
+          setIsSubmitting(false);
+          return;
+        }
 
-    try {
-      await editPatientData(
-        token,
-        Number(params.id),
-        payloadToSend,
-        beforeSurgeryFiles,
-        afterSurgeryFiles
-      );
-      alert('Data berhasil diperbarui!');
-      router.push('/my-data');
-    } catch (error: any) {
-      console.error('Upload error:', error.message);
-      alert(`Gagal memperbarui data: ${error.message}`);
-    }
+        const payloadToSend: EditPatientPayload = {
+          patientName: patientData.patientName,
+          congenitalComorbidities: patientData.congenitalComorbidities,
+          whichChild: patientData.whichChild,
+          dateOfBirth: patientData.dateOfBirth,
+          patientGender: patientData.patientGender,
+          dateOfSurgery: patientData.dateOfSurgery,
+          patientAge: patientData.patientAge,
+          operationTechnique: patientData.operationTechnique,
+          patientAddress: patientData.patientAddress,
+          providerName: patientData.providerName,
+          ethnicity: patientData.ethnicity,
+          surgeryLocation: patientData.surgeryLocation,
+          motherPregnancyHistory: patientData.motherPregnancyHistory,
+          familyHistory: patientData.familyHistory,
+          residentsMaritalHistory: patientData.residentsMaritalHistory,
+          previousMedicalHistory: patientData.previousMedicalHistory,
+          followUp: patientData.followUp,
+          cleftPalateType: patientData.cleftPalateType,
+          therapyType: patientData.therapyType,
+          diagnosis: patientData.diagnosis,
+        };
+
+        try {
+          await editPatientData(
+            token,
+            Number(params.id),
+            payloadToSend,
+            beforeSurgeryFile ? [beforeSurgeryFile] : [],
+            afterSurgeryFile ? [afterSurgeryFile] : []
+          );
+          Swal.fire({
+            icon: 'success',
+            title: 'Updated!',
+            text: 'Patient data has been updated successfully.',
+            showConfirmButton: false,
+            timer: 1500,
+          }).then(() => {
+            router.push('/my-data');
+          });
+        } catch (error: any) {
+          console.error('Upload error:', error.message);
+          Swal.fire(
+            'Update Failed!',
+            `Failed to update data: ${error.message}`,
+            'error'
+          );
+        } finally {
+          setIsSubmitting(false);
+        }
+      }
+    });
   };
+
+  if (isFetchingData) {
+    return (
+      <div className='flex items-center justify-center h-full'>
+        <p>Loading patient data...</p>
+      </div>
+    );
+  }
 
   if (!patientData) {
     return (
       <div className='flex items-center justify-center h-full'>
-        <p>Loading patient data...</p>
+        <p>Patient data not found.</p>
       </div>
     );
   }
@@ -252,8 +292,9 @@ export default function EditDataForm() {
             type='submit'
             form='cleft-lip-form'
             className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white px-6'
+            disabled={isSubmitting}
           >
-            Update
+            {isSubmitting ? 'Updating...' : 'Update'}
           </Button>
         </div>
       </CardHeader>
@@ -263,7 +304,7 @@ export default function EditDataForm() {
           onSubmit={onSubmit}
           className='space-y-6 pt-6'
         >
-          {/* Patient Details */}
+          {/* ...Form fields... */}
           <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
             <div className='space-y-2'>
               <label
@@ -326,16 +367,16 @@ export default function EditDataForm() {
                   <Button
                     variant={'outline'}
                     className={cn(
-                      'w-full justify-start text-left font-normal bg-gray-100 border-0',
+                      'w-full justify-between text-left font-normal bg-gray-100 border-0',
                       !patientData.dateOfBirth && 'text-muted-foreground'
                     )}
                   >
-                    <CalendarIcon className='mr-2 h-4 w-4' />
                     {patientData.dateOfBirth ? (
                       format(new Date(patientData.dateOfBirth), 'PPP')
                     ) : (
                       <span>Pick a date</span>
                     )}
+                    <CalendarIcon className='mr-2 h-4 w-4' />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className='w-auto p-0'>
@@ -457,6 +498,7 @@ export default function EditDataForm() {
                 required
               />
             </div>
+            {/* DIUBAH: Gunakan data dinamis untuk dropdown */}
             <div className='space-y-2'>
               <label
                 htmlFor='cleftPalateType'
@@ -475,12 +517,11 @@ export default function EditDataForm() {
                   <SelectValue placeholder='Select type' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value='Sindromic Cleft'>
-                    Sindromic Cleft
-                  </SelectItem>
-                  <SelectItem value='Nonsindromic Cleft'>
-                    Nonsindromic Cleft
-                  </SelectItem>
+                  {cleftPalateTypeOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -517,6 +558,7 @@ export default function EditDataForm() {
                 required
               />
             </div>
+            {/* DIUBAH: Gunakan data dinamis untuk dropdown */}
             <div className='space-y-2'>
               <label
                 htmlFor='therapyType'
@@ -535,11 +577,11 @@ export default function EditDataForm() {
                   <SelectValue placeholder='Select therapy' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value='Labioshisis'>Labioshisis</SelectItem>
-                  <SelectItem value='Palatoschisis'>Palatoschisis</SelectItem>
-                  <SelectItem value='Labiopalatoschisis'>
-                    Labiopalatoschisis
-                  </SelectItem>
+                  {therapyOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -576,6 +618,7 @@ export default function EditDataForm() {
                 required
               />
             </div>
+            {/* DIUBAH: Gunakan data dinamis untuk dropdown */}
             <div className='space-y-2'>
               <label
                 htmlFor='diagnosis'
@@ -594,11 +637,11 @@ export default function EditDataForm() {
                   <SelectValue placeholder='Select diagnosis' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value='Labioschisis'>Labioschisis</SelectItem>
-                  <SelectItem value='Palatoschisis'>Palatoschisis</SelectItem>
-                  <SelectItem value='Labiopalatoshisis'>
-                    Labiopalatoshisis
-                  </SelectItem>
+                  {diagnosisOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -689,8 +732,6 @@ export default function EditDataForm() {
               />
             </div>
           </div>
-
-          {/* Photo Upload Section */}
           <div className='bg-[#4F959D]/11 p-6 rounded-lg'>
             <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
               <div>
@@ -714,13 +755,14 @@ export default function EditDataForm() {
               </div>
 
               <div className='space-y-4'>
+                {/* Before Surgery Upload */}
                 <div>
                   <label className='text-sm font-medium text-gray-700 mb-2 block'>
                     Photo before surgery
                   </label>
                   <div
                     className={cn(
-                      'border-2 border-dashed border-[#4971A9] bg-[#4971A9]/11 rounded-lg p-4 text-center transition-colors',
+                      'relative border-2 border-dashed border-[#4971A9] bg-[#4971A9]/11 rounded-lg p-4 h-48 flex justify-center items-center transition-colors',
                       isDragging && 'bg-blue-200 border-blue-500'
                     )}
                     onDragEnter={(e) => handleDragEvents(e, true)}
@@ -728,49 +770,51 @@ export default function EditDataForm() {
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => handleDrop(e, 'before')}
                   >
-                    {beforeSurgeryFiles.length > 0 ? (
-                      <FilePreview files={beforeSurgeryFiles} type='before' />
-                    ) : patientData.preOpImage ? (
-                      <div className='relative'>
+                    <input
+                      type='file'
+                      accept='image/*'
+                      onChange={(e) =>
+                        handleFileUpload(e.target.files, 'before')
+                      }
+                      className='hidden'
+                      id='before-surgery'
+                    />
+                    {beforeSurgeryFile || patientData.preOpImage ? (
+                      <div className='relative w-full h-full'>
                         <Image
-                          src={patientData.preOpImage}
-                          alt='Preview before surgery'
-                          width={200}
-                          height={200}
-                          className='w-full h-auto rounded-md'
-                        />
-                        <Button
-                          type='button'
-                          size='sm'
-                          onClick={() =>
-                            setPatientData({ ...patientData, preOpImage: '' })
+                          src={
+                            beforeSurgeryFile
+                              ? URL.createObjectURL(beforeSurgeryFile)
+                              : patientData.preOpImage
                           }
-                          className='absolute cursor-pointer  top-1 right-1 bg-red-500 hover:bg-red-600 text-white'
+                          alt='Preview before surgery'
+                          layout='fill'
+                          className='object-contain rounded-lg'
+                        />
+                        <label
+                          htmlFor='before-surgery'
+                          className='absolute top-2 right-2 z-10'
                         >
-                          Change
-                        </Button>
+                          <Button
+                            type='button'
+                            size='sm'
+                            className='cursor-pointer bg-red-500 hover:bg-red-600 text-white'
+                            asChild
+                          >
+                            <span>Change</span>
+                          </Button>
+                        </label>
                       </div>
                     ) : (
                       <label
                         htmlFor='before-surgery'
-                        className='flex items-center justify-center gap-2 cursor-pointer h-full py-4'
+                        className='flex items-center justify-center gap-2 cursor-pointer w-full h-full'
                       >
-                        <input
-                          type='file'
-                          multiple
-                          accept='image/*'
-                          onChange={(e) =>
-                            handleFileUpload(e.target.files, 'before')
-                          }
-                          className='hidden'
-                          id='before-surgery'
-                          name='foto_sebelum_operasi'
-                        />
                         <Plus className='h-6 w-6 primary-color' />
                         <p className='primary-color text-sm'>
-                          Add files{' '}
+                          Add file{' '}
                           <span className='text-[#868686]'>
-                            or drop files here
+                            or drop file here
                           </span>
                         </p>
                       </label>
@@ -778,13 +822,14 @@ export default function EditDataForm() {
                   </div>
                 </div>
 
+                {/* After Surgery Upload */}
                 <div>
                   <label className='text-sm font-medium text-gray-700 mb-2 block'>
                     Photo after surgery
                   </label>
                   <div
                     className={cn(
-                      'border-2 border-dashed border-[#4971A9] bg-[#4971A9]/11 rounded-lg p-4 text-center transition-colors',
+                      'relative border-2 border-dashed border-[#4971A9] bg-[#4971A9]/11 rounded-lg p-4 h-48 flex justify-center items-center transition-colors',
                       isDragging && 'bg-blue-200 border-blue-500'
                     )}
                     onDragEnter={(e) => handleDragEvents(e, true)}
@@ -792,49 +837,51 @@ export default function EditDataForm() {
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => handleDrop(e, 'after')}
                   >
-                    {afterSurgeryFiles.length > 0 ? (
-                      <FilePreview files={afterSurgeryFiles} type='after' />
-                    ) : patientData.postOpImage ? (
-                      <div className='relative'>
+                    <input
+                      type='file'
+                      accept='image/*'
+                      onChange={(e) =>
+                        handleFileUpload(e.target.files, 'after')
+                      }
+                      className='hidden'
+                      id='after-surgery'
+                    />
+                    {afterSurgeryFile || patientData.postOpImage ? (
+                      <div className='relative w-full h-full'>
                         <Image
-                          src={patientData.postOpImage}
-                          alt='Preview after surgery'
-                          width={200}
-                          height={200}
-                          className='w-full h-auto rounded-md'
-                        />
-                        <Button
-                          type='button'
-                          size='sm'
-                          onClick={() =>
-                            setPatientData({ ...patientData, postOpImage: '' })
+                          src={
+                            afterSurgeryFile
+                              ? URL.createObjectURL(afterSurgeryFile)
+                              : patientData.postOpImage
                           }
-                          className='absolute cursor-pointer top-1 right-1 bg-red-500 hover:bg-red-600 text-white'
+                          alt='Preview after surgery'
+                          layout='fill'
+                          className='object-contain rounded-lg'
+                        />
+                        <label
+                          htmlFor='after-surgery'
+                          className='absolute top-2 right-2 z-10'
                         >
-                          Change
-                        </Button>
+                          <Button
+                            type='button'
+                            size='sm'
+                            className='cursor-pointer bg-red-500 hover:bg-red-600 text-white'
+                            asChild
+                          >
+                            <span>Change</span>
+                          </Button>
+                        </label>
                       </div>
                     ) : (
                       <label
                         htmlFor='after-surgery'
-                        className='flex items-center justify-center gap-2 cursor-pointer h-full py-4'
+                        className='flex items-center justify-center gap-2 cursor-pointer w-full h-full'
                       >
-                        <input
-                          type='file'
-                          multiple
-                          accept='image/*'
-                          onChange={(e) =>
-                            handleFileUpload(e.target.files, 'after')
-                          }
-                          className='hidden'
-                          id='after-surgery'
-                          name='foto_setelah_operasi'
-                        />
                         <Plus className='h-6 w-6 primary-color' />
                         <p className='primary-color text-sm'>
-                          Add files{' '}
+                          Add file{' '}
                           <span className='text-[#868686]'>
-                            or drop files here
+                            or drop file here
                           </span>
                         </p>
                       </label>

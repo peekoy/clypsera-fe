@@ -242,11 +242,13 @@ export default function BrowseDataPage() {
           await deleteRequest(token, allDataRequestId);
           setAllDataRequestStatus(null);
           setAllDataRequestId(null);
-          Swal.fire(
-            'Cancelled!',
-            'Your request has been cancelled.',
-            'success'
-          );
+          Swal.fire({
+            icon: 'success',
+            title: 'Cancelled!',
+            text: 'Your request has been cancelled.',
+            showConfirmButton: false,
+            timer: 2000,
+          });
         } catch (error: any) {
           Swal.fire(
             'Error!',

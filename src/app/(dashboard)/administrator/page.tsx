@@ -16,7 +16,7 @@ import Swal from 'sweetalert2';
 // Fungsi untuk memformat tanggal
 const formatDateTime = (date: Date) => {
   if (!date || !(date instanceof Date)) return 'N/A';
-  // Menggunakan toLocaleString dengan lokal Swedia untuk format YYYY-MM-DD HH:mm:ss
+  // Menggunakan lokal Swedia untuk format YYYY-MM-DD HH:mm:ss
   return date.toLocaleString('sv-SE');
 };
 
@@ -34,7 +34,9 @@ export default function AdministratorPage() {
       setIsLoading(true);
       const users = (await getAllUsers(token)) || [];
       if (users) {
-        setAllUsersData(users);
+        // DIUBAH: Urutkan data pengguna berdasarkan tanggal pembuatan secara menurun
+        const sortedUsers = users.sort((a, b) => b.id - a.id);
+        setAllUsersData(sortedUsers);
       }
       setIsLoading(false);
     };
@@ -168,7 +170,13 @@ export default function AdministratorPage() {
           if (token) {
             await deleteUser(token, userId);
             setAllUsersData(allUsersData.filter((user) => user.id !== userId));
-            Swal.fire('Deleted!', 'User has been deleted.', 'success');
+            Swal.fire({
+              icon: 'success',
+              title: 'Deleted!',
+              text: 'User has been deleted.',
+              showConfirmButton: false,
+              timer: 2000,
+            });
           }
         } catch (error: any) {
           Swal.fire(

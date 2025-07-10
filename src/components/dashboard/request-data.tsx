@@ -119,6 +119,8 @@ export default function RequestData() {
             title: isApproving ? 'Approved!' : 'Rejected!',
             text: `The request has been successfully ${status}.`,
             icon: 'success',
+            showConfirmButton: false,
+            timer: 2000,
           }).then(() => {
             router.back();
           });

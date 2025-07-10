@@ -104,11 +104,13 @@ export default function EditUserForm() {
         return;
       }
       await editUser(formData, Number.parseInt(params.id as string), token);
-      Swal.fire(
-        'Success!',
-        'User data has been updated successfully.',
-        'success'
-      ).then(() => {
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: 'User data has been updated successfully.',
+        showConfirmButton: false,
+        timer: 2000,
+      }).then(() => {
         router.push('/administrator');
       });
     } catch (error: any) {

@@ -146,11 +146,14 @@ export default function OperationDetail() {
           setIsDataRequested(false);
           setRequestId(null);
           setStatusRequest('');
-          Swal.fire(
-            'Cancelled!',
-            'Your request has been cancelled.',
-            'success'
-          );
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Cancelled!',
+            text: 'Your request has been cancelled.',
+            showConfirmButton: false,
+            timer: 2000,
+          });
         } catch (error: any) {
           Swal.fire(
             'Error!',

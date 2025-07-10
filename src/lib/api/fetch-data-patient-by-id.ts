@@ -54,7 +54,7 @@ export async function getMyPatientById(
       diagnosis: data.operasi.diagnosis.nama_diagnosis,
       pregnancyHistory: data.riwayat_kehamilan,
       familyHistory: data.riwayat_keluarga_pasien,
-      relativeMarriageHistory: data.riwayat_kawin_berabat,
+      relativeMarriageHistory: data.riwayat_kawin_kerabat,
       previousIllnessHistory: data.riwayat_terdahulu,
       followUp: data.operasi.follow_up,
       uploadedBy: data.operasi.operator.name,
