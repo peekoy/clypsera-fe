@@ -1,24 +1,44 @@
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
+import Link from 'next/link';
 
 type CardNewsProps = {
+  id: number;
   image: string;
   title: string;
   description: string;
+  source: string; // Pastikan 'source' ada di dalam props
 };
 
-export default function CardNews({ image, title, description }: CardNewsProps) {
+export default function CardNews({
+  id,
+  image,
+  title,
+  description,
+  source,
+}: CardNewsProps) {
+  // Gunakan 'source' sebagai URL tujuan
+  const newsUrl = source;
+
   return (
     <div className='flex'>
-      <Card className='h-140 gap-0 bg-white w-100 py-0 shadow-md'>
-        <CardContent className='px-0'>
-          <div className='relative w-full h-60'>
-            <Image src={image} alt={title} fill />
-          </div>
+      <Card className='h-140 flex flex-col gap-0 bg-white w-100 py-0 shadow-md overflow-hidden'>
+        <CardContent className='p-0'>
+          {/* PERBAIKAN: Mengarahkan tautan ke 'newsUrl' dan membuka di tab baru */}
+          <Link href={newsUrl} target='_blank' rel='noopener noreferrer'>
+            <div className='relative w-full h-60 cursor-pointer'>
+              <Image src={image} alt={title} fill className='object-cover' />
+            </div>
+          </Link>
         </CardContent>
-        <div className='flex flex-col gap-8 px-10'>
-          <CardTitle className='text-xl font-bold'>{title}</CardTitle>
-          <p className='text-sm'>{description}</p>
+        <div className='flex flex-col flex-1 gap-4 p-6'>
+          {/* PERBAIKAN: Mengarahkan tautan ke 'newsUrl' dan membuka di tab baru */}
+          <Link href={newsUrl} target='_blank' rel='noopener noreferrer'>
+            <CardTitle className='text-xl font-bold hover:underline cursor-pointer'>
+              {title}
+            </CardTitle>
+          </Link>
+          <p className='text-sm text-gray-600 line-clamp-4'>{description}</p>
         </div>
       </Card>
     </div>
