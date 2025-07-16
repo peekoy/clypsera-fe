@@ -1,3 +1,5 @@
+// src/components/landingpage/Header.tsx
+
 'use client';
 
 import {
@@ -32,7 +34,7 @@ export function Header() {
 
   return (
     <header className='w-full'>
-      <div className='container mx-auto flex 4xs:h-0 2xs:h-10 sm:h-20 items-center justify-between pt-6 2xs:px-6 md:px-14 lg:px-24'>
+      <div className='container mx-auto flex 4xs:h-0 2xs:h-10 sm:h-20 items-center justify-between 4xs:pt-10 2xs:pt-6 4xs:px-4 2xs:px-6 md:px-14 lg:px-24'>
         {pathname === '/' || pathname === '/about' ? (
           <Link href='/' className='flex items-center gap-2'>
             <Image
@@ -40,7 +42,7 @@ export function Header() {
               alt='clypsera-logo'
               width={128}
               height={128}
-              className='2xs:w-[70px] md:w-[100px] lg:w-[128px]'
+              className='4xs:w-[60px] 2xs:w-[70px] md:w-[100px] lg:w-[128px]'
             />
           </Link>
         ) : (
@@ -50,19 +52,23 @@ export function Header() {
               alt='clypsera-logo'
               width={128}
               height={128}
-              className='md:w-[100px] lg:w-[128px]'
+              className='4xs:w-[60px] 2xs:w-[70px] md:w-[100px] lg:w-[128px]'
             />
           </Link>
         )}
 
         <div className='md:hidden'>
           <button onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {isMenuOpen ? (
+              <X color='white' size={24} />
+            ) : (
+              <Menu color='white' size={24} />
+            )}
           </button>
         </div>
 
         {isMenuOpen && (
-          <div className='md:hidden absolute flex justify-center top-20 left-0 w-full bg-black z-20 shadow-lg'>
+          <div className='md:hidden absolute flex justify-center top-20 left-0 w-full bg-white z-20 shadow-lg'>
             <NavigationMenu>
               <NavigationMenuList className='flex flex-col justify-center items-center gap-4 py-4'>
                 <NavigationMenuItem className='w-full'>
@@ -77,7 +83,7 @@ export function Header() {
                     <NavigationMenuLink
                       className={
                         pathname === '/' || pathname === '/about'
-                          ? 'bg-white text-md text-white hover:bg-blue-400/20 hover:text-white'
+                          ? 'bg-black text-md text-white hover:bg-blue-400/20 hover:text-white'
                           : 'bg-transparent text-md text-black hover:bg-gray-100/80'
                       }
                     >

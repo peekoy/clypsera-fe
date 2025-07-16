@@ -92,10 +92,10 @@ export function News() {
 
   return (
     <div className='flex flex-col items-center md:mb-10 lg:mb-20 2xs:gap-2 md:gap-4 lg:gap-8 xl:gap-12 z-10 w-full'>
-      <p className='2xs:text-lg md:text-3xl lg:text-4xl xl:text-5xl primary-color font-bold'>
+      <p className='4xs:text-[16px] 2xs:text-lg md:text-3xl lg:text-4xl xl:text-5xl primary-color font-bold'>
         Latest News
       </p>
-      <p className='2xs:text-[12px] md:text-[16px] lg:text-[24px] xl:text-[32px] font-semibold text-center'>
+      <p className='4xs:text-[14px] 2xs:text-[12px] md:text-[16px] lg:text-[24px] xl:text-[32px] font-semibold text-center'>
         Explore the latest research and updates related to cleft lip and palate.
       </p>
 
@@ -119,7 +119,7 @@ export function News() {
               </Button>
             )}
 
-            <div className='flex gap-6 justify-center pb-4 items-start 4xs:w-10 2xs:w-106 sm:w-full'>
+            <div className='flex gap-6 justify-center pb-4 items-start 4xs:w-80 2xs:w-106 sm:w-full'>
               {displayedNews.map((article) => (
                 <div key={article.id} className='w-1/3 flex-shrink-0'>
                   <CardNews

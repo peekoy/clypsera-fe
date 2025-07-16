@@ -21,21 +21,21 @@ export default function CardNews({
 
   return (
     <div className='flex'>
-      <Card className='2xs:h-80 md:h-100 lg:h-120 xl:h-140 flex flex-col gap-0 bg-white w-100 py-0 shadow-md overflow-hidden'>
+      <Card className='4xs:h-80 2xs:h-80 md:h-100 lg:h-120 xl:h-140 flex flex-col gap-0 bg-white w-100 py-0 shadow-md overflow-hidden'>
         <CardContent className='p-0'>
           <Link href={newsUrl} target='_blank' rel='noopener noreferrer'>
-            <div className='relative w-full 2xs:h-30 md:h-40 lg:h-60 cursor-pointer'>
+            <div className='relative w-full 4xs:h-30 md:h-40 lg:h-60 cursor-pointer'>
               <Image src={image} alt={title} fill className='object-cover' />
             </div>
           </Link>
         </CardContent>
-        <div className='flex flex-col flex-1 gap-4 p-6'>
+        <div className='flex flex-col flex-1 gap-4 4xs:p-2 2xs:p-6'>
           <Link href={newsUrl} target='_blank' rel='noopener noreferrer'>
-            <CardTitle className='2xs:text-[12px] md:text-[16px] lg:text-lg xl:text-xl font-bold hover:underline cursor-pointer'>
+            <CardTitle className='4xs:text-[12px] 2xs:text-[12px] md:text-[16px] lg:text-lg xl:text-xl font-bold hover:underline cursor-pointer'>
               {title}
             </CardTitle>
           </Link>
-          <p className='2xs:text-[10px] md:text-[12px] xl:text-sm text-gray-600 line-clamp-4'>
+          <p className='4xs:text-[10px] 2xs:text-[10px] md:text-[12px] xl:text-sm text-gray-600 line-clamp-4'>
             {description}
           </p>
         </div>

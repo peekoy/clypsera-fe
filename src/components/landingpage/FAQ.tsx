@@ -6,13 +6,13 @@ import Image from 'next/image';
 export async function FAQ() {
   return (
     <>
-      <div className='absolute z-10 2xs:right-10 md:right-14 lg:right-24 xl:right-30 2xs:mt-6 md:-mt-0 lg:-mt-18 xl:-mt-28'>
+      <div className='absolute z-10 4xs:right-1 2xs:right-10 md:right-14 lg:right-24 xl:right-30 4xs:-mt-10 2xs:mt-6 md:-mt-0 lg:-mt-18 xl:-mt-28'>
         <Image
           src='/tanda-tanya.svg'
           alt='Background network'
           width={400}
           height={300}
-          className='2xs:w-[120px] md:w-[230px] lg:w-[300px] xl:w-[400px]'
+          className='4xs:w-[100px] 2xs:w-[120px] md:w-[230px] lg:w-[300px] xl:w-[400px]'
         />
       </div>
       <div className='absolute z-10 mt-42 ml-10'>
@@ -21,13 +21,13 @@ export async function FAQ() {
           alt='Background network'
           width={800}
           height={500}
-          className='2xs:w-[400px] md:w-[560px] lg:w-[640px] xl:w-[800px]'
+          className='4xs:w-[20px] 2xs:w-[400px] md:w-[560px] lg:w-[640px] xl:w-[800px]'
         />
       </div>
-      <div className='2xs:pt-20 md:pt-28 lg:pt-16 xl:pt-20 2xs:my-10 md:my-20 lg:my-40 xl:my-64'>
+      <div className='2xs:pt-20 md:pt-28 lg:pt-16 xl:pt-20 4xs:my-10 2xs:my-10 md:my-20 lg:my-40 xl:my-64'>
         <div className='lg:h-130 xl:h-150 bg-radial from-[#198AE5] from-9% to-[#4971A9] rounded-[50px]'>
-          <div className='flex flex-col 2xs:gap-4 md:gap-6 lg:gap-8 2xs:px-6 md:px-12 lg:px-16 xl:px-32 2xs:py-6 md:py-8 lg:py-12 xl:py-16 z-20 w-full h-full'>
-            <p className='2xs:text-[12px] md:text-2xl lg:text-4xl xl:text-5xl font-semibold text-white text-shadow-lg'>
+          <div className='flex flex-col 4xs:gap-2 2xs:gap-4 md:gap-6 lg:gap-8 4xs:px-4 2xs:px-6 md:px-12 lg:px-16 xl:px-32 4xs:py-4 2xs:py-6 md:py-8 lg:py-12 xl:py-16 z-20 w-full h-full'>
+            <p className='4xs:text-[16px] 2xs:text-[12px] md:text-2xl lg:text-4xl xl:text-5xl font-semibold text-white text-shadow-lg'>
               Everything You Need to{' '}
               <span className='tertiary-color'>Know.</span>
             </p>
