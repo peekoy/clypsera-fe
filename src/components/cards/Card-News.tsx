@@ -7,7 +7,7 @@ type CardNewsProps = {
   image: string;
   title: string;
   description: string;
-  source: string; // Pastikan 'source' ada di dalam props
+  source: string;
 };
 
 export default function CardNews({
@@ -20,8 +20,8 @@ export default function CardNews({
   const newsUrl = source;
 
   return (
-    <div className='flex'>
-      <Card className='4xs:h-80 2xs:h-80 md:h-100 lg:h-120 xl:h-140 flex flex-col gap-0 bg-white w-100 py-0 shadow-md overflow-hidden'>
+    <div className='flex h-full'>
+      <Card className='flex 4xs:h-80 2xs:h-80 md:h-100 lg:h-120 xl:h-140 flex-col gap-0 bg-white w-full py-0 shadow-md overflow-hidden'>
         <CardContent className='p-0'>
           <Link href={newsUrl} target='_blank' rel='noopener noreferrer'>
             <div className='relative w-full 4xs:h-30 md:h-40 lg:h-60 cursor-pointer'>

@@ -2,6 +2,7 @@
 
 'use client';
 
+import { useState } from 'react';
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -12,8 +13,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export function Header() {
   const router = useRouter();
@@ -25,190 +26,134 @@ export function Header() {
     const storedUser = localStorage.getItem('user');
     if (!token || !storedUser) {
       router.push('/login');
-      return;
     } else {
       router.push('/dashboard');
-      return;
     }
+    setIsMenuOpen(false);
+  };
+
+  const navLinks = [
+    { href: '#feature', label: 'Features' },
+    { href: '#faq', label: 'FAQ' },
+    { href: '#news', label: 'News' },
+  ];
+
+  const handleScroll = (
+    e: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
+    id: string
+  ) => {
+    e.preventDefault();
+    if (pathname === '/') {
+      const sectionId = id.substring(1);
+      const section = document.getElementById(sectionId);
+      section?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      router.push('/' + id);
+    }
+    setIsMenuOpen(false);
   };
 
   return (
     <header className='w-full'>
       <div className='container mx-auto flex 4xs:h-0 2xs:h-10 sm:h-20 items-center justify-between 4xs:pt-10 2xs:pt-6 4xs:px-4 2xs:px-6 md:px-14 lg:px-24'>
-        {pathname === '/' || pathname === '/about' ? (
-          <Link href='/' className='flex items-center gap-2'>
-            <Image
-              src='/logo-putih.svg'
-              alt='clypsera-logo'
-              width={128}
-              height={128}
-              className='4xs:w-[60px] 2xs:w-[70px] md:w-[100px] lg:w-[128px]'
-            />
-          </Link>
-        ) : (
-          <Link href='/' className='flex items-center gap-2'>
-            <Image
-              src='/LOGO.svg'
-              alt='clypsera-logo'
-              width={128}
-              height={128}
-              className='4xs:w-[60px] 2xs:w-[70px] md:w-[100px] lg:w-[128px]'
-            />
-          </Link>
-        )}
+        <Link href='/' className='z-50'>
+          <Image
+            src={
+              pathname === '/' || pathname === '/about'
+                ? '/logo-putih.svg'
+                : '/LOGO.svg'
+            }
+            alt='clypsera-logo'
+            width={128}
+            height={128}
+            className='4xs:w-[60px] 2xs:w-[70px] md:w-[100px] lg:w-[128px]'
+          />
+        </Link>
 
+        {/* Mobile Menu */}
         <div className='md:hidden'>
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            {isMenuOpen ? (
-              <X color='white' size={24} />
-            ) : (
-              <Menu color='white' size={24} />
-            )}
-          </button>
-        </div>
+          <Button
+            variant='ghost'
+            size='icon'
+            onClick={() => setIsMenuOpen(true)}
+            className='text-white hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 z-50'
+          >
+            <Menu
+              color={
+                pathname === '/' || pathname === '/about' ? 'white' : 'black'
+              }
+              size={30}
+            />
+            <span className='sr-only'>Open menu</span>
+          </Button>
 
-        {isMenuOpen && (
-          <div className='md:hidden absolute flex justify-center top-20 left-0 w-full bg-white z-20 shadow-lg'>
-            <NavigationMenu>
-              <NavigationMenuList className='flex flex-col justify-center items-center gap-4 py-4'>
-                <NavigationMenuItem className='w-full'>
+          <div
+            className={cn(
+              'fixed inset-0 z-40 bg-white transition-opacity duration-300 md:hidden',
+              isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            )}
+          >
+            <div className='flex flex-col p-6'>
+              <div className='flex justify-between items-center mb-12'>
+                <Link href='/' onClick={() => setIsMenuOpen(false)}>
+                  <Image
+                    src='/LOGO.svg'
+                    alt='clypsera-logo'
+                    width={100}
+                    height={40}
+                  />
+                </Link>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <X size={30} />
+                  <span className='sr-only'>Close menu</span>
+                </Button>
+              </div>
+              <nav className='flex flex-col items-center gap-8'>
+                {navLinks.map((link) => (
                   <Link
-                    href='/'
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const section = document.getElementById('feature');
-                      section?.scrollIntoView({ behavior: 'smooth' });
-                    }}
+                    key={link.href}
+                    href={link.href}
+                    onClick={(e) => handleScroll(e, link.href)}
+                    className='text-xl font-medium text-gray-800 hover:text-primary'
                   >
-                    <NavigationMenuLink
-                      className={
-                        pathname === '/' || pathname === '/about'
-                          ? 'bg-black text-md text-white hover:bg-blue-400/20 hover:text-white'
-                          : 'bg-transparent text-md text-black hover:bg-gray-100/80'
-                      }
-                    >
-                      Features
-                    </NavigationMenuLink>
+                    {link.label}
                   </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link
-                    href='/'
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const section = document.getElementById('faq');
-                      section?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                  >
-                    <NavigationMenuLink
-                      className={
-                        pathname === '/' || pathname === '/about'
-                          ? 'bg-transparent text-md text-white hover:bg-blue-400/20 hover:text-white'
-                          : 'bg-transparent text-md text-black hover:bg-gray-100/80'
-                      }
-                    >
-                      FAQ
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link
-                    href='/'
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const section = document.getElementById('news');
-                      section?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                  >
-                    <NavigationMenuLink
-                      className={
-                        pathname === '/' || pathname === '/about'
-                          ? 'bg-transparent text-md text-white hover:bg-blue-400/20 hover:text-white'
-                          : 'bg-transparent text-md text-black hover:bg-gray-100/80'
-                      }
-                    >
-                      News
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
+                ))}
                 <Button
                   variant='default'
-                  className={
-                    pathname === '/' || pathname === '/about'
-                      ? 'rounded-full bg-secondary px-6 text-white font-medium hover:bg-[#4f959d]/80 cursor-pointer'
-                      : 'rounded-full bg-primary px-6 text-white font-medium hover:bg-[#4971a9]/90 cursor-pointer'
-                  }
+                  className='rounded-full bg-primary px-10 py-6 text-lg text-white font-medium hover:bg-[#4971a9]/90 cursor-pointer w-full mt-8'
                   onClick={handleLogin}
                 >
                   Login
                 </Button>
-              </NavigationMenuList>
-            </NavigationMenu>
+              </nav>
+            </div>
           </div>
-        )}
+        </div>
 
+        {/* Desktop Menu */}
         <NavigationMenu className='hidden md:flex'>
           <NavigationMenuList className='flex gap-12'>
-            <NavigationMenuItem>
-              <Link
-                href='/'
-                onClick={(e) => {
-                  e.preventDefault();
-                  const section = document.getElementById('feature');
-                  section?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                <NavigationMenuLink
-                  className={
+            {navLinks.map((link) => (
+              <NavigationMenuItem key={link.href}>
+                <a
+                  href={link.href}
+                  onClick={(e) => handleScroll(e, link.href)}
+                  className={cn(
+                    'bg-transparent text-md hover:bg-blue-400/20 hover:text-white md:text-[16px] lg:text-[18px] px-3 py-2 rounded-md cursor-pointer',
                     pathname === '/' || pathname === '/about'
-                      ? 'bg-transparent text-md text-white hover:bg-blue-400/20 hover:text-white md:text-[16px] lg:text-[18px]'
-                      : 'bg-transparent text-md text-black hover:bg-gray-100/80'
-                  }
+                      ? 'text-white'
+                      : 'text-black hover:!text-black'
+                  )}
                 >
-                  Features
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link
-                href='/'
-                onClick={(e) => {
-                  e.preventDefault();
-                  const section = document.getElementById('faq');
-                  section?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                <NavigationMenuLink
-                  className={
-                    pathname === '/' || pathname === '/about'
-                      ? 'bg-transparent text-md text-white hover:bg-blue-400/20 hover:text-white md:text-[16px] lg:text-[18px]'
-                      : 'bg-transparent text-md text-black hover:bg-gray-100/80'
-                  }
-                >
-                  FAQ
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link
-                href='/'
-                onClick={(e) => {
-                  e.preventDefault();
-                  const section = document.getElementById('news');
-                  section?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                <NavigationMenuLink
-                  className={
-                    pathname === '/' || pathname === '/about'
-                      ? 'bg-transparent text-md text-white hover:bg-blue-400/20 hover:text-white md:text-[16px] lg:text-[18px]'
-                      : 'bg-transparent text-md text-black hover:bg-gray-100/80'
-                  }
-                >
-                  News
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
+                  {link.label}
+                </a>
+              </NavigationMenuItem>
+            ))}
             <Button
               variant='default'
               className={
