@@ -12,6 +12,28 @@ export function News() {
   const [news, setNews] = useState<NewsType[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  // 1. Convert articlesPerPage to a state variable
+  const [articlesPerPage, setArticlesPerPage] = useState(3);
+
+  // 2. Add useEffect to handle window resizing
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.outerWidth <= 500) {
+        setArticlesPerPage(2);
+      } else {
+        setArticlesPerPage(3);
+      }
+    };
+
+    // Set initial value on component mount
+    handleResize();
+
+    // Add event listener for window resize
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup function to remove event listener
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -31,8 +53,6 @@ export function News() {
     fetchNews();
   }, []);
 
-  const articlesPerPage = 3;
-
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : 0));
   };
@@ -48,12 +68,13 @@ export function News() {
     currentIndex + articlesPerPage
   );
 
+  // 3. Make the skeleton component dynamic based on articlesPerPage
   const NewsSkeleton = () => (
     <div className='flex gap-6 justify-between pb-4 items-center w-full'>
-      {[...Array(3)].map((_, i) => (
+      {[...Array(articlesPerPage)].map((_, i) => (
         <div
           key={i}
-          className='h-140 bg-white w-100 py-0 shadow-md flex flex-col gap-4 p-4 border rounded-lg'
+          className='md:h-100 lg:h-120 xl:h-140 bg-white w-100 py-0 shadow-md flex flex-col gap-4 p-4 border rounded-lg'
         >
           <Skeleton className='h-60 w-full' />
           <div className='flex flex-col gap-4 px-6 pt-4'>
@@ -70,9 +91,11 @@ export function News() {
   );
 
   return (
-    <div className='flex flex-col items-center mb-20 gap-12 z-10 w-full'>
-      <p className='text-5xl primary-color font-bold'>Latest News</p>
-      <p className='text-[32px] font-semibold text-center'>
+    <div className='flex flex-col items-center md:mb-10 lg:mb-20 2xs:gap-2 md:gap-4 lg:gap-8 xl:gap-12 z-10 w-full'>
+      <p className='2xs:text-lg md:text-3xl lg:text-4xl xl:text-5xl primary-color font-bold'>
+        Latest News
+      </p>
+      <p className='2xs:text-[12px] md:text-[16px] lg:text-[24px] xl:text-[32px] font-semibold text-center'>
         Explore the latest research and updates related to cleft lip and palate.
       </p>
 
@@ -89,17 +112,16 @@ export function News() {
                 onClick={handlePrev}
                 variant='outline'
                 size='icon'
-                className='absolute left-0 -translate-x-full top-1/2 -translate-y-1/2 rounded-full h-12 w-12 z-20 bg-white/80 hover:bg-white shadow-md'
+                className='absolute left-0 2xs:-translate-x-0 -translate-x-full top-1/2 -translate-y-1/2 rounded-full sm:h-8 sm:w-8 sm:h-12 sm:w-12 z-20 bg-white/80 hover:bg-white shadow-md'
                 disabled={currentIndex === 0}
               >
                 <ChevronLeft className='h-6 w-6' />
               </Button>
             )}
 
-            <div className='flex gap-6 justify-center pb-4 items-start w-full'>
+            <div className='flex gap-6 justify-center pb-4 items-start 4xs:w-10 2xs:w-106 sm:w-full'>
               {displayedNews.map((article) => (
                 <div key={article.id} className='w-1/3 flex-shrink-0'>
-                  {/* PERBAIKAN: Tambahkan prop 'id' di sini */}
                   <CardNews
                     id={article.id}
                     image={article.image || '/artikel1.svg'}
@@ -116,7 +138,7 @@ export function News() {
                 onClick={handleNext}
                 variant='outline'
                 size='icon'
-                className='absolute right-0 translate-x-full top-1/2 -translate-y-1/2 rounded-full h-12 w-12 z-20 bg-white/80 hover:bg-white shadow-md'
+                className='absolute right-0 2xs:translate-x-0 translate-x-full top-1/2 -translate-y-1/2 rounded-full sm:h-8 sm:w-8 sm:h-12 sm:w-12 z-20 bg-white/80 hover:bg-white shadow-md'
                 disabled={currentIndex >= news.length - articlesPerPage}
               >
                 <ChevronRight className='h-6 w-6' />
@@ -124,7 +146,9 @@ export function News() {
             )}
           </>
         ) : (
-          <p>No published news available at the moment.</p>
+          <div className='my-70 flex items-center'>
+            <p>No published news available at the moment.</p>
+          </div>
         )}
       </div>
     </div>

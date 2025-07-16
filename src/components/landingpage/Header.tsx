@@ -32,7 +32,7 @@ export function Header() {
 
   return (
     <header className='w-full'>
-      <div className='container mx-auto flex h-20 items-center justify-between mt-10 px-4 sm:px-6 lg:px-8'>
+      <div className='container mx-auto flex 4xs:h-0 2xs:h-10 sm:h-20 items-center justify-between pt-6 2xs:px-6 md:px-14 lg:px-24'>
         {pathname === '/' || pathname === '/about' ? (
           <Link href='/' className='flex items-center gap-2'>
             <Image
@@ -40,6 +40,7 @@ export function Header() {
               alt='clypsera-logo'
               width={128}
               height={128}
+              className='2xs:w-[70px] md:w-[100px] lg:w-[128px]'
             />
           </Link>
         ) : (
@@ -49,6 +50,7 @@ export function Header() {
               alt='clypsera-logo'
               width={128}
               height={128}
+              className='md:w-[100px] lg:w-[128px]'
             />
           </Link>
         )}
@@ -153,7 +155,7 @@ export function Header() {
                 <NavigationMenuLink
                   className={
                     pathname === '/' || pathname === '/about'
-                      ? 'bg-transparent text-md text-white hover:bg-blue-400/20 hover:text-white'
+                      ? 'bg-transparent text-md text-white hover:bg-blue-400/20 hover:text-white md:text-[16px] lg:text-[18px]'
                       : 'bg-transparent text-md text-black hover:bg-gray-100/80'
                   }
                 >
@@ -173,7 +175,7 @@ export function Header() {
                 <NavigationMenuLink
                   className={
                     pathname === '/' || pathname === '/about'
-                      ? 'bg-transparent text-md text-white hover:bg-blue-400/20 hover:text-white'
+                      ? 'bg-transparent text-md text-white hover:bg-blue-400/20 hover:text-white md:text-[16px] lg:text-[18px]'
                       : 'bg-transparent text-md text-black hover:bg-gray-100/80'
                   }
                 >
@@ -193,7 +195,7 @@ export function Header() {
                 <NavigationMenuLink
                   className={
                     pathname === '/' || pathname === '/about'
-                      ? 'bg-transparent text-md text-white hover:bg-blue-400/20 hover:text-white'
+                      ? 'bg-transparent text-md text-white hover:bg-blue-400/20 hover:text-white md:text-[16px] lg:text-[18px]'
                       : 'bg-transparent text-md text-black hover:bg-gray-100/80'
                   }
                 >
@@ -205,7 +207,7 @@ export function Header() {
               variant='default'
               className={
                 pathname === '/' || pathname === '/about'
-                  ? 'rounded-full bg-secondary px-6 text-white font-medium hover:bg-[#4f959d]/80 cursor-pointer'
+                  ? 'rounded-full bg-secondary px-6 text-white font-medium hover:bg-[#4f959d]/80 cursor-pointer md:text-[16px] lg:text-[18px]'
                   : 'rounded-full bg-primary px-6 text-white font-medium hover:bg-[#4971a9]/90 cursor-pointer'
               }
               onClick={handleLogin}
