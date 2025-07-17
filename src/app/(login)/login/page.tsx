@@ -1,4 +1,3 @@
-// peekoy/clypsera-fe/clypsera-fe-e7ec6013669fff13aaaee4aaded0139ea273ab8d/src/app/(login)/login/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -8,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Lock, User, EyeOff, Eye, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { loginUser } from '@/lib/api/auth';
-import { requestPasswordReset } from '@/lib/api/reset-password'; // Import the new function
+import { requestPasswordReset } from '@/lib/api/reset-password';
 import Swal from 'sweetalert2';
 
 export default function LoginPage() {
@@ -72,21 +71,28 @@ export default function LoginPage() {
   };
 
   return (
-    <>
-      <div className='relative bg-white h-dvh w-230 z-10 rounded-tr-[14px] rounded-br-[14px]'>
-        <div className='h-dvh flex flex-col justify-center items-center gap-2'>
-          <Image src='/LOGO.svg' alt='' width={200} height={100} />
+    <div className='flex h-dvh w-full items-center justify-center md:justify-start'>
+      {/* Login Form Container */}
+      <div className='relative z-10 flex h-full w-full max-w-md flex-col items-center justify-center gap-2 bg-white p-6 shadow-lg md:h-dvh md:max-w-none md:rounded-tr-[14px] md:rounded-br-[14px] md:w-230'>
+        <div className='flex w-full max-w-sm flex-col items-center gap-2'>
+          <Image
+            src='/LOGO.svg'
+            alt='Clypsera Logo'
+            width={200}
+            height={100}
+            className='h-auto w-40'
+          />
 
           {isForgotPassword ? (
             <>
-              <p className='text-[34px] primary-color font-semibold'>
+              <p className='primary-color text-[34px] font-semibold'>
                 Reset Password
               </p>
               <form
                 onSubmit={handleForgotPasswordSubmit}
-                className='space-y-4 flex flex-col items-center mt-6'
+                className='mt-6 flex w-full flex-col items-center space-y-4'
               >
-                <div className='bg-[#F4F8F7] relative flex items-center'>
+                <div className='relative flex w-full items-center bg-[#F4F8F7]'>
                   <Mail
                     size={24}
                     className='absolute left-3 h-5 w-5 text-muted-foreground'
@@ -94,16 +100,16 @@ export default function LoginPage() {
                   <Input
                     type='email'
                     placeholder='Enter your Email'
-                    className='w-100 h-10 pl-10 border-none'
+                    className='h-10 w-full border-none pl-10'
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
-                {error && <p className='text-red-500 text-sm'>{error}</p>}
+                {error && <p className='text-sm text-red-500'>{error}</p>}
                 <Button
                   type='submit'
-                  className='w-50 h-10 mt-10 hover:bg-[#4971a9]/90 rounded-full cursor-pointer'
+                  className='mt-10 h-10 w-50 cursor-pointer rounded-full hover:bg-[#4971a9]/90'
                   disabled={loading}
                 >
                   {loading ? 'Sending...' : 'Send Reset Link'}
@@ -111,7 +117,7 @@ export default function LoginPage() {
                 <button
                   type='button'
                   onClick={() => setIsForgotPassword(false)}
-                  className='text-sm primary-color cursor-pointer'
+                  className='primary-color cursor-pointer text-sm'
                 >
                   Back to Login
                 </button>
@@ -119,12 +125,12 @@ export default function LoginPage() {
             </>
           ) : (
             <>
-              <p className='text-[34px] primary-color font-semibold'>Login</p>
+              <p className='primary-color text-[34px] font-semibold'>Login</p>
               <form
                 onSubmit={handleLogin}
-                className='space-y-4 flex flex-col items-center mt-6'
+                className='mt-6 flex w-full flex-col items-center space-y-4'
               >
-                <div className='bg-[#F4F8F7] relative flex items-center'>
+                <div className='relative flex w-full items-center bg-[#F4F8F7]'>
                   <User
                     size={24}
                     className='absolute left-3 h-5 w-5 text-muted-foreground'
@@ -132,14 +138,14 @@ export default function LoginPage() {
                   <Input
                     type='text'
                     placeholder='Username / Email'
-                    className='w-100 h-10 pl-10 border-none'
+                    className='h-10 w-full border-none pl-10'
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
 
-                <div className='bg-[#F4F8F7] relative flex items-center'>
+                <div className='relative flex w-full items-center bg-[#F4F8F7]'>
                   <Lock
                     size={24}
                     className='absolute left-3 h-5 w-5 text-muted-foreground'
@@ -148,7 +154,7 @@ export default function LoginPage() {
                     name='password'
                     type={showPassword ? 'text' : 'password'}
                     placeholder='Password'
-                    className='w-100 h-10 pl-10 border-none'
+                    className='h-10 w-full border-none pl-10'
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -157,7 +163,7 @@ export default function LoginPage() {
                     type='button'
                     variant='ghost'
                     size='icon'
-                    className='absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground cursor-pointer'
+                    className='absolute right-0 top-0 h-full cursor-pointer px-3 py-2 text-muted-foreground'
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
@@ -170,19 +176,19 @@ export default function LoginPage() {
                     </span>
                   </Button>
                 </div>
-                {error && <p className='text-red-500 text-sm'>{error}</p>}
-                <div className='w-full flex justify-end px-1'>
+                {error && <p className='text-sm text-red-500'>{error}</p>}
+                <div className='flex w-full justify-end px-1'>
                   <button
                     type='button'
                     onClick={() => setIsForgotPassword(true)}
-                    className='text-xs text-gray-500 hover:text-primary cursor-pointer'
+                    className='hover:text-primary cursor-pointer text-xs text-gray-500'
                   >
                     Forgot Password?
                   </button>
                 </div>
                 <Button
                   type='submit'
-                  className='w-50 h-10 mt-4 hover:bg-[#4971a9]/90 rounded-full cursor-pointer'
+                  className='mt-4 h-10 w-50 cursor-pointer rounded-full hover:bg-[#4971a9]/90'
                   disabled={loading}
                 >
                   {loading ? 'Logging in...' : 'Login'}
@@ -192,6 +198,6 @@ export default function LoginPage() {
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }
