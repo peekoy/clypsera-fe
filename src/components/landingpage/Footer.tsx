@@ -40,7 +40,7 @@ export async function Footer() {
             {/* Kolom Partner */}
             <div className='flex flex-col gap-1'>
               <p className='font-bold'>Partner</p>
-              <Link href='#'>Affiliates</Link>
+              <Link href='/affiliates'>Affiliates</Link>
             </div>
 
             {/* Kolom Legal */}
