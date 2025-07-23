@@ -54,7 +54,7 @@ export default function CleftLipPatientForm() {
   const [token, setToken] = useState<string | null>(null);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  let photo = `https://0cf6-182-253-58-176.ngrok-free.app${userData?.photo}`;
+  let photo = `${process.env.NEXT_PUBLIC_API_PHOTO_URL}${userData?.photo}`;
 
   console.log(userData?.photo);
 

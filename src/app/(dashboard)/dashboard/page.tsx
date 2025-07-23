@@ -185,13 +185,6 @@ export default function DashboardPage() {
               <CardHeader className='gap-0'>
                 <CardTitle className='flex items-center justify-between text-lg font-medium text-gray-700'>
                   Total Users
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    className='text-gray-400 hover:text-gray-600 h-8 px-3'
-                  >
-                    <span className='text-sm'>Get</span>
-                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent className='pt-0'>

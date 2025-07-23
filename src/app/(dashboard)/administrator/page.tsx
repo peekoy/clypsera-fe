@@ -210,7 +210,6 @@ export default function AdministratorPage() {
           <DataTable
             data={formattedData} // Menggunakan data yang sudah diformat
             columns={[
-              { key: 'id', label: 'User ID' },
               { key: 'name', label: 'Name' },
               { key: 'email', label: 'Email' },
               { key: 'userCreationDate', label: 'User Creation Date' },
