@@ -19,7 +19,7 @@ export async function Feature() {
               description='Includes patient family history, maternal pregnancy history, and other relevant health information.'
             />
           </div>
-          <div className='flex flex-col-reverse 4xs:gap-4 2xs:gap-4 md:gap-8 lg:gap-8 xl:gap-12'>
+          <div className='flex 4xs:flex-col-reverse 2xs:flex-col 4xs:gap-4 2xs:gap-4 md:gap-8 lg:gap-8 xl:gap-12'>
             <CardFeature
               image='/patient-data.svg'
               title='Patient Data'

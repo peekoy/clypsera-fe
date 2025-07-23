@@ -50,7 +50,6 @@ export default function ScrollspySidebar({ pathname }: ScrollspySidebarProps) {
       if (el) observer.observe(el);
     });
 
-    // fallback biar section pertama tetap ke-set
     if (sections.length > 0) {
       setActiveId(sections[0].id);
     }

@@ -1,5 +1,3 @@
-// src/components/landingpage/Header.tsx
-
 'use client';
 
 import { useState } from 'react';
@@ -70,7 +68,6 @@ export function Header() {
           />
         </Link>
 
-        {/* Mobile Menu */}
         <div className='md:hidden'>
           <Button
             variant='ghost'
@@ -135,7 +132,6 @@ export function Header() {
           </div>
         </div>
 
-        {/* Desktop Menu */}
         <NavigationMenu className='hidden md:flex'>
           <NavigationMenuList className='flex gap-12'>
             {navLinks.map((link) => (

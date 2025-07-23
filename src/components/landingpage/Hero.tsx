@@ -1,5 +1,3 @@
-// src/components/landingpage/Hero.tsx
-
 'use server';
 import Image from 'next/image';
 
@@ -7,7 +5,6 @@ export async function Hero() {
   return (
     <>
       <div className='absolute left-0 4xs:bottom-[3%] 2xs:bottom-[3%] sm:bottom-[4%] -z-10 h-full w-full'>
-        {/* Gambar ini hanya akan tampil di layar 4xs (dan lebih kecil) */}
         <div className='block 2xs:hidden h-100 w-full relative'>
           <Image
             src='/homepage-hero.svg'
@@ -17,7 +14,6 @@ export async function Hero() {
           />
         </div>
 
-        {/* Gambar ini akan tampil di layar 2xs (dan lebih besar) */}
         <div className='hidden 2xs:block h-full w-full'>
           <Image
             src='/homepage-hero.svg'
@@ -40,7 +36,6 @@ export async function Hero() {
             patients.
           </p>
         </div>
-        {/* <Image src='/cleftlip.png' alt='' width={1200} height={0}></Image> */}
       </div>
     </>
   );
