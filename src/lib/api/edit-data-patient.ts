@@ -1,5 +1,24 @@
 import { EditPatientPayload } from '@/types/patient';
 
+type ApiDiagnosis = {
+  id: number;
+  nama_diagnosis: string;
+};
+
+type ApiJenisKelainan = {
+  id: number;
+  nama_kelainan: string;
+};
+
+type ApiJenisTerapi = {
+  id: number;
+  nama_terapi: string;
+};
+
+type ApiResponse<T> = {
+  data: T[];
+};
+
 export async function editPatientData(
   token: string | null,
   patientId: number,
@@ -21,9 +40,10 @@ export async function editPatientData(
       }
     );
 
-    const diagnosisData = await diagnosisResponse.json();
+    const diagnosisData: ApiResponse<ApiDiagnosis> =
+      await diagnosisResponse.json();
     const matchedDiagnosis = diagnosisData.data.find(
-      (item: any) =>
+      (item: ApiDiagnosis) =>
         item?.nama_diagnosis?.toLowerCase() === payload.diagnosis.toLowerCase()
     );
     if (!matchedDiagnosis) {
@@ -41,9 +61,10 @@ export async function editPatientData(
       }
     );
 
-    const jenisKelainanData = await jenisKelainanResponse.json();
+    const jenisKelainanData: ApiResponse<ApiJenisKelainan> =
+      await jenisKelainanResponse.json();
     const matchedJenisKelainan = jenisKelainanData.data.find(
-      (item: any) =>
+      (item: ApiJenisKelainan) =>
         item?.nama_kelainan?.toLowerCase() ===
         payload.cleftPalateType.toLowerCase()
     );
@@ -65,9 +86,10 @@ export async function editPatientData(
       }
     );
 
-    const jenisTerapiData = await jenisTerapiResponse.json();
+    const jenisTerapiData: ApiResponse<ApiJenisTerapi> =
+      await jenisTerapiResponse.json();
     const matchedJenisTerapi = jenisTerapiData.data.find(
-      (item: any) =>
+      (item: ApiJenisTerapi) =>
         item?.nama_terapi?.toLowerCase() === payload.therapyType.toLowerCase()
     );
     if (!matchedJenisTerapi) {
@@ -93,9 +115,12 @@ export async function editPatientData(
     formData.append('tehnik_operasi', payload.operationTechnique);
     formData.append('nama_penyelenggara', payload.providerName);
     formData.append('lokasi_operasi', payload.surgeryLocation);
-    formData.append('jenis_kelainan_cleft_id', matchedJenisKelainan.id);
-    formData.append('jenis_terapi_id', matchedJenisTerapi.id);
-    formData.append('diagnosis_id', matchedDiagnosis.id);
+    formData.append(
+      'jenis_kelainan_cleft_id',
+      matchedJenisKelainan.id.toString()
+    );
+    formData.append('jenis_terapi_id', matchedJenisTerapi.id.toString());
+    formData.append('diagnosis_id', matchedDiagnosis.id.toString());
     formData.append('follow_up', payload.followUp);
     formData.append('operator_id', operatorId);
 
@@ -126,8 +151,9 @@ export async function editPatientData(
     }
 
     return result;
-  } catch (error: any) {
-    console.error('Upload error:', error);
-    throw new Error(error.message || 'Terjadi kesalahan saat mengupload data.');
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Upload error:', err);
+    throw new Error(err.message || 'Terjadi kesalahan saat mengupload data.');
   }
 }

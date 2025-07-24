@@ -11,7 +11,6 @@ type CardNewsProps = {
 };
 
 export default function CardNews({
-  id,
   image,
   title,
   description,

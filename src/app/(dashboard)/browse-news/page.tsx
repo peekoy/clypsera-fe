@@ -11,6 +11,7 @@ import { FilterNews } from '@/types/filter';
 import { News } from '@/types/news';
 import { getAllNews } from '@/lib/api/fetch-news';
 import { deleteNews } from '@/lib/api/delete-news';
+import Swal from 'sweetalert2';
 
 export default function BrowseDataPage() {
   const [allNews, setAllNews] = useState<News[]>([]);
@@ -145,9 +146,16 @@ export default function BrowseDataPage() {
     try {
       const token = localStorage.getItem('token');
       await deleteNews(token!, newsId);
-      alert('berita berhasil dihapus.');
-    } catch (error: any) {
-      alert(error.message);
+      Swal.fire({
+        icon: 'success',
+        title: 'Deleted!',
+        text: 'News has been deleted.',
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    } catch (error: unknown) {
+      const err = error as Error;
+      Swal.fire('Error!', err.message || 'Failed to delete news.', 'error');
     }
   };
 
@@ -178,7 +186,7 @@ export default function BrowseDataPage() {
               { key: 'status', label: 'Status' },
             ]}
             loading={isLoading}
-            actions={(item) => (
+            actions={(item: News) => (
               <div className='flex'>
                 <Button
                   size='sm'
@@ -215,7 +223,8 @@ export default function BrowseDataPage() {
               Patient Data Not Found
             </h1>
             <p className='text-gray-600 mb-4'>
-              The data you're looking for doesn't exist. Please try again later!
+              The data you&apos;re looking for doesn&apos;t exist. Please try
+              again later!
             </p>
           </div>
         </div>

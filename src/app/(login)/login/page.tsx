@@ -58,12 +58,13 @@ export default function LoginPage() {
         showConfirmButton: false,
       });
       setIsForgotPassword(false);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message);
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: err.message || 'An unexpected error occurred.',
+        text: error.message || 'An unexpected error occurred.',
       });
     } finally {
       setLoading(false);

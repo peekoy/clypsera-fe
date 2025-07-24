@@ -5,7 +5,6 @@ import {
   NavigationMenu,
   NavigationMenuList,
   NavigationMenuItem,
-  NavigationMenuLink,
 } from '@/components/ui/navigation-menu';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';

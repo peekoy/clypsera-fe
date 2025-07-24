@@ -249,10 +249,11 @@ export default function BrowseDataPage() {
             showConfirmButton: false,
             timer: 2000,
           });
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const err = error as Error;
           Swal.fire(
             'Error!',
-            error.message || 'Failed to cancel the request.',
+            err.message || 'Failed to cancel the request.',
             'error'
           );
         }
@@ -285,8 +286,9 @@ export default function BrowseDataPage() {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
-    } catch (err: any) {
-      Swal.fire('Download Error!', err.message, 'error');
+    } catch (err: unknown) {
+      const error = err as Error;
+      Swal.fire('Download Error!', error.message, 'error');
     } finally {
       setIsDownloading(false);
     }
@@ -404,7 +406,8 @@ export default function BrowseDataPage() {
               Patient Data Not Found
             </h1>
             <p className='text-gray-600 mb-4'>
-              The data you're looking for doesn't exist. Please try again later!
+              The data you&apos;re looking for doesn&apos;t exist. Please try
+              again later!
             </p>
           </div>
         </div>

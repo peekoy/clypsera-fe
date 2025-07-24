@@ -22,6 +22,30 @@ import Image from 'next/image';
 import { getChartData } from '@/lib/api/fetch-chart';
 import { Skeleton } from '@/components/ui/skeleton';
 
+// Define interfaces for the chart data structure
+interface RoleCounts {
+  [key: string]: number;
+}
+
+interface UserChartData {
+  role: RoleCounts;
+}
+
+interface TherapyChartItem {
+  nama_terapi: string;
+  jumlah_operasi: number;
+}
+
+interface GenderChartData {
+  [key: string]: number;
+}
+
+interface ChartData {
+  user: UserChartData;
+  chart_jenis_terapi: TherapyChartItem[];
+  chart_jenis_kelamin: GenderChartData;
+}
+
 const chartConfig = {
   users: {
     label: 'Users',
@@ -93,7 +117,7 @@ export default function DashboardPage() {
       }
 
       try {
-        const chartData = await getChartData(token);
+        const chartData: ChartData | null = await getChartData(token);
         if (chartData) {
           if (chartData.user && chartData.user.role) {
             const roleCounts = chartData.user.role;
@@ -111,7 +135,7 @@ export default function DashboardPage() {
           if (chartData.chart_jenis_terapi) {
             const therapyColors = ['#4971A9', '#4F959D', '#8DCCD3'];
             const formattedTherapyData = chartData.chart_jenis_terapi.map(
-              (item: any, index: number) => ({
+              (item: TherapyChartItem, index: number) => ({
                 name: item.nama_terapi,
                 value: item.jumlah_operasi,
                 fill: therapyColors[index % therapyColors.length],

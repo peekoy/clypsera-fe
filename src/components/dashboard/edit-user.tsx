@@ -113,9 +113,11 @@ export default function EditUserForm() {
       }).then(() => {
         router.push('/administrator');
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      Swal.fire('Error!', error.message || 'Something went wrong.', 'error');
+      const message =
+        error instanceof Error ? error.message : 'Something went wrong.';
+      Swal.fire('Error!', message, 'error');
     } finally {
       setIsSubmitting(false);
     }

@@ -23,8 +23,8 @@ export default async function SupportPage() {
           </p>
           <p className='mx-auto max-w-3xl text-base font-semibold sm:text-lg md:text-2xl'>
             If you have any questions or need assistance, feel free to reach out
-            to us through the following contact information. We're here to help
-            you.
+            to us through the following contact information. We&apos;re here to
+            help you.
           </p>
           <div className='flex flex-col items-center gap-4 sm:flex-row sm:justify-center'>
             <Button

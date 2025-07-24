@@ -8,16 +8,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
 
-type DataTableProps<T> = {
+type DataTableProps<T extends { id: number | string }> = {
   data: T[];
   columns: { key: keyof T; label: string }[];
   loading?: boolean;
-  actions?: (item: any) => React.ReactNode;
+  actions?: (item: T) => React.ReactNode;
 };
 
-export default function DataTable<T>({
+export default function DataTable<T extends { id: number | string }>({
   data,
   columns,
   loading,
@@ -33,8 +32,6 @@ export default function DataTable<T>({
       </div>
     );
   }
-
-  console.log(data);
 
   return (
     <div className='overflow-hidden rounded-lg shadow-lg'>
@@ -62,7 +59,7 @@ export default function DataTable<T>({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {!data ? (
+            {!data || data.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length + (actions ? 1 : 0)}
@@ -74,7 +71,7 @@ export default function DataTable<T>({
             ) : (
               data.map((item, index) => (
                 <TableRow
-                  key={(item as any).id || index}
+                  key={item.id}
                   className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}
                 >
                   {columns.map((col) => (

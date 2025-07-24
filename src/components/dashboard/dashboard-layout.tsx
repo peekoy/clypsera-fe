@@ -35,14 +35,6 @@ export function DashboardLayout({ children, user }: DashboardLayoutProps) {
     router.back();
   };
 
-  const handleBackToBrowse = () => {
-    router.push('/browse-data');
-  };
-
-  const handleBackToAdmin = () => {
-    router.push('/administrator');
-  };
-
   const handleBackToLanding = () => {
     router.push('/');
   };

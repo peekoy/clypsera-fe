@@ -113,7 +113,7 @@ export default function CheckDataRequestPage() {
         ...req,
         createdAt: formatDateTime(req.createdAt),
       }));
-  }, [filteredData, currentPage, itemsPerPage]);
+  }, [filteredData, itemsPerPage, startIndex]);
 
   const handleTempFilterChange = (
     key: keyof FilterRequestData,
@@ -206,10 +206,11 @@ export default function CheckDataRequestPage() {
               timer: 2000,
             });
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const err = error as Error;
           Swal.fire(
             'Error!',
-            error.message || 'Failed to delete request.',
+            err.message || 'Failed to delete request.',
             'error'
           );
         }
@@ -280,7 +281,8 @@ export default function CheckDataRequestPage() {
               Check Request Data Not Found
             </h1>
             <p className='text-gray-600 mb-4'>
-              The data you're looking for doesn't exist. Please try again later!
+              The data you&apos;re looking for doesn&apos;t exist. Please try
+              again later!
             </p>
           </div>
         </div>

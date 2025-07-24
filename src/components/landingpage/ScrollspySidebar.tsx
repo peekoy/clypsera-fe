@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 interface ScrollspySidebarProps {
   pathname: string;
@@ -25,7 +25,7 @@ const sectionMap: Record<string, { id: string; label: string }[]> = {
 };
 
 export default function ScrollspySidebar({ pathname }: ScrollspySidebarProps) {
-  const sections = sectionMap[pathname] || [];
+  const sections = useMemo(() => sectionMap[pathname] || [], [pathname]);
   const [activeId, setActiveId] = useState(sections[0]?.id || '');
 
   useEffect(() => {
@@ -50,12 +50,12 @@ export default function ScrollspySidebar({ pathname }: ScrollspySidebarProps) {
       if (el) observer.observe(el);
     });
 
-    if (sections.length > 0) {
+    if (sections.length > 0 && !activeId) {
       setActiveId(sections[0].id);
     }
 
     return () => observer.disconnect();
-  }, [sections]);
+  }, [sections, activeId]);
 
   return (
     <aside className='w-64 space-y-2 sticky top-24 h-fit'>
