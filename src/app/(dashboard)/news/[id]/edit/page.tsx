@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus } from 'lucide-react';
-import type { News, EditNewsPayload } from '@/types/news';
+import type { EditNewsPayload } from '@/types/news';
 import { getNewsById } from '@/lib/api/fetch-news-by-id';
 import { useParams, useRouter } from 'next/navigation';
 import { editNews } from '@/lib/api/edit-news';
@@ -24,7 +24,6 @@ import Swal from 'sweetalert2';
 export default function EditNewsForm() {
   const params = useParams();
   const router = useRouter();
-  const [newsData, setNewsData] = useState<News | null>(null);
   const [newsImage, setNewsImage] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -46,7 +45,7 @@ export default function EditNewsForm() {
     try {
       new URL(urlString);
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   };
@@ -66,7 +65,6 @@ export default function EditNewsForm() {
           Number.parseInt(params.id as string)
         );
         if (news) {
-          setNewsData(news);
           setFormData({
             title: news.title,
             source: news.source,
@@ -167,9 +165,10 @@ export default function EditNewsForm() {
       }).then(() => {
         router.push('/browse-news');
       });
-    } catch (error: any) {
-      setError(error.message);
-      Swal.fire('Error!', error.message || 'Something went wrong.', 'error');
+    } catch (error: unknown) {
+      const err = error as Error;
+      setError(err.message);
+      Swal.fire('Error!', err.message || 'Something went wrong.', 'error');
     } finally {
       setIsSubmitting(false);
     }

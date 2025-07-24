@@ -1,5 +1,14 @@
 import { RequestDataPayload } from '@/types/check-request-data';
 
+type ApiCategory = {
+  id: number;
+  kategori: string;
+};
+
+type CategoryApiResponse = {
+  data: ApiCategory[];
+};
+
 export async function requestAllData(
   token: string | null,
   payload: RequestDataPayload
@@ -20,9 +29,9 @@ export async function requestAllData(
       }
     );
 
-    const categoryData = await categoryResponse.json();
+    const categoryData: CategoryApiResponse = await categoryResponse.json();
     const matchedCategory = categoryData.data.find(
-      (item: any) =>
+      (item: ApiCategory) =>
         item.kategori.toLowerCase() === payload.category.toLowerCase()
     );
 
@@ -35,7 +44,7 @@ export async function requestAllData(
     const userId = localStorage.getItem('userId');
 
     const formData = new FormData();
-    formData.append('kategori_id', categoryId);
+    formData.append('kategori_id', categoryId.toString());
     formData.append('nama_pemohon', payload.name);
     formData.append('email_pemohon', payload.email);
     formData.append('no_telepon', payload.phoneNumber);
@@ -66,10 +75,11 @@ export async function requestAllData(
     }
 
     return result;
-  } catch (error: any) {
-    console.error('Request error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Request error:', err);
     throw new Error(
-      error.message || 'Terjadi kesalahan saat mengirim permintaan.'
+      err.message || 'Terjadi kesalahan saat mengirim permintaan.'
     );
   }
 }

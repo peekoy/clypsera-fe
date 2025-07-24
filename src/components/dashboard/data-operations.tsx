@@ -22,7 +22,6 @@ const formatDateTime = (isoString: string) => {
 export default function OperationDetail() {
   const params = useParams();
   const router = useRouter();
-  const [isDataRequested, setIsDataRequested] = useState(false);
   const [requestId, setRequestId] = useState<number | null>(null);
   const [statusRequest, setStatusRequest] = useState('');
   const [detailedPatient, setDetailedPatient] = useState<DetailedPatientData[]>(
@@ -30,7 +29,6 @@ export default function OperationDetail() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDetailedPatient = async () => {
@@ -50,11 +48,10 @@ export default function OperationDetail() {
 
         if (patient.length > 0) {
           setDetailedPatient(patient);
-          const { requested, requestId, status } = await checkIfDataRequested(
+          const { requestId, status } = await checkIfDataRequested(
             token,
             patient[0].id
           );
-          setIsDataRequested(requested);
           setRequestId(requestId);
           setStatusRequest(status);
         }
@@ -72,13 +69,11 @@ export default function OperationDetail() {
 
   const handleExport = async () => {
     if (!requestId) {
-      setDownloadError('Request ID not found.');
       Swal.fire('Error!', 'Request ID not found to generate token.', 'error');
       return;
     }
 
     setIsDownloading(true);
-    setDownloadError(null);
 
     try {
       const token = localStorage.getItem('token');
@@ -100,10 +95,11 @@ export default function OperationDetail() {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Download process failed:', err);
-      setDownloadError(err.message);
-      Swal.fire('Download Error!', err.message, 'error');
+      const errorMessage =
+        err instanceof Error ? err.message : 'An unknown error occurred';
+      Swal.fire('Download Error!', errorMessage, 'error');
     } finally {
       setIsDownloading(false);
     }
@@ -138,7 +134,6 @@ export default function OperationDetail() {
         }
         try {
           await deleteRequest(token, requestId);
-          setIsDataRequested(false);
           setRequestId(null);
           setStatusRequest('');
 
@@ -149,12 +144,12 @@ export default function OperationDetail() {
             showConfirmButton: false,
             timer: 2000,
           });
-        } catch (error: any) {
-          Swal.fire(
-            'Error!',
-            error.message || 'Failed to cancel the request.',
-            'error'
-          );
+        } catch (error: unknown) {
+          const message =
+            error instanceof Error
+              ? error.message
+              : 'Failed to cancel the request.';
+          Swal.fire('Error!', message, 'error');
         }
       }
     });
@@ -176,7 +171,7 @@ export default function OperationDetail() {
             Operation Data Not Found
           </h1>
           <p className='text-gray-600 mb-4'>
-            The operation data you're looking for doesn't exist.
+            The operation data you&apos;re looking for doesn&apos;t exist.
           </p>
         </div>
       </div>

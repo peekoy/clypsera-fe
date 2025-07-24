@@ -9,7 +9,7 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select';
-import { Lock, User, EyeOff, Eye } from 'lucide-react';
+import { EyeOff, Eye } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { addUser } from '@/lib/api/add-user';
@@ -76,14 +76,15 @@ export default function AddNewUserForm() {
       }).then(() => {
         router.push('/administrator');
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
+      const message =
+        error instanceof Error ? error.message : 'Something went wrong.';
       Swal.fire({
         icon: 'error',
         title: 'Error!',
-        text: error.message || 'Something went wrong.',
+        text: message,
       });
-      setIsLoading(false);
     }
   };
 
@@ -101,7 +102,7 @@ export default function AddNewUserForm() {
         </CardHeader>
         <CardContent className='space-y-2 py-6'>
           <div>
-            <label htmlFor='name'>Applicant's full name</label>
+            <label htmlFor='name'>Applicant&apos;s full name</label>
             <Input
               id='name'
               name='name'

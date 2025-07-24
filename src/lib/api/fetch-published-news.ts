@@ -1,5 +1,18 @@
 import { News } from '@/types/news';
 
+type ApiNewsItem = {
+  id: number;
+  judul: string;
+  gambar: string | null;
+  sumber: string;
+  status: string;
+  content: string;
+};
+
+type ApiResponse = {
+  data: ApiNewsItem[];
+};
+
 export async function getPublishedNews(): Promise<News[] | null> {
   try {
     const res = await fetch(
@@ -19,12 +32,12 @@ export async function getPublishedNews(): Promise<News[] | null> {
       return null;
     }
 
-    const result = await res.json();
+    const result: ApiResponse = await res.json();
     const baseUrl =
       process.env.NEXT_PUBLIC_API_BASE_URL?.replace('/api', '') || '';
 
     const newsItems: News[] = result.data
-      .map((item: any) => {
+      .map((item: ApiNewsItem) => {
         let imageUrl = '/artikel1.svg';
         if (item.gambar) {
           const cleanedBaseUrl = baseUrl.endsWith('/')

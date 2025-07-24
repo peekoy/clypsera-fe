@@ -221,12 +221,12 @@ export default function MyDataPage() {
               timer: 2000,
             });
           }
-        } catch (error: any) {
-          Swal.fire(
-            'Error!',
-            error.message || 'Failed to delete patient.',
-            'error'
-          );
+        } catch (error: unknown) {
+          let message = 'Failed to delete patient.';
+          if (error instanceof Error) {
+            message = error.message;
+          }
+          Swal.fire('Error!', message, 'error');
         }
       }
     });
@@ -296,8 +296,8 @@ export default function MyDataPage() {
               Patient Data Not Found
             </h1>
             <p className='text-gray-600 mb-4'>
-              The data you're looking for doesn't exist. Or you can upload it
-              first!
+              The data you&apos;re looking for doesn&apos;t exist. Or you can
+              upload it first!
             </p>
           </div>
         </div>

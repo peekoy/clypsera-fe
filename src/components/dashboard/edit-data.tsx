@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar as CalendarIcon, Plus, X } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { DetailedPatientData, EditPatientPayload } from '@/types/patient';
 import { getMyPatientById } from '@/lib/api/fetch-data-patient-by-id';
@@ -246,11 +246,15 @@ export default function EditDataForm() {
           }).then(() => {
             router.push('/my-data');
           });
-        } catch (error: any) {
-          console.error('Upload error:', error.message);
+        } catch (error: unknown) {
+          const message =
+            error instanceof Error
+              ? error.message
+              : 'An unknown error occurred.';
+          console.error('Upload error:', message);
           Swal.fire(
             'Update Failed!',
-            `Failed to update data: ${error.message}`,
+            `Failed to update data: ${message}`,
             'error'
           );
         } finally {
@@ -648,7 +652,7 @@ export default function EditDataForm() {
                 htmlFor='motherPregnancyHistory'
                 className='text-sm font-medium text-gray-700'
               >
-                Patient's mother's pregnancy history
+                Patient&apos;s mother&apos;s pregnancy history
               </label>
               <Textarea
                 name='motherPregnancyHistory'
@@ -664,7 +668,7 @@ export default function EditDataForm() {
                 htmlFor='familyHistory'
                 className='text-sm font-medium text-gray-700'
               >
-                Patient's family history
+                Patient&apos;s family history
               </label>
               <Textarea
                 name='familyHistory'
@@ -680,7 +684,7 @@ export default function EditDataForm() {
                 htmlFor='residentsMaritalHistory'
                 className='text-sm font-medium text-gray-700'
               >
-                Residents' marital history
+                Residents&apos; marital history
               </label>
               <Textarea
                 name='residentsMaritalHistory'
@@ -736,15 +740,16 @@ export default function EditDataForm() {
                 <div className='text-md space-y-1'>
                   <p>1. The size must have a 1:1 ratio (eg: 512x512).</p>
                   <p>
-                    2. The patient's eyes must be covered / given a black box to
-                    cover their eyes.
+                    2. The patient&apos;s eyes must be covered / given a black
+                    box to cover their eyes.
                   </p>
                   <p>
-                    3. The patient's face must face the camera screen when
+                    3. The patient&apos;s face must face the camera screen when
                     photographed.
                   </p>
                   <p>
-                    4. The patient's lips must be visible when photographed.
+                    4. The patient&apos;s lips must be visible when
+                    photographed.
                   </p>
                 </div>
               </div>

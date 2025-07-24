@@ -1,5 +1,24 @@
 import { RequestDataById } from '@/types/check-request-data';
 
+type ApiRequestItem = {
+  id: number;
+  nama_pemohon: string;
+  email_pemohon: string;
+  nik_pemohon: string;
+  no_telepon: string;
+  kategori: {
+    kategori: string;
+  };
+  alasan_permohonan: string;
+  status_permohonan: string;
+  created_at: string;
+  operasi_id: number;
+};
+
+type ApiResponse = {
+  data: ApiRequestItem[];
+};
+
 export async function getRequestDataById(
   token: string,
   requestId: number
@@ -23,13 +42,15 @@ export async function getRequestDataById(
       return null;
     }
 
-    const result = await res.json();
+    const result: ApiResponse = await res.json();
     if (!result || !Array.isArray(result.data)) {
       console.error('Expected an array of requests, but got:', result);
       return null;
     }
 
-    const data = result.data.find((item: any) => item.id === requestId);
+    const data = result.data.find(
+      (item: ApiRequestItem) => item.id === requestId
+    );
 
     if (!data) {
       console.error(`Request with ID ${requestId} not found in the list.`);

@@ -39,7 +39,6 @@ export default function RequestData() {
 
   const [loading, setLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(!isCreateMode);
-  const [error, setError] = useState('');
   const [requestData, setRequestData] = useState<RequestDataById | null>(null);
   const [currentUser, setCurrentUser] = useState<UserAuth | null>(null);
   const [formData, setFormData] = useState<RequestDataPayload>({
@@ -133,18 +132,19 @@ export default function RequestData() {
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
       const isRequestAll = pathname.includes('/request-all');
-      const result = isRequestAll
-        ? await requestAllData(token, formData)
-        : await singleRequestData(
-            token,
-            formData,
-            Number.parseInt(params.id as string)
-          );
+      if (isRequestAll) {
+        await requestAllData(token, formData);
+      } else {
+        await singleRequestData(
+          token,
+          formData,
+          Number.parseInt(params.id as string)
+        );
+      }
 
       Swal.fire({
         icon: 'success',
@@ -155,13 +155,16 @@ export default function RequestData() {
       }).then(() => {
         router.back();
       });
-    } catch (error: any) {
-      setError(error.message || 'Gagal mengupload data. Silakan coba lagi.');
+    } catch (error: unknown) {
+      // Use 'unknown' for better type safety
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to submit your request. Please try again.';
       Swal.fire({
         icon: 'error',
         title: 'Submission Failed!',
-        text:
-          error.message || 'Failed to submit your request. Please try again.',
+        text: message,
       });
     } finally {
       setLoading(false);
@@ -195,7 +198,7 @@ export default function RequestData() {
           <CardContent className='space-y-2'>
             <form id='cleft-lip-form' onSubmit={onSubmit} className='space-y-6'>
               <div>
-                <label>Applicant's full name</label>
+                <label>Applicant&apos;s full name</label>
                 <Input
                   name='name'
                   placeholder='Name'
@@ -295,7 +298,7 @@ export default function RequestData() {
           </CardHeader>
           <CardContent className='space-y-2'>
             <div>
-              <label>Applicant's full name</label>
+              <label>Applicant&apos;s full name</label>
               <Input
                 placeholder='Name'
                 className='bg-gray-100 border-0'

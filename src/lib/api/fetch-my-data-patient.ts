@@ -1,5 +1,28 @@
 import { MyDataPatient } from '@/types/patient';
 
+// Definisikan tipe untuk data mentah dari API
+type ApiPatient = {
+  id: number;
+  nama_pasien: string;
+  umur_pasien: number;
+  jenis_kelamin: 'P' | 'L';
+  tanggal_lahir: string;
+  operasi?: {
+    operator?: {
+      id: number;
+      name: string;
+    };
+    tanggal_operasi?: string;
+    lokasi_operasi?: string;
+    tehnik_operasi?: string;
+  };
+};
+
+// Definisikan tipe untuk response API
+type ApiResponse = {
+  data: ApiPatient[];
+};
+
 export async function getMyPatient(
   token: string
 ): Promise<MyDataPatient[] | null> {
@@ -28,15 +51,15 @@ export async function getMyPatient(
       return null;
     }
 
-    let data = await res.json();
+    const apiResponse: ApiResponse = await res.json();
 
-    let filteredData = data.data.filter(
-      (item: any) => item.operasi?.operator?.id === Number(userId)
+    const filteredData = apiResponse.data.filter(
+      (item: ApiPatient) => item.operasi?.operator?.id === Number(userId)
     );
 
     console.log(filteredData);
 
-    filteredData = filteredData.map((item: any) => ({
+    const mappedData = filteredData.map((item: ApiPatient) => ({
       id: item.id,
       patientName: item.nama_pasien,
       age: item.umur_pasien,
@@ -48,8 +71,8 @@ export async function getMyPatient(
       uploadedBy: item.operasi?.operator?.name ?? 'N/A',
     }));
 
-    console.log('yaya', filteredData);
-    return filteredData;
+    console.log('yaya', mappedData);
+    return mappedData;
   } catch (error) {
     console.error('Error fetching users:', error);
     return null;

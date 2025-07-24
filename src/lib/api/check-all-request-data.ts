@@ -1,3 +1,11 @@
+type PermohonanItem = {
+  id: number;
+  scope: string;
+  user_id: number;
+  created_at: string;
+  status_permohonan: string;
+};
+
 export async function checkAllDataRequest(
   token: string
 ): Promise<{ status: string | null; requestId: number | null }> {
@@ -31,7 +39,7 @@ export async function checkAllDataRequest(
     }
 
     const allDataRequestsForUser = result.data.filter(
-      (item: any) =>
+      (item: PermohonanItem) =>
         item.scope === 'semua' && item.user_id === Number(currentUserId)
     );
 
@@ -40,7 +48,7 @@ export async function checkAllDataRequest(
     }
 
     allDataRequestsForUser.sort(
-      (a: any, b: any) =>
+      (a: PermohonanItem, b: PermohonanItem) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
 

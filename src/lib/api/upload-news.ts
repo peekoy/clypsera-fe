@@ -45,8 +45,9 @@ export async function uploadNews(
 
     console.log('Upload successful:', result);
     return result;
-  } catch (error: any) {
-    console.error('Upload error:', error);
-    throw new Error(error.message || 'Terjadi kesalahan saat mengupload data.');
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Upload error:', err);
+    throw new Error(err.message || 'Terjadi kesalahan saat mengupload data.');
   }
 }

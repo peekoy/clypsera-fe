@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent, useEffect, DragEvent } from 'react';
+import { useState, useEffect, DragEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -121,9 +121,13 @@ export default function CleftLipPatientForm() {
       }).then(() => {
         router.push('/browse-news');
       });
-    } catch (error: any) {
-      setError(error.message || 'Gagal mengupload data. Silakan coba lagi.');
-      Swal.fire('Error!', error.message || 'Something went wrong.', 'error');
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Gagal mengupload data. Silakan coba lagi.';
+      setError(message);
+      Swal.fire('Error!', message, 'error');
     } finally {
       setLoading(false);
     }

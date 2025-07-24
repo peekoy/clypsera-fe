@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent, useEffect, ChangeEvent } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { Pencil, Calendar as CalendarIcon } from 'lucide-react';
@@ -49,17 +48,14 @@ export default function CleftLipPatientForm() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [token, setToken] = useState<string | null>(null);
+
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  let photo = `${process.env.NEXT_PUBLIC_API_PHOTO_URL}${userData?.photo}`;
+  const photo = `${process.env.NEXT_PUBLIC_API_PHOTO_URL}${userData?.photo}`;
 
   console.log(userData?.photo);
 
   useEffect(() => {
-    setToken(localStorage.getItem('token'));
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
@@ -128,8 +124,6 @@ export default function CleftLipPatientForm() {
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    setError('');
-    setSuccess('');
     setLoading(true);
 
     try {
@@ -167,13 +161,13 @@ export default function CleftLipPatientForm() {
         setIsEditing(false);
         router.refresh();
       });
-    } catch (error: any) {
-      setError(error.message || 'Gagal mengupload data. Silakan coba lagi.');
-      Swal.fire(
-        'Error!',
-        error.message || 'Failed to upload data. Please try again.',
-        'error'
-      );
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Gagal mengupload data. Silakan coba lagi.';
+
+      Swal.fire('Error!', errorMessage, 'error');
     } finally {
       setLoading(false);
     }

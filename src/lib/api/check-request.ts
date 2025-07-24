@@ -1,3 +1,11 @@
+type PermohonanItem = {
+  id: number;
+  operasi_id: number;
+  user_id: number;
+  created_at: string;
+  status_permohonan: string;
+};
+
 export async function checkIfDataRequested(
   token: string,
   operasiId: number
@@ -33,7 +41,7 @@ export async function checkIfDataRequested(
     }
 
     const userRequestsForOperation = result.data.filter(
-      (item: any) =>
+      (item: PermohonanItem) =>
         item.operasi_id === operasiId && item.user_id === Number(currentUserId)
     );
 
@@ -42,7 +50,7 @@ export async function checkIfDataRequested(
     }
 
     userRequestsForOperation.sort(
-      (a: any, b: any) =>
+      (a: PermohonanItem, b: PermohonanItem) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
 

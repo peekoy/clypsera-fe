@@ -23,7 +23,7 @@ export async function getTherapyTypes(
       return [];
     }
 
-    return result.data.map((item: any) => ({
+    return result.data.map((item: { nama_terapi: string }) => ({
       label: item.nama_terapi,
       value: item.nama_terapi,
     }));
@@ -58,7 +58,7 @@ export async function getDiagnosisTypes(
       return [];
     }
 
-    return result.data.map((item: any) => ({
+    return result.data.map((item: { nama_diagnosis: string }) => ({
       label: item.nama_diagnosis,
       value: item.nama_diagnosis,
     }));
@@ -93,7 +93,7 @@ export async function getCleftPalateTypes(
       return [];
     }
 
-    return result.data.map((item: any) => ({
+    return result.data.map((item: { nama_kelainan: string }) => ({
       label: item.nama_kelainan,
       value: item.nama_kelainan,
     }));

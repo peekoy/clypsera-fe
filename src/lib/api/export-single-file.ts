@@ -17,7 +17,7 @@ export async function exportSingleFile(
     try {
       const errorData = await response.clone().json();
       errorMessage = errorData?.message || errorMessage;
-    } catch (jsonError) {
+    } catch {
       const textError = await response.text();
       errorMessage = `Download failed. Server response: ${textError.substring(
         0,

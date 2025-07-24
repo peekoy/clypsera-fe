@@ -1,3 +1,11 @@
+type ApiCategory = {
+  kategori: string;
+};
+
+type ApiResponse = {
+  data: ApiCategory[];
+};
+
 export async function getRequestCategories(
   token: string
 ): Promise<{ label: string; value: string }[]> {
@@ -17,10 +25,10 @@ export async function getRequestCategories(
       return [];
     }
 
-    const data = await response.json();
+    const data: ApiResponse = await response.json();
 
     if (data && Array.isArray(data.data)) {
-      return data.data.map((cat: any) => ({
+      return data.data.map((cat: ApiCategory) => ({
         label: cat.kategori,
         value: cat.kategori.toLowerCase(),
       }));

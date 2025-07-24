@@ -174,12 +174,12 @@ export default function AdministratorPage() {
               timer: 2000,
             });
           }
-        } catch (error: any) {
-          Swal.fire(
-            'Error!',
-            error.message || 'Failed to delete user.',
-            'error'
-          );
+        } catch (error: unknown) {
+          let message = 'Failed to delete user.';
+          if (error instanceof Error) {
+            message = error.message;
+          }
+          Swal.fire('Error!', message, 'error');
         }
       }
     });
@@ -253,7 +253,8 @@ export default function AdministratorPage() {
               User Data Not Found
             </h1>
             <p className='text-gray-600 mb-4'>
-              The data you're looking for doesn't exist. Please try again later!
+              The data you&apos;re looking for doesn&apos;t exist. Please try
+              again later!
             </p>
           </div>
         </div>

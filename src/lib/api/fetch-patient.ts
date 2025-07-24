@@ -1,5 +1,28 @@
 import { PatientData } from '@/types/patient';
 
+type ApiPatient = {
+  id: number;
+  nama_pasien: string;
+  umur_pasien: number;
+  jenis_kelamin: 'P' | 'L';
+  tanggal_lahir: string;
+  operasi?: {
+    tanggal_operasi?: string;
+    nama_penyelenggara?: string;
+    tehnik_operasi?: string;
+    operator?: {
+      name?: string;
+    };
+    jenis_terapi?: {
+      nama_terapi?: string;
+    };
+  };
+};
+
+type ApiResponse = {
+  data: ApiPatient[];
+};
+
 export async function getAllPatient(
   token: string
 ): Promise<PatientData[] | null> {
@@ -12,8 +35,6 @@ export async function getAllPatient(
         'ngrok-skip-browser-warning': 'true',
       },
     });
-
-    console.log('tes', token);
 
     const contentType = res.headers.get('content-type');
 
@@ -29,8 +50,8 @@ export async function getAllPatient(
       return null;
     }
 
-    let data = await res.json();
-    data = data.data.map((item: any) => ({
+    const apiResponse: ApiResponse = await res.json();
+    const mappedData = apiResponse.data.map((item: ApiPatient) => ({
       id: item.id,
       patientName: item.nama_pasien,
       age: item.umur_pasien,
@@ -42,8 +63,7 @@ export async function getAllPatient(
       uploadedBy: item.operasi?.operator?.name ?? 'N/A',
       therapyType: item.operasi?.jenis_terapi?.nama_terapi ?? 'N/A',
     }));
-    console.log('yaya', data);
-    return data;
+    return mappedData;
   } catch (error) {
     console.error('Error fetching users:', error);
     return null;

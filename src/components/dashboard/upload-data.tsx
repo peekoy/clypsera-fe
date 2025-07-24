@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent, useEffect, DragEvent } from 'react';
+import { useState, useEffect, DragEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar as CalendarIcon, Plus, X } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus } from 'lucide-react';
 import { uploadPatientData } from '@/lib/api/upload-patient';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -83,7 +83,6 @@ export default function CleftLipPatientForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFetchingOptions, setIsFetchingOptions] = useState(true);
 
-  const [error, setError] = useState('');
   const [token, setToken] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -177,7 +176,6 @@ export default function CleftLipPatientForm() {
     }
 
     setIsSubmitting(true);
-    setError('');
 
     const payload = {
       ...formData,
@@ -202,10 +200,11 @@ export default function CleftLipPatientForm() {
       }).then(() => {
         router.push('/my-data');
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage =
-        error.message || 'Gagal mengupload data. Silakan coba lagi.';
-      setError(errorMessage);
+        error instanceof Error
+          ? error.message
+          : 'Gagal mengupload data. Silakan coba lagi.';
       Swal.fire({
         title: 'Upload Failed!',
         text: errorMessage,
@@ -230,8 +229,6 @@ export default function CleftLipPatientForm() {
         } else {
           setAfterSurgeryFile(file);
         }
-      } else {
-        setError('Hanya file gambar yang diperbolehkan');
       }
     }
   };
@@ -672,7 +669,7 @@ export default function CleftLipPatientForm() {
                   htmlFor='motherPregnancyHistory'
                   className='text-sm font-medium text-gray-700'
                 >
-                  Patient's mother's pregnancy history
+                  Patient&apos;s mother&apos;s pregnancy history
                 </label>
                 <Textarea
                   name='motherPregnancyHistory'
@@ -688,7 +685,7 @@ export default function CleftLipPatientForm() {
                   htmlFor='familyHistory'
                   className='text-sm font-medium text-gray-700'
                 >
-                  Patient's family history
+                  Patient&apos;s family history
                 </label>
                 <Textarea
                   name='familyHistory'
@@ -704,7 +701,7 @@ export default function CleftLipPatientForm() {
                   htmlFor='residentsMaritalHistory'
                   className='text-sm font-medium text-gray-700'
                 >
-                  Residents' marital history
+                  Residents&apos; marital history
                 </label>
                 <Textarea
                   name='residentsMaritalHistory'
@@ -762,15 +759,16 @@ export default function CleftLipPatientForm() {
                   <div className='text-md space-y-1'>
                     <p>1. The size must have a 1:1 ratio (eg: 512x512).</p>
                     <p>
-                      2. The patient's eyes must be covered / given a black box
-                      to cover their eyes.
+                      2. The patient&apos;s eyes must be covered / given a black
+                      box to cover their eyes.
                     </p>
                     <p>
-                      3. The patient's face must face the camera screen when
+                      3. The patient&apos;s face must face the camera screen
+                      when photographed.
+                    </p>
+                    <p>
+                      4. The patient&apos;s lips must be visible when
                       photographed.
-                    </p>
-                    <p>
-                      4. The patient's lips must be visible when photographed.
                     </p>
                   </div>
                 </div>
