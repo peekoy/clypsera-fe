@@ -1,6 +1,3 @@
-// src/lib/api/fetch-form-options.ts
-
-// Fungsi untuk mengambil data Jenis Terapi
 export async function getTherapyTypes(
   token: string
 ): Promise<{ label: string; value: string }[]> {
@@ -26,7 +23,6 @@ export async function getTherapyTypes(
       return [];
     }
 
-    // Ubah data dari API menjadi format yang dibutuhkan oleh komponen Select
     return result.data.map((item: any) => ({
       label: item.nama_terapi,
       value: item.nama_terapi,
@@ -37,7 +33,6 @@ export async function getTherapyTypes(
   }
 }
 
-// Fungsi untuk mengambil data Diagnosis
 export async function getDiagnosisTypes(
   token: string
 ): Promise<{ label: string; value: string }[]> {
@@ -63,7 +58,6 @@ export async function getDiagnosisTypes(
       return [];
     }
 
-    // Ubah data dari API menjadi format yang dibutuhkan oleh komponen Select
     return result.data.map((item: any) => ({
       label: item.nama_diagnosis,
       value: item.nama_diagnosis,
@@ -99,7 +93,6 @@ export async function getCleftPalateTypes(
       return [];
     }
 
-    // Ubah data dari API menjadi format yang dibutuhkan oleh komponen Select
     return result.data.map((item: any) => ({
       label: item.nama_kelainan,
       value: item.nama_kelainan,

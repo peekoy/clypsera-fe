@@ -1,4 +1,3 @@
-// src/lib/api/download-with-token.ts
 export async function exportSingleFile(
   downloadToken: string
 ): Promise<Response> {
@@ -16,12 +15,9 @@ export async function exportSingleFile(
   if (!response.ok) {
     let errorMessage = `Failed to download file: ${response.status} ${response.statusText}`;
     try {
-      // PERBAIKAN: Clone respons sebelum membacanya.
-      // Kita coba baca kloningnya sebagai JSON.
       const errorData = await response.clone().json();
       errorMessage = errorData?.message || errorMessage;
     } catch (jsonError) {
-      // Jika kloning gagal dibaca sebagai JSON, baca respons asli sebagai teks.
       const textError = await response.text();
       errorMessage = `Download failed. Server response: ${textError.substring(
         0,

@@ -1,5 +1,3 @@
-// src/lib/api/check-request.ts
-
 export async function checkIfDataRequested(
   token: string,
   operasiId: number
@@ -19,7 +17,6 @@ export async function checkIfDataRequested(
           Accept: 'application/json',
           'ngrok-skip-browser-warning': 'true',
         },
-        // Tambahkan ini untuk memastikan data yang diambil selalu yang terbaru
         cache: 'no-cache',
       }
     );
@@ -44,7 +41,6 @@ export async function checkIfDataRequested(
       return { requested: false, requestId: null, status: '' };
     }
 
-    // DIUBAH: Urutkan berdasarkan tanggal pembuatan (created_at) dari yang paling baru
     userRequestsForOperation.sort(
       (a: any, b: any) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()

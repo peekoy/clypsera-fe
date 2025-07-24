@@ -27,7 +27,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import Swal from 'sweetalert2';
-// DIUBAH: Impor fungsi untuk mengambil data dropdown
 import {
   getTherapyTypes,
   getDiagnosisTypes,
@@ -64,7 +63,6 @@ export default function EditDataForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFetchingData, setIsFetchingData] = useState(true);
 
-  // DIUBAH: Tambahkan state untuk menyimpan opsi dropdown
   const [therapyOptions, setTherapyOptions] = useState<
     { label: string; value: string }[]
   >([]);
@@ -85,7 +83,6 @@ export default function EditDataForm() {
 
     const fetchInitialData = async () => {
       try {
-        // Ambil semua data secara bersamaan
         const [patient, therapies, diagnoses, cleftTypes] = await Promise.all([
           getMyPatientById(token, Number.parseInt(params.id as string)),
           getTherapyTypes(token),
@@ -93,7 +90,6 @@ export default function EditDataForm() {
           getCleftPalateTypes(token),
         ]);
 
-        // Set state untuk data pasien
         if (patient) {
           setPatientData({
             ...patient,
@@ -115,7 +111,6 @@ export default function EditDataForm() {
           });
         }
 
-        // Set state untuk opsi dropdown
         setTherapyOptions(therapies);
         setDiagnosisOptions(diagnoses);
         setCleftPalateTypeOptions(cleftTypes);

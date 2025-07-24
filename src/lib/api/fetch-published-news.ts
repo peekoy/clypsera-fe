@@ -25,21 +25,18 @@ export async function getPublishedNews(): Promise<News[] | null> {
 
     const newsItems: News[] = result.data
       .map((item: any) => {
-        let imageUrl = '/artikel1.svg'; // Gambar fallback
+        let imageUrl = '/artikel1.svg';
         if (item.gambar) {
-          // 1. Membersihkan base URL dari slash di akhir
           const cleanedBaseUrl = baseUrl.endsWith('/')
             ? baseUrl.slice(0, -1)
             : baseUrl;
 
-          // 2. Membersihkan path gambar dari slash di awal
           const cleanedImagePath = item.gambar.startsWith('/')
             ? item.gambar.slice(1)
             : item.gambar;
 
           let finalUrl = `${cleanedBaseUrl}/${cleanedImagePath}`;
 
-          // 3. Memperbaiki masalah ekstensi ganda (.jpg.jpg)
           const extensions = ['.jpg', '.jpeg', '.png', '.svg'];
           for (const ext of extensions) {
             if (finalUrl.endsWith(ext + ext)) {

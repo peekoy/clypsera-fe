@@ -269,7 +269,6 @@ export default function BrowseDataPage() {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('Authentication token not found.');
-      // PERBAIKAN: Kirim ID request ke fungsi export
       const response = await exportAllData(token, allDataRequestId);
 
       const blob = await response.blob();

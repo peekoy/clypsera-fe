@@ -23,7 +23,6 @@ export async function editNews(
     {
       method: 'POST',
       headers: {
-        // 'Content-Type': 'application/json',
         Accept: 'application/json',
         Authorization: `Bearer ${token}`,
         'ngrok-skip-browser-warning': 'true',

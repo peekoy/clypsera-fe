@@ -14,11 +14,9 @@ import { useRouter } from 'next/navigation';
 import { getRequestCategories } from '@/lib/api/fetch-request-categories';
 import Swal from 'sweetalert2';
 
-// Fungsi untuk memformat tanggal
 const formatDateTime = (isoString: string) => {
   if (!isoString) return 'N/A';
   const date = new Date(isoString);
-  // Menggunakan lokal Swedia untuk format yyyy-MM-dd HH:mm:ss
   return date.toLocaleString('sv-SE');
 };
 
@@ -45,7 +43,6 @@ export default function CheckDataRequestPage() {
       ]);
 
       if (requests) {
-        // DIUBAH: Urutkan data di sini sebelum disimpan ke state
         const sortedRequests = requests.sort(
           (a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()

@@ -28,7 +28,6 @@ export async function singleRequestData(
     );
 
     const categoryId = matchedCategory.id;
-    // const operatorId = localStorage.getItem('userId');
     const status = 'pending';
     const userId = localStorage.getItem('userId');
     console.log(userId);
@@ -50,7 +49,6 @@ export async function singleRequestData(
       {
         method: 'POST',
         headers: {
-          // 'Content-Type': 'application/json',
           Accept: 'application/json',
           Authorization: `Bearer ${token}`,
           'ngrok-skip-browser-warning': 'true',

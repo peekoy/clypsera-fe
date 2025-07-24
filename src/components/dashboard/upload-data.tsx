@@ -77,7 +77,6 @@ export default function CleftLipPatientForm() {
     { label: string; value: string }[]
   >([]);
 
-  // DIUBAH: State sekarang hanya menampung satu file, bukan array
   const [beforeSurgeryFile, setBeforeSurgeryFile] = useState<File | null>(null);
   const [afterSurgeryFile, setAfterSurgeryFile] = useState<File | null>(null);
 
@@ -167,7 +166,6 @@ export default function CleftLipPatientForm() {
       return;
     }
 
-    // DIUBAH: Pengecekan file tunggal
     if (!beforeSurgeryFile || !afterSurgeryFile) {
       Swal.fire({
         title: 'Error!',
@@ -188,7 +186,6 @@ export default function CleftLipPatientForm() {
     };
 
     try {
-      // DIUBAH: Kirim file tunggal sebagai array
       await uploadPatientData(
         token,
         payload,
@@ -220,7 +217,6 @@ export default function CleftLipPatientForm() {
     }
   }
 
-  // DIUBAH: Logika handleFileUpload disederhanakan untuk satu file
   const handleFileUpload = (
     files: FileList | null,
     type: 'before' | 'after'

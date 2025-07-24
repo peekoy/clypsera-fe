@@ -27,7 +27,7 @@ export default function CleftLipPatientForm() {
     image: '',
     source: '',
     content: '',
-    status: 'draft', // Default value
+    status: 'draft',
   });
   const [newsImage, setNewsImage] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);

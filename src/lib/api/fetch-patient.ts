@@ -36,7 +36,6 @@ export async function getAllPatient(
       age: item.umur_pasien,
       gender: item.jenis_kelamin === 'P' ? 'Women' : 'Men',
       dateOfBirth: item.tanggal_lahir,
-      // PERUBAHAN DI BAWAH INI
       operationDate: item.operasi?.tanggal_operasi ?? 'N/A',
       organizer: item.operasi?.nama_penyelenggara ?? 'N/A',
       operationalTechniques: item.operasi?.tehnik_operasi ?? 'N/A',

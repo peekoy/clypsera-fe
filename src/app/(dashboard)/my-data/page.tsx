@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
-// import { patientData } from '@/data/data';
 import DataTable from '@/components/dashboard/data-table';
 import FilterForm from '@/components/dashboard/filter-form';
 import Pagination from '@/components/dashboard/pagination';
@@ -17,8 +16,7 @@ import Swal from 'sweetalert2';
 const toSlug = (str: string) =>
   str
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '') // Hapus semua karakter kecuali huruf, angka, spasi, dan hubung
-    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-');
 
 export default function MyDataPage() {
@@ -37,7 +35,7 @@ export default function MyDataPage() {
         return;
       }
       setIsLoading(true);
-      let patients = (await getMyPatient(token)) || [];
+      const patients = (await getMyPatient(token)) || [];
 
       if (patients) {
         setMyPatient(patients);
@@ -212,7 +210,6 @@ export default function MyDataPage() {
           const token = localStorage.getItem('token');
           if (token) {
             await deleteMyDataPatient(token, patientId);
-            // Hapus data dari state setelah berhasil dihapus dari API
             setMyPatient((prev) =>
               prev.filter((patient) => patient.id !== patientId)
             );

@@ -1,4 +1,3 @@
-// src/lib/api/fetch-profile.ts - Updated version
 import { UserProfile } from '@/types/user';
 
 export async function getUserProfile(
@@ -45,17 +44,8 @@ export async function getUserProfile(
       nik: data.detail_user.nik,
       address: data.detail_user.alamat,
       age: data.detail_user.umur,
-      photo: data.detail_user.foto, // Added foto field
+      photo: data.detail_user.foto,
     };
-
-    // data = data.data.map((item: any) => ({
-    //   name: item.name,
-    //   email: item.email,
-    //   password: item.password,
-    //   confirmPassword: item.password_confirmation,
-    //   role: item.roles.length <= 0 ? 'not found' : item.roles[0].name,
-    // }));
-    return data;
   } catch (error) {
     console.error('Error fetching users:', error);
     return null;

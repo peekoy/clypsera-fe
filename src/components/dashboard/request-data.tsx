@@ -24,7 +24,6 @@ import { updateRequestData } from '@/lib/api/update-status';
 import Swal from 'sweetalert2';
 import { UserAuth } from '@/types/user';
 
-// Fungsi untuk memformat tanggal dan waktu
 const formatDateTime = (isoString: string) => {
   if (!isoString) return 'N/A';
   const date = new Date(isoString);
@@ -42,7 +41,7 @@ export default function RequestData() {
   const [isFetching, setIsFetching] = useState(!isCreateMode);
   const [error, setError] = useState('');
   const [requestData, setRequestData] = useState<RequestDataById | null>(null);
-  const [currentUser, setCurrentUser] = useState<UserAuth | null>(null); // State untuk menyimpan data user
+  const [currentUser, setCurrentUser] = useState<UserAuth | null>(null);
   const [formData, setFormData] = useState<RequestDataPayload>({
     name: '',
     email: '',

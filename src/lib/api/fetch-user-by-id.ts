@@ -41,15 +41,6 @@ export async function getUserById(
       confirmPassword: '',
       role: data.roles.length <= 0 ? 'not found' : data.roles[0].name,
     };
-
-    // data = data.data.map((item: any) => ({
-    //   name: item.name,
-    //   email: item.email,
-    //   password: item.password,
-    //   confirmPassword: item.password_confirmation,
-    //   role: item.roles.length <= 0 ? 'not found' : item.roles[0].name,
-    // }));
-    return data;
   } catch (error) {
     console.error('Error fetching users:', error);
     return null;

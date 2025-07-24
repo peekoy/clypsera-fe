@@ -10,7 +10,6 @@ import { getDetailedPatient } from '@/lib/api/fetch-show-patient-data';
 import { checkIfDataRequested } from '@/lib/api/check-request';
 import { deleteRequest } from '@/lib/api/delete-request';
 import Swal from 'sweetalert2';
-// --- MODIFIKASI IMPORT ---
 import { generateDownloadToken } from '@/lib/api/generate-download-token';
 import { exportSingleFile } from '@/lib/api/export-single-file';
 
@@ -71,7 +70,6 @@ export default function OperationDetail() {
 
   const detailPatient = detailedPatient[0];
 
-  // --- MODIFIKASI TOTAL FUNGSI HANDLEEXPORT ---
   const handleExport = async () => {
     if (!requestId) {
       setDownloadError('Request ID not found.');
@@ -102,10 +100,7 @@ export default function OperationDetail() {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
-
-      // Tidak perlu menampilkan Swal success di sini karena file sudah terunduh
     } catch (err: any) {
-      // TAMBAHKAN LOGGING INI untuk melihat error lengkap di console browser
       console.error('Download process failed:', err);
       setDownloadError(err.message);
       Swal.fire('Download Error!', err.message, 'error');
@@ -210,7 +205,6 @@ export default function OperationDetail() {
         </Button>
       );
     }
-    // Jika belum pernah request
     return (
       <Button
         className='bg-primary hover:bg-[#4971A9]/90 cursor-pointer text-white px-6'

@@ -13,10 +13,8 @@ import { FilterAdmin } from '@/types/filter';
 import { deleteUser } from '@/lib/api/delete-user';
 import Swal from 'sweetalert2';
 
-// Fungsi untuk memformat tanggal
 const formatDateTime = (date: Date) => {
   if (!date || !(date instanceof Date)) return 'N/A';
-  // Menggunakan lokal Swedia untuk format YYYY-MM-DD HH:mm:ss
   return date.toLocaleString('sv-SE');
 };
 
@@ -34,7 +32,6 @@ export default function AdministratorPage() {
       setIsLoading(true);
       const users = (await getAllUsers(token)) || [];
       if (users) {
-        // DIUBAH: Urutkan data pengguna berdasarkan tanggal pembuatan secara menurun
         const sortedUsers = users.sort((a, b) => b.id - a.id);
         setAllUsersData(sortedUsers);
       }
@@ -86,7 +83,6 @@ export default function AdministratorPage() {
     });
   }, [appliedFilters, allUsersData]);
 
-  // Memformat data sebelum dikirim ke DataTable
   const formattedData = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return filteredData
@@ -208,7 +204,7 @@ export default function AdministratorPage() {
           </div>
 
           <DataTable
-            data={formattedData} // Menggunakan data yang sudah diformat
+            data={formattedData}
             columns={[
               { key: 'name', label: 'Name' },
               { key: 'email', label: 'Email' },

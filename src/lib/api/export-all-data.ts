@@ -1,12 +1,9 @@
-// src/lib/api/export-all-data.ts
-
 import { generateDownloadToken } from './generate-download-token';
 
 export async function exportAllData(
   token: string,
   requestId: number
 ): Promise<Response> {
-  // Gunakan generateDownloadToken untuk mendapatkan token unduhan yang spesifik
   const downloadToken = await generateDownloadToken(token, requestId);
   const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/export/${downloadToken}`;
 

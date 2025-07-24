@@ -23,14 +23,11 @@ export async function uploadNews(
       formData.append('gambar', image[0]);
     }
 
-    // console.log('Data yang dikirim:', dataToSend);
-
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/page/berita`,
       {
         method: 'POST',
         headers: {
-          // 'Content-Type': 'application/json',
           Accept: 'application/json',
           Authorization: `Bearer ${token}`,
           'ngrok-skip-browser-warning': 'true',

@@ -1,4 +1,3 @@
-// src/lib/api/upload-profile-photo.ts
 export async function uploadProfilePhoto(file: File, token: string) {
   const userId = localStorage.getItem('userId');
 
@@ -9,7 +8,7 @@ export async function uploadProfilePhoto(file: File, token: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/${userId}/update?_method=PATCH`,
     {
-      method: 'POST', // Menggunakan POST dengan _method=PATCH
+      method: 'POST',
       headers: {
         Accept: 'application/json',
         Authorization: `Bearer ${token}`,

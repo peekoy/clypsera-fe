@@ -61,13 +61,10 @@ export default function DashboardLayoutWrapper({
       return;
     }
 
-    // Panggil saat pertama kali load
     fetchFreshUserData();
 
-    // Tambahkan listener untuk event 'profileUpdated'
     window.addEventListener('profileUpdated', fetchFreshUserData);
 
-    // Hapus listener saat komponen tidak lagi digunakan
     return () => {
       window.removeEventListener('profileUpdated', fetchFreshUserData);
     };

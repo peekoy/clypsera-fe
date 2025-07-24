@@ -66,7 +66,7 @@ export default function AddNewUserForm() {
 
     try {
       await addUser(formData);
-      setIsLoading(true); // Menonaktifkan input setelah sukses
+      setIsLoading(true);
       Swal.fire({
         icon: 'success',
         title: 'Success!',

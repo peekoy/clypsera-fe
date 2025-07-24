@@ -1,5 +1,3 @@
-// src/lib/api/fetch-request-data-by-id.ts
-
 import { RequestDataById } from '@/types/check-request-data';
 
 export async function getRequestDataById(
@@ -7,8 +5,6 @@ export async function getRequestDataById(
   requestId: number
 ): Promise<RequestDataById | null> {
   try {
-    // ALIHKAN LOGIKA: Ambil semua data request, lalu filter di frontend.
-    // Ini untuk menghindari error 404 dari endpoint /permohonan/find/[id]
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/permohonan`,
       {
@@ -33,7 +29,6 @@ export async function getRequestDataById(
       return null;
     }
 
-    // Cari request yang spesifik dari daftar yang ada
     const data = result.data.find((item: any) => item.id === requestId);
 
     if (!data) {
@@ -41,7 +36,6 @@ export async function getRequestDataById(
       return null;
     }
 
-    // Mapping data yang ditemukan ke format yang benar
     return {
       name: data.nama_pemohon,
       email: data.email_pemohon,

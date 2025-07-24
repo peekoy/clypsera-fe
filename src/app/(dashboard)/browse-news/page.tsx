@@ -2,14 +2,12 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, Trash2 } from 'lucide-react';
-// import { patientData } from '@/data/data';
+import { Trash2 } from 'lucide-react';
 import DataTable from '@/components/dashboard/data-table';
 import FilterForm from '@/components/dashboard/filter-form';
 import Pagination from '@/components/dashboard/pagination';
 import { useRouter } from 'next/navigation';
 import { FilterNews } from '@/types/filter';
-// import { patientData } from '@/data/data';
 import { News } from '@/types/news';
 import { getAllNews } from '@/lib/api/fetch-news';
 import { deleteNews } from '@/lib/api/delete-news';
@@ -26,7 +24,7 @@ export default function BrowseDataPage() {
         return;
       }
       setIsLoading(true);
-      let news = (await getAllNews(token)) || [];
+      const news = (await getAllNews(token)) || [];
 
       if (news) {
         setAllNews(news);

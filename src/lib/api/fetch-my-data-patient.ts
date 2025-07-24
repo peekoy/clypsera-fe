@@ -1,4 +1,4 @@
-import { MyDataPatient } from '@/types/patient'; // Menggunakan tipe data yang sesuai
+import { MyDataPatient } from '@/types/patient';
 
 export async function getMyPatient(
   token: string
@@ -30,14 +30,12 @@ export async function getMyPatient(
 
     let data = await res.json();
 
-    // PERBAIKAN PADA FUNGSI FILTER
     let filteredData = data.data.filter(
       (item: any) => item.operasi?.operator?.id === Number(userId)
     );
 
     console.log(filteredData);
 
-    // PERBAIKAN PADA FUNGSI MAP
     filteredData = filteredData.map((item: any) => ({
       id: item.id,
       patientName: item.nama_pasien,
@@ -45,7 +43,7 @@ export async function getMyPatient(
       gender: item.jenis_kelamin === 'P' ? 'Women' : 'Men',
       dateOfBirth: item.tanggal_lahir,
       operationDate: item.operasi?.tanggal_operasi ?? 'N/A',
-      organizer: item.operasi?.lokasi_operasi ?? 'N/A', // diasumsikan lokasi operasi adalah organizer
+      organizer: item.operasi?.lokasi_operasi ?? 'N/A',
       operationalTechniques: item.operasi?.tehnik_operasi ?? 'N/A',
       uploadedBy: item.operasi?.operator?.name ?? 'N/A',
     }));

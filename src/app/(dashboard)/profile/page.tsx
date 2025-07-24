@@ -155,7 +155,6 @@ export default function CleftLipPatientForm() {
 
       await editProfile(payload, token, profileImage);
 
-      // Kirim sinyal bahwa profil telah diperbarui
       window.dispatchEvent(new Event('profileUpdated'));
 
       Swal.fire({

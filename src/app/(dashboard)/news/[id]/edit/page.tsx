@@ -79,7 +79,6 @@ export default function EditNewsForm() {
               ? news.image
               : `${baseUrl}/${news.image.replace(/^\//, '')}`;
 
-            // --- PERBAIKAN: Menghapus ekstensi ganda ---
             const extensions = ['.png', '.jpg', '.jpeg', '.svg', '.gif'];
             for (const ext of extensions) {
               if (imageUrl.endsWith(ext + ext)) {

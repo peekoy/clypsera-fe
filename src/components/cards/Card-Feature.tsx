@@ -1,5 +1,3 @@
-// src/components/cards/Card-Feature.tsx
-
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 

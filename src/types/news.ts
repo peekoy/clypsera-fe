@@ -4,7 +4,6 @@ export type News = {
   image: string;
   source: string;
   status: string;
-  // userId: number,
   content: string;
 };
 

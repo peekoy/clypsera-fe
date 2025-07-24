@@ -19,7 +19,6 @@ export async function getRequestCategories(
 
     const data = await response.json();
 
-    // Pastikan data.data ada dan merupakan array
     if (data && Array.isArray(data.data)) {
       return data.data.map((cat: any) => ({
         label: cat.kategori,

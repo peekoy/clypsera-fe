@@ -1,4 +1,3 @@
-// src/lib/api/generate-download-token.ts
 export async function generateDownloadToken(
   token: string,
   requestId: number
@@ -6,7 +5,7 @@ export async function generateDownloadToken(
   const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/permohonan/${requestId}/generate-token`;
 
   const response = await fetch(url, {
-    method: 'GET', // Atau GET, sesuaikan dengan metode API Anda
+    method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: 'application/json',

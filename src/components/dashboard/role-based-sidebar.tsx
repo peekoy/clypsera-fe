@@ -58,7 +58,6 @@ export function RoleBasedSidebar({ user }: RoleBasedSidebarProps) {
     toast('Logged Out', {
       description: 'You have been logged out successfully.',
     });
-    // Implement logout logic here
     localStorage.removeItem('token');
     router.push('/login');
   };

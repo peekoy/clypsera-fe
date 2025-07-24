@@ -61,7 +61,6 @@ export async function uploadPatientData(
         item.nama_terapi.toLowerCase() === payload.therapyType.toLowerCase()
     );
 
-    // --- PENAMBAHAN VALIDASI DI SINI ---
     if (!matchedDiagnosis || !matchedJenisKelainan || !matchedJenisTerapi) {
       throw new Error(
         'Pastikan semua kolom dropdown (Diagnosis, Cleft Palate Type, Therapy Type) telah terisi dengan benar.'
@@ -125,7 +124,6 @@ export async function uploadPatientData(
     return result;
   } catch (error: any) {
     console.error('Upload error:', error);
-    // Lempar kembali error agar bisa ditangkap oleh komponen UI
     throw error;
   }
 }
