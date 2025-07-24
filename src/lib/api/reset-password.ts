@@ -1,4 +1,10 @@
-export async function requestPasswordReset(email: string): Promise<any> {
+interface PasswordResetResponse {
+  message: string;
+}
+
+export async function requestPasswordReset(
+  email: string
+): Promise<PasswordResetResponse> {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/forgot-password`,
     {

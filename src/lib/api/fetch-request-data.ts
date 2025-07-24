@@ -1,5 +1,20 @@
 import { CheckRequestData } from '@/types/check-request-data';
 
+type ApiRequestItem = {
+  id: number;
+  nama_pemohon: string;
+  email_pemohon: string;
+  kategori: {
+    kategori: string;
+  };
+  status_permohonan: string;
+  created_at: string;
+};
+
+type ApiResponse = {
+  data: ApiRequestItem[];
+};
+
 export async function getAllRequestData(
   token: string
 ): Promise<CheckRequestData[] | null> {
@@ -16,8 +31,6 @@ export async function getAllRequestData(
       }
     );
 
-    console.log('tes', token);
-
     const contentType = res.headers.get('content-type');
 
     if (!res.ok) {
@@ -32,8 +45,8 @@ export async function getAllRequestData(
       return null;
     }
 
-    let data = await res.json();
-    data = data.data.map((item: any) => ({
+    const apiResponse: ApiResponse = await res.json();
+    const mappedData = apiResponse.data.map((item: ApiRequestItem) => ({
       id: item.id,
       name: item.nama_pemohon,
       email: item.email_pemohon,
@@ -41,8 +54,8 @@ export async function getAllRequestData(
       status: item.status_permohonan,
       createdAt: item.created_at,
     }));
-    console.log('yaya', data);
-    return data;
+
+    return mappedData;
   } catch (error) {
     console.error('Error fetching users:', error);
     return null;

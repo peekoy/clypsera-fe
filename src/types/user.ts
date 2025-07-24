@@ -1,5 +1,5 @@
 import type React from 'react';
-export type UserRole = 'admin' | 'operator' | 'user' | '';
+export type UserRole = 'admin' | 'operator' | 'user' | 'not found' | '';
 
 export interface UserAuth {
   id: number;

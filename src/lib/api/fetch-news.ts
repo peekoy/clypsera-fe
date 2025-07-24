@@ -1,5 +1,18 @@
 import { News } from '@/types/news';
 
+type ApiNewsItem = {
+  id: number;
+  judul: string;
+  gambar: string;
+  sumber: string;
+  status: string;
+  content: string;
+};
+
+type ApiResponse = {
+  data: ApiNewsItem[];
+};
+
 export async function getAllNews(token: string): Promise<News[] | null> {
   try {
     const res = await fetch(
@@ -28,8 +41,8 @@ export async function getAllNews(token: string): Promise<News[] | null> {
       return null;
     }
 
-    let data = await res.json();
-    data = data.data.map((item: any) => ({
+    const apiResponse: ApiResponse = await res.json();
+    const mappedData = apiResponse.data.map((item: ApiNewsItem) => ({
       id: item.id,
       title: item.judul,
       image: item.gambar,
@@ -37,8 +50,9 @@ export async function getAllNews(token: string): Promise<News[] | null> {
       status: item.status,
       content: item.content,
     }));
-    console.log('yaya', data);
-    return data;
+
+    console.log('yaya', mappedData);
+    return mappedData;
   } catch (error) {
     console.error('Error fetching users:', error);
     return null;

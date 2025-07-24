@@ -1,5 +1,40 @@
 import { DetailedPatientData } from '@/types/patient';
 
+type ApiPatientData = {
+  id: number;
+  pasien: {
+    nama_pasien: string;
+    tanggal_lahir: string;
+    umur_pasien: string;
+    alamat_pasien: string;
+    suku_pasien: string;
+    kelainan_kotigental: string;
+    pasien_anak_ke_berapa: string;
+    jenis_kelamin: string;
+    riwayat_kehamilan: string;
+    riwayat_keluarga_pasien: string;
+    riwayat_kawin_kerabat: string;
+    riwayat_terdahulu: string;
+  };
+  tanggal_operasi: string;
+  tehnik_operasi: string;
+  nama_penyelenggara: string;
+  lokasi_operasi: string;
+  jenis_kelainan: { nama_kelainan: string };
+  jenis_terapi: { nama_terapi: string };
+  diagnosis: { nama_diagnosis: string };
+  operator: { name: string };
+  follow_up: string;
+  created_at: string;
+  updated_at: string;
+  foto_sebelum_operasi: string | null;
+  foto_setelah_operasi: string | null;
+};
+
+type ApiResponse = {
+  data: ApiPatientData[] | ApiPatientData;
+};
+
 export async function getDetailedPatient(
   token: string,
   id: number
@@ -31,13 +66,13 @@ export async function getDetailedPatient(
       return null;
     }
 
-    let response = await res.json();
+    const response: ApiResponse = await res.json();
     const dataArray = Array.isArray(response.data)
       ? response.data
       : [response.data];
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-    const mappedData = dataArray.map((item: any) => ({
+    const mappedData = dataArray.map((item: ApiPatientData) => ({
       id: id,
       name: item.pasien.nama_pasien,
       birthDate: item.pasien.tanggal_lahir,

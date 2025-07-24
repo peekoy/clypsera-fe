@@ -1,4 +1,20 @@
-import { AllUsers } from '@/types/user';
+import { AllUsers, UserRole } from '@/types/user'; // Impor UserRole
+
+// Definisikan tipe untuk item pengguna dari API
+type ApiUser = {
+  id: number;
+  email: string;
+  name: string;
+  detail_user: {
+    created_at: string;
+  };
+  roles: { name: string }[];
+};
+
+// Definisikan tipe untuk response API
+type ApiResponse = {
+  data: ApiUser[];
+};
 
 export async function getAllUsers(token: string): Promise<AllUsers[] | null> {
   try {
@@ -10,8 +26,6 @@ export async function getAllUsers(token: string): Promise<AllUsers[] | null> {
         'ngrok-skip-browser-warning': 'true',
       },
     });
-
-    console.log('tes', token);
 
     const contentType = res.headers.get('content-type');
 
@@ -27,15 +41,18 @@ export async function getAllUsers(token: string): Promise<AllUsers[] | null> {
       return null;
     }
 
-    let data = await res.json();
-    data = data.data.map((item: any) => ({
+    const apiResponse: ApiResponse = await res.json();
+    const mappedData: AllUsers[] = apiResponse.data.map((item: ApiUser) => ({
       id: item.id,
       email: item.email,
       name: item.name,
-      userCreationDate: new Date(item.detail_user.created_at),
-      role: item.roles.length <= 0 ? 'not found' : item.roles[0].name,
+      userCreationDate: new Date(item.detail_user.created_at).toISOString(),
+      // Tambahkan 'as UserRole' untuk type assertion
+      role: (item.roles.length <= 0
+        ? 'not found'
+        : item.roles[0].name) as UserRole,
     }));
-    return data;
+    return mappedData;
   } catch (error) {
     console.error('Error fetching users:', error);
     return null;

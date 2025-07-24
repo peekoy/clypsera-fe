@@ -32,7 +32,7 @@ export async function updateRequestData(
       return null;
     }
 
-    let data = await res.json();
+    const data = await res.json();
     return data;
   } catch (error) {
     console.error('Error fetching users:', error);

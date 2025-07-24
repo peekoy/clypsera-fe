@@ -9,7 +9,6 @@ import {
   TextSearch,
 } from 'lucide-react';
 import type { MenuSection, UserRole } from '@/types/user';
-import Image from 'next/image';
 
 export const menuSections: MenuSection[] = [
   {
